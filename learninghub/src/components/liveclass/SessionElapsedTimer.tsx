@@ -9,9 +9,7 @@ interface Props {
 }
 
 export function SessionElapsedTimer({ startTime, durationMinutes }: Props) {
-  const startRef = useRef<number>(
-    startTime ? new Date(startTime).getTime() : Date.now()
-  )
+  const startRef = useRef<number>(startTime ? new Date(startTime).getTime() : Date.now())
   const totalMs = durationMinutes * 60 * 1000
 
   const [elapsedMs, setElapsedMs] = useState(() => {
@@ -85,11 +83,7 @@ export function SessionElapsedTimer({ startTime, durationMinutes }: Props) {
       <div className="w-16 h-1.5 rounded-full bg-slate-700 overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-1000 ${
-            isOvertime
-              ? 'bg-rose-500'
-              : isNearEnd
-                ? 'bg-amber-500'
-                : 'bg-emerald-500'
+            isOvertime ? 'bg-rose-500' : isNearEnd ? 'bg-amber-500' : 'bg-emerald-500'
           }`}
           style={{ width: `${Math.min(100, progress)}%` }}
         />
@@ -98,11 +92,7 @@ export function SessionElapsedTimer({ startTime, durationMinutes }: Props) {
       {/* Remaining */}
       <span
         className={`text-[10px] font-bold tabular-nums ${
-          isOvertime
-            ? 'text-rose-400'
-            : isNearEnd
-              ? 'text-amber-400'
-              : 'text-slate-400'
+          isOvertime ? 'text-rose-400' : isNearEnd ? 'text-amber-400' : 'text-slate-400'
         }`}
       >
         {isOvertime ? `+${formatTime(elapsed - totalMs)}` : `-${formatTime(remaining)}`}
@@ -115,11 +105,7 @@ export function SessionElapsedTimer({ startTime, durationMinutes }: Props) {
         title={isPaused ? 'Resume timer' : 'Pause timer'}
         aria-label={isPaused ? 'Resume timer' : 'Pause timer'}
       >
-        {isPaused ? (
-          <Play className="w-3 h-3" />
-        ) : (
-          <Pause className="w-3 h-3" />
-        )}
+        {isPaused ? <Play className="w-3 h-3" /> : <Pause className="w-3 h-3" />}
       </button>
     </div>
   )

@@ -314,14 +314,14 @@ export const submitSolution = asyncHandler(async (req: Request, res: Response): 
 
   const executionTime = executionResult.executionTime
   const memoryUsed = executionResult.memoryUsed
-   const score =
-     status === 'ACCEPTED'
-       ? problem.points
-       : executionResult.testCasesTotal === 0
-         ? 0
-         : Math.floor(
-             problem.points * (executionResult.testCasesPassed / executionResult.testCasesTotal)
-           )
+  const score =
+    status === 'ACCEPTED'
+      ? problem.points
+      : executionResult.testCasesTotal === 0
+        ? 0
+        : Math.floor(
+            problem.points * (executionResult.testCasesPassed / executionResult.testCasesTotal)
+          )
 
   const result = await prisma.$transaction(async (tx: any) => {
     const submission = await tx.problemSubmission.create({

@@ -155,10 +155,14 @@ export const login = asyncHandler(async (req: Request, res: Response): Promise<v
       return
     }
 
-    setAuthCookies(res, {
-      accessToken: result.tokens.accessToken,
-      refreshToken: result.tokens.refreshToken,
-    }, req)
+    setAuthCookies(
+      res,
+      {
+        accessToken: result.tokens.accessToken,
+        refreshToken: result.tokens.refreshToken,
+      },
+      req
+    )
 
     const clientIp = req.ip ?? req.socket.remoteAddress ?? 'unknown'
     void clearFailedAuth(clientIp)
@@ -251,10 +255,14 @@ export const demoLogin = asyncHandler(async (req: Request, res: Response): Promi
     userAgent: req.headers['user-agent'],
   })
 
-  setAuthCookies(res, {
-    accessToken: result.tokens.accessToken,
-    refreshToken: result.tokens.refreshToken,
-  }, req)
+  setAuthCookies(
+    res,
+    {
+      accessToken: result.tokens.accessToken,
+      refreshToken: result.tokens.refreshToken,
+    },
+    req
+  )
 
   const clientIp = req.ip ?? req.socket.remoteAddress ?? 'unknown'
   void clearFailedAuth(clientIp)

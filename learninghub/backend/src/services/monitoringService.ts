@@ -1,5 +1,11 @@
 import { Request, Response, NextFunction } from 'express'
-import { register, httpRequestDuration, httpRequestTotal, databaseQueryDuration, errorTotal } from '../utils/metrics'
+import {
+  register,
+  httpRequestDuration,
+  httpRequestTotal,
+  databaseQueryDuration,
+  errorTotal,
+} from '../utils/metrics'
 
 export class MonitoringService {
   static trackDbQuery(queryType: string, durationMs: number) {

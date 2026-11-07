@@ -36,7 +36,7 @@ export const ExamScientificCalculatorModal = memo(function ExamScientificCalcula
       setDisplay('0.')
       setOverwrite(false)
     } else if (!display.includes('.')) {
-      setDisplay(prev => prev + '.')
+      setDisplay(prev => `${prev}.`)
     }
   }, [display, overwrite])
 
@@ -58,29 +58,26 @@ export const ExamScientificCalculatorModal = memo(function ExamScientificCalcula
     setDisplay(prev => (prev.length > 1 ? prev.slice(0, -1) : '0'))
   }, [overwrite])
 
-  const calculate = useCallback(
-    (a: number, b: number, operator: string): number => {
-      switch (operator) {
-        case '+':
-          return a + b
-        case '-':
-          return a - b
-        case '×':
-        case '*':
-          return a * b
-        case '÷':
-        case '/':
-          return b !== 0 ? a / b : NaN
-        case 'x^y':
-          return Math.pow(a, b)
-        case 'mod':
-          return a % b
-        default:
-          return b
-      }
-    },
-    []
-  )
+  const calculate = useCallback((a: number, b: number, operator: string): number => {
+    switch (operator) {
+      case '+':
+        return a + b
+      case '-':
+        return a - b
+      case '×':
+      case '*':
+        return a * b
+      case '÷':
+      case '/':
+        return b !== 0 ? a / b : NaN
+      case 'x^y':
+        return Math.pow(a, b)
+      case 'mod':
+        return a % b
+      default:
+        return b
+    }
+  }, [])
 
   const handleOperator = useCallback(
     (operator: string) => {
@@ -271,7 +268,10 @@ export const ExamScientificCalculatorModal = memo(function ExamScientificCalcula
               <div className="p-1.5 rounded-lg bg-blue-600/30 text-blue-400">
                 <CalcIcon className="w-4 h-4" />
               </div>
-              <span id="calc-dialog-title" className="text-xs font-bold uppercase tracking-wider text-slate-200">
+              <span
+                id="calc-dialog-title"
+                className="text-xs font-bold uppercase tracking-wider text-slate-200"
+              >
                 CBT Virtual Scientific Calculator
               </span>
             </div>

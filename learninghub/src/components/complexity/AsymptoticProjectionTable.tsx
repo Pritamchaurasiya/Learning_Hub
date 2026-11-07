@@ -64,7 +64,8 @@ export const AsymptoticProjectionTable: React.FC<AsymptoticProjectionTableProps>
             Asymptotic Scalability Projections
           </h3>
           <p className="text-xs text-slate-400 mt-0.5">
-            Theoretical scaling model extrapolated from empirical regression: <code className="text-indigo-400 font-mono">{primaryModel.formula}</code>
+            Theoretical scaling model extrapolated from empirical regression:{' '}
+            <code className="text-indigo-400 font-mono">{primaryModel.formula}</code>
           </p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 font-mono">
@@ -104,9 +105,7 @@ export const AsymptoticProjectionTable: React.FC<AsymptoticProjectionTableProps>
                 <td className="py-3.5 px-4 text-slate-300">
                   {proj.projectedMemoryMb < 1 ? '< 1 MB' : `${proj.projectedMemoryMb} MB`}
                 </td>
-                <td className="py-3.5 px-4">
-                  {getVerdictBadge(proj.feasibilityVerdict)}
-                </td>
+                <td className="py-3.5 px-4">{getVerdictBadge(proj.feasibilityVerdict)}</td>
               </tr>
             ))}
           </tbody>

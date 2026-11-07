@@ -22,8 +22,12 @@ export const ProctoringWarningBanner: React.FC<ProctoringWarningBannerProps> = (
         {/* Subtle persistent HUD badge */}
         <div className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 dark:bg-slate-900/95 border border-slate-700/70 text-slate-200 text-xs shadow-lg backdrop-blur-md">
           <span className="relative flex h-2 w-2">
-            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${violationCount > 0 ? 'bg-amber-400' : 'bg-emerald-400'} opacity-75`} />
-            <span className={`relative inline-flex rounded-full h-2 w-2 ${violationCount > 0 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+            <span
+              className={`animate-ping absolute inline-flex h-full w-full rounded-full ${violationCount > 0 ? 'bg-amber-400' : 'bg-emerald-400'} opacity-75`}
+            />
+            <span
+              className={`relative inline-flex rounded-full h-2 w-2 ${violationCount > 0 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+            />
           </span>
           <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
           <span className="font-medium tracking-tight">Integrity Shield</span>

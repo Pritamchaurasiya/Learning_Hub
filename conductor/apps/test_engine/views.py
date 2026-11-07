@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from django.utils import timezone
 
-from .models import Test, TestAttempt, Question, AttemptAnswer
+from .models import Test, TestAttempt, Question, AttemptAnswer, QuestionBookmark, TestSection
 from .serializers import (
     TestListSerializer,
     TestDetailSerializer,
@@ -22,6 +22,8 @@ from .serializers import (
     AttemptResultSerializer,
     QuestionSerializer,
     QuestionDetailSerializer,
+    QuestionBookmarkSerializer,
+    TestSectionSerializer,
 )
 from .services import TestSessionManager, AdaptiveAssessmentEngine
 
@@ -978,19 +980,68 @@ class QuestionViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset.order_by('-created_at')
 
 
-@extend_schema(description="Bookmark a test question")
-@api_view(['POST'])
+@extend_schema(description="Bookmark a test question or list saved bookmarks")
+@api_view(['GET', 'POST', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def bookmark_question(request):
-    """Bookmark a question for revision."""
-    question_id = request.data.get('question_id') or request.data.get('questionId')
+    """Bookmark a question for revision, retrieve saved bookmarks, or remove a bookmark."""
+    if request.method == 'GET':
+        bookmarks = QuestionBookmark.objects.filter(user=request.user).select_related(
+            'question', 'question__topic', 'question__topic__subject', 'test'
+        )
+        serializer = QuestionBookmarkSerializer(bookmarks, many=True)
+        return Response({
+            'status': 'success',
+            'data': serializer.data,
+            'count': len(serializer.data),
+        })
+
+    question_id = request.data.get('question_id') or request.data.get('questionId') or request.query_params.get('question_id')
     notes = request.data.get('notes', '')
+    test_id = request.data.get('test_id') or request.data.get('testId')
+    is_bookmarked = request.data.get('is_bookmarked', True)
+    if isinstance(is_bookmarked, str):
+        is_bookmarked = is_bookmarked.lower() not in ('false', '0', 'no')
+
     if not question_id:
         return Response(
             {'status': 'error', 'message': 'question_id is required'},
             status=status.HTTP_400_BAD_REQUEST
         )
 
+    if request.method == 'DELETE' or not is_bookmarked:
+        QuestionBookmark.objects.filter(user=request.user, question_id=question_id).delete()
+        AttemptAnswer.objects.filter(
+            attempt__user=request.user, question_id=question_id
+        ).update(is_bookmarked=False)
+        return Response({
+            'status': 'success',
+            'data': {
+                'bookmarked': False,
+                'question_id': str(question_id),
+            }
+        })
+
+    # Ensure question exists
+    try:
+        q_obj = Question.objects.get(id=question_id)
+    except Question.DoesNotExist:
+        return Response(
+            {'status': 'error', 'message': f'Question {question_id} not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Persist in QuestionBookmark
+    bm, _ = QuestionBookmark.objects.update_or_create(
+        user=request.user,
+        question=q_obj,
+        defaults={
+            'notes': notes,
+            'test_id': test_id if test_id else None,
+        }
+    )
+
+    # Synchronize any existing AttemptAnswers for current user
     AttemptAnswer.objects.filter(
         attempt__user=request.user, question_id=question_id
     ).update(is_bookmarked=True)

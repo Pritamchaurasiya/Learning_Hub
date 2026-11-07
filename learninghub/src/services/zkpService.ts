@@ -61,7 +61,9 @@ class ZkpService {
    */
   async generateProof(req: GenerateProofRequest): Promise<ZkAttestationProofPayload> {
     if (req.actualScoreOrElo < req.thresholdValue) {
-      throw new Error(`Threshold unsatisfied: ${req.actualScoreOrElo} is below required threshold ${req.thresholdValue}`)
+      throw new Error(
+        `Threshold unsatisfied: ${req.actualScoreOrElo} is below required threshold ${req.thresholdValue}`
+      )
     }
 
     try {
@@ -147,7 +149,8 @@ class ZkpService {
   }
 
   private synthesizeClientProof(req: GenerateProofRequest): ZkAttestationProofPayload {
-    const dummyHex = () => `0x${Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`
+    const dummyHex = () =>
+      `0x${Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`
 
     return {
       proofId: `zkp-${Math.random().toString(36).substring(2, 10)}`,
@@ -211,7 +214,8 @@ class ZkpService {
       {
         id: 'ANONYMOUS_MEMBERSHIP',
         name: 'Merkle Skill Tree Set Membership',
-        description: 'Proves cryptographic inclusion in certified engineer registry without identity leak.',
+        description:
+          'Proves cryptographic inclusion in certified engineer registry without identity leak.',
         constraints: 2048,
         defaultThreshold: 1,
         metricLabel: 'Set Invariant',

@@ -6,7 +6,9 @@ test('Verify code copy functionality in AI Tutor', async ({ page, context }) => 
 
   // Grant clipboard permissions for Chromium-based browsers
   if (context.browser()?.browserType().name() === 'chromium') {
-    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
+      origin: 'http://localhost:3000',
+    })
   }
 
   // ──────────────────────────────────────────────────────────
@@ -39,6 +41,7 @@ test('Verify code copy functionality in AI Tutor', async ({ page, context }) => 
 
   await context.addInitScript(() => {
     window.localStorage.setItem('cookieConsent', 'accepted')
+    window.localStorage.setItem('lh_location_permission_requested', 'true')
     window.localStorage.setItem(
       'learninghub-storage',
       JSON.stringify({

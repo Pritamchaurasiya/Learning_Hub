@@ -53,7 +53,7 @@ export const P2PCollaborativeCodeBlock: React.FC<P2PCollaborativeCodeBlockProps>
       <div className="relative p-3 bg-slate-950">
         <textarea
           value={snippet.code}
-          onChange={(e) => onUpdateCode(snippet.id, e.target.value)}
+          onChange={e => onUpdateCode(snippet.id, e.target.value)}
           rows={8}
           spellCheck={false}
           className="w-full bg-transparent font-mono text-xs text-slate-200 outline-none resize-y selection:bg-indigo-500/30 leading-relaxed"

@@ -19,7 +19,9 @@ export class SocraticDiagnosticService {
         this.geminiAdapter = new GeminiAdapter()
       }
     } catch {
-      logger.warn('[SocraticDiagnosticService] GeminiAdapter initialization skipped: missing or invalid key')
+      logger.warn(
+        '[SocraticDiagnosticService] GeminiAdapter initialization skipped: missing or invalid key'
+      )
     }
   }
 

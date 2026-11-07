@@ -150,10 +150,7 @@ export const questionBankService = {
   /**
    * Update an existing question and its options
    */
-  async updateQuestion(
-    id: string,
-    question: Partial<RawQuestionInput>
-  ): Promise<QuestionBankItem> {
+  async updateQuestion(id: string, question: Partial<RawQuestionInput>): Promise<QuestionBankItem> {
     const response = await fetchApi(`/question-bank/questions/${id}`, {
       method: 'PUT',
       body: JSON.stringify(question),
@@ -245,4 +242,3 @@ export const questionBankService = {
 }
 
 export default questionBankService
-

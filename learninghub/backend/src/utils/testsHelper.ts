@@ -181,8 +181,14 @@ export const computeAuditDigest = (
     hash = hash & hash
   }
   const hex1 = Math.abs(hash).toString(16).padStart(8, '0')
-  const hex2 = Math.abs(hash ^ 0x5a5a5a5a).toString(16).padStart(8, '0')
-  const hex3 = Math.abs(hash ^ 0x3c3c3c3c).toString(16).padStart(8, '0')
-  const hex4 = Math.abs(hash ^ 0xa5a5a5a5).toString(16).padStart(8, '0')
+  const hex2 = Math.abs(hash ^ 0x5a5a5a5a)
+    .toString(16)
+    .padStart(8, '0')
+  const hex3 = Math.abs(hash ^ 0x3c3c3c3c)
+    .toString(16)
+    .padStart(8, '0')
+  const hex4 = Math.abs(hash ^ 0xa5a5a5a5)
+    .toString(16)
+    .padStart(8, '0')
   return `LH-${hex1.toUpperCase()}-${hex2.toUpperCase()}-${hex3.toUpperCase()}-${hex4.toUpperCase()}`
 }

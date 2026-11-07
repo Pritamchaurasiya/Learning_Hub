@@ -2,16 +2,10 @@ import crypto from 'crypto'
 import logger from '../utils/logger'
 
 export type CareerTrack =
-  | 'DISTRIBUTED_SYSTEMS'
-  | 'AI_RESEARCH'
-  | 'FULL_STACK_WEB3'
-  | 'STAFF_SRE'
-  | 'ALGORITHM_QUANT'
+  'DISTRIBUTED_SYSTEMS' | 'AI_RESEARCH' | 'FULL_STACK_WEB3' | 'STAFF_SRE' | 'ALGORITHM_QUANT'
 
 export type RecruiterPersonaRole =
-  | 'EXECUTIVE_TALENT_LEAD'
-  | 'ENGINEERING_DIRECTOR'
-  | 'BAR_RAISER_PRINCIPAL'
+  'EXECUTIVE_TALENT_LEAD' | 'ENGINEERING_DIRECTOR' | 'BAR_RAISER_PRINCIPAL'
 
 export interface SimulatedJobListing {
   id: string
@@ -86,9 +80,13 @@ export interface CareerSimulationState {
 }
 
 export class CareerOrchestratorService {
-  private secretKey: string = process.env.CAREER_SIGNING_SECRET || 'learninghub-career-orchestrator-salt-v1'
+  private secretKey: string =
+    process.env.CAREER_SIGNING_SECRET || 'learninghub-career-orchestrator-salt-v1'
 
-  private sampleJobs: Omit<SimulatedJobListing, 'matchAffinityScore' | 'matchedSkills' | 'missingSkills' | 'telemetryAlignment'>[] = [
+  private sampleJobs: Omit<
+    SimulatedJobListing,
+    'matchAffinityScore' | 'matchedSkills' | 'missingSkills' | 'telemetryAlignment'
+  >[] = [
     {
       id: 'job-dist-sys-01',
       title: 'Senior Distributed Systems Infrastructure Engineer',
@@ -102,10 +100,16 @@ export class CareerOrchestratorService {
       signingBonusUsd: 45000,
       currency: 'USD',
       track: 'DISTRIBUTED_SYSTEMS',
-      requiredSkills: ['Distributed Consensus (Raft/Paxos)', 'Go / Rust', 'Kubernetes Architecture', 'Zero-Trust Security'],
+      requiredSkills: [
+        'Distributed Consensus (Raft/Paxos)',
+        'Go / Rust',
+        'Kubernetes Architecture',
+        'Zero-Trust Security',
+      ],
       preferredSkills: ['CRDTs', 'eBPF Profiling', 'Chaos Engineering'],
       minimumElo: 1800,
-      description: 'Architect planetary-scale replication engines, multi-region state machine persistence, and fault-tolerant telemetry pipelines.',
+      description:
+        'Architect planetary-scale replication engines, multi-region state machine persistence, and fault-tolerant telemetry pipelines.',
     },
     {
       id: 'job-ai-res-02',
@@ -120,10 +124,20 @@ export class CareerOrchestratorService {
       signingBonusUsd: 60000,
       currency: 'USD',
       track: 'AI_RESEARCH',
-      requiredSkills: ['LLM Kernel Optimization', 'PyTorch / CUDA', 'WebGPU Micro-Inference', 'Bayesian Active Learning'],
-      preferredSkills: ['Quantization (AWQ/GPTQ)', 'Distributed Training (Megatron-LM)', 'Speculative Decoding'],
+      requiredSkills: [
+        'LLM Kernel Optimization',
+        'PyTorch / CUDA',
+        'WebGPU Micro-Inference',
+        'Bayesian Active Learning',
+      ],
+      preferredSkills: [
+        'Quantization (AWQ/GPTQ)',
+        'Distributed Training (Megatron-LM)',
+        'Speculative Decoding',
+      ],
       minimumElo: 1950,
-      description: 'Build low-latency on-device micro-inference runtimes and autonomous multi-agent reasoning councils for frontier systems.',
+      description:
+        'Build low-latency on-device micro-inference runtimes and autonomous multi-agent reasoning councils for frontier systems.',
     },
     {
       id: 'job-web3-03',
@@ -138,10 +152,20 @@ export class CareerOrchestratorService {
       signingBonusUsd: 40000,
       currency: 'USD',
       track: 'FULL_STACK_WEB3',
-      requiredSkills: ['Zero-Knowledge Proofs (Groth16/Plonk)', 'Solidity / Rust', 'TypeScript / React 18', 'W3C DID & VC Architecture'],
-      preferredSkills: ['Account Abstraction (ERC-4337)', 'Merkle Tree Inclusion Proofs', 'IPFS Pinning'],
+      requiredSkills: [
+        'Zero-Knowledge Proofs (Groth16/Plonk)',
+        'Solidity / Rust',
+        'TypeScript / React 18',
+        'W3C DID & VC Architecture',
+      ],
+      preferredSkills: [
+        'Account Abstraction (ERC-4337)',
+        'Merkle Tree Inclusion Proofs',
+        'IPFS Pinning',
+      ],
       minimumElo: 1700,
-      description: 'Develop tamper-proof decentralized credential protocols, privacy-preserving zero-knowledge identity, and real-time state trees.',
+      description:
+        'Develop tamper-proof decentralized credential protocols, privacy-preserving zero-knowledge identity, and real-time state trees.',
     },
     {
       id: 'job-sre-04',
@@ -156,10 +180,20 @@ export class CareerOrchestratorService {
       signingBonusUsd: 50000,
       currency: 'USD',
       track: 'STAFF_SRE',
-      requiredSkills: ['Chaos Mesh / Fault Injection', 'Distributed Tracing (OpenTelemetry)', 'Circuit Breakers', 'Prometheus & Grafana'],
-      preferredSkills: ['Incident Post-Mortem Scribe', 'Capacity Little\'s Law Modeling', 'Linux Kernel Cgroups'],
+      requiredSkills: [
+        'Chaos Mesh / Fault Injection',
+        'Distributed Tracing (OpenTelemetry)',
+        'Circuit Breakers',
+        'Prometheus & Grafana',
+      ],
+      preferredSkills: [
+        'Incident Post-Mortem Scribe',
+        "Capacity Little's Law Modeling",
+        'Linux Kernel Cgroups',
+      ],
       minimumElo: 1750,
-      description: 'Fortify mission-critical tier-0 services through proactive chaos simulations, zero-downtime rollouts, and automated blast-radius containment.',
+      description:
+        'Fortify mission-critical tier-0 services through proactive chaos simulations, zero-downtime rollouts, and automated blast-radius containment.',
     },
     {
       id: 'job-quant-05',
@@ -174,10 +208,16 @@ export class CareerOrchestratorService {
       signingBonusUsd: 75000,
       currency: 'USD',
       track: 'ALGORITHM_QUANT',
-      requiredSkills: ['C++20 / Modern C++', 'Order Book Microstructure', 'Lock-Free Queues', 'Cache-Aware Asymptotic Analysis'],
+      requiredSkills: [
+        'C++20 / Modern C++',
+        'Order Book Microstructure',
+        'Lock-Free Queues',
+        'Cache-Aware Asymptotic Analysis',
+      ],
       preferredSkills: ['Kernel Bypass (Solarflare/DPDK)', 'FPGA Integration', 'SIMD Parallelism'],
       minimumElo: 2100,
-      description: 'Design deterministic sub-microsecond limit order book matching engines and competitive algorithmic execution pipelines.',
+      description:
+        'Design deterministic sub-microsecond limit order book matching engines and competitive algorithmic execution pipelines.',
     },
   ]
 
@@ -199,16 +239,15 @@ export class CareerOrchestratorService {
       const missingSkills: string[] = []
 
       job.requiredSkills.forEach(req => {
-        const isMatched = Array.from(candidateSkillsLower).some(cs =>
-          req.toLowerCase().includes(cs) || cs.includes(req.toLowerCase().split(' ')[0])
+        const isMatched = Array.from(candidateSkillsLower).some(
+          cs => req.toLowerCase().includes(cs) || cs.includes(req.toLowerCase().split(' ')[0])
         )
         if (isMatched) matchedSkills.push(req)
         else missingSkills.push(req)
       })
 
-      const skillOverlapRatio = job.requiredSkills.length > 0
-        ? matchedSkills.length / job.requiredSkills.length
-        : 1
+      const skillOverlapRatio =
+        job.requiredSkills.length > 0 ? matchedSkills.length / job.requiredSkills.length : 1
 
       const eloFactor = Math.min(1.2, Math.max(0.7, params.candidateElo / job.minimumElo))
       const interviewFactor = params.interviewPercentile / 100
@@ -217,9 +256,7 @@ export class CareerOrchestratorService {
         100,
         Math.max(
           40,
-          Math.round(
-            (skillOverlapRatio * 0.50 + eloFactor * 0.25 + interviewFactor * 0.25) * 100
-          )
+          Math.round((skillOverlapRatio * 0.5 + eloFactor * 0.25 + interviewFactor * 0.25) * 100)
         )
       )
 
@@ -230,7 +267,7 @@ export class CareerOrchestratorService {
         missingSkills,
         telemetryAlignment: {
           eloRatingMatch: params.candidateElo >= job.minimumElo,
-          bktMasteryMatch: skillOverlapRatio >= 0.60,
+          bktMasteryMatch: skillOverlapRatio >= 0.6,
           interviewReadinessMatch: params.interviewPercentile >= 80,
         },
       }
@@ -294,12 +331,15 @@ export class CareerOrchestratorService {
         name: 'Elena Rostova',
         title: 'Principal Staff Bar Raiser',
         avatarColor: 'from-purple-600 to-pink-700',
-        evaluationFocus: 'Asymptotic complexity rigor, high-stakes incidents, and standards elevation',
+        evaluationFocus:
+          'Asymptotic complexity rigor, high-stakes incidents, and standards elevation',
         currentImpressionScore: 94,
       },
     ]
 
-    const dialogueHistory: RecruiterTurn[] = params.dialogueHistory ? [...params.dialogueHistory] : []
+    const dialogueHistory: RecruiterTurn[] = params.dialogueHistory
+      ? [...params.dialogueHistory]
+      : []
 
     if (dialogueHistory.length === 0) {
       dialogueHistory.push({
@@ -355,9 +395,14 @@ export class CareerOrchestratorService {
     const eloLeverage = Math.min(40, (params.candidateElo / 2400) * 40)
     const interviewLeverage = (params.interviewPercentile / 100) * 35
     const credentialsLeverage = 25
-    const leverageScore = Math.min(100, Math.round(eloLeverage + interviewLeverage + credentialsLeverage))
+    const leverageScore = Math.min(
+      100,
+      Math.round(eloLeverage + interviewLeverage + credentialsLeverage)
+    )
 
-    const baseSalary = Math.round(job.baseSalaryMin + (job.baseSalaryMax - job.baseSalaryMin) * (leverageScore / 100 * 0.7))
+    const baseSalary = Math.round(
+      job.baseSalaryMin + (job.baseSalaryMax - job.baseSalaryMin) * ((leverageScore / 100) * 0.7)
+    )
     const equityValueUsd = Math.round(job.equityAnnualUsd * (1 + (leverageScore - 70) / 200))
     const signingBonus = Math.round(job.signingBonusUsd * (1 + (leverageScore - 70) / 150))
     const totalTargetCompensation = baseSalary + equityValueUsd + signingBonus
@@ -413,10 +458,13 @@ export class CareerOrchestratorService {
   } {
     const job = this.sampleJobs.find(j => j.id === params.jobId) || this.sampleJobs[0]
     const maxAllowableBase = job.baseSalaryMax * 1.05
-    const maxAllowableEquity = job.equityAnnualUsd * 1.30
-    const maxAllowableSign = job.signingBonusUsd * 1.50
+    const maxAllowableEquity = job.equityAnnualUsd * 1.3
+    const maxAllowableSign = job.signingBonusUsd * 1.5
 
-    const proposedTotal = params.counterOffer.baseSalary + params.counterOffer.equityValueUsd + params.counterOffer.signingBonus
+    const proposedTotal =
+      params.counterOffer.baseSalary +
+      params.counterOffer.equityValueUsd +
+      params.counterOffer.signingBonus
     const initialTotal = job.baseSalaryMin + job.equityAnnualUsd + job.signingBonusUsd
 
     const deltaUsd = proposedTotal - initialTotal
@@ -439,10 +487,14 @@ export class CareerOrchestratorService {
         feedbackNote: `Outstanding negotiation! Your leverage score of ${params.leverageScore} supported by verified platform telemetry warranted full executive sign-off on your requested numbers.`,
         deltaUsd,
       }
-    } else if (params.counterOffer.baseSalary <= maxAllowableBase * 1.10) {
+    } else if (params.counterOffer.baseSalary <= maxAllowableBase * 1.1) {
       const compromiseBase = Math.min(params.counterOffer.baseSalary, job.baseSalaryMax)
-      const compromiseEquity = Math.round((params.counterOffer.equityValueUsd + job.equityAnnualUsd) / 2)
-      const compromiseSign = Math.round((params.counterOffer.signingBonus + job.signingBonusUsd) / 2)
+      const compromiseEquity = Math.round(
+        (params.counterOffer.equityValueUsd + job.equityAnnualUsd) / 2
+      )
+      const compromiseSign = Math.round(
+        (params.counterOffer.signingBonus + job.signingBonusUsd) / 2
+      )
       const compromiseTotal = compromiseBase + compromiseEquity + compromiseSign
 
       return {
@@ -468,7 +520,7 @@ export class CareerOrchestratorService {
           acceptedStatus: 'REJECTED',
         },
         feedbackNote: `The proposed numbers exceed the structural compensation parity limits for this role tier. We must hold at our strong top-of-market offer.`,
-        deltaUsd: (job.baseSalaryMax + job.equityAnnualUsd + job.signingBonusUsd) - initialTotal,
+        deltaUsd: job.baseSalaryMax + job.equityAnnualUsd + job.signingBonusUsd - initialTotal,
       }
     }
   }
@@ -478,7 +530,10 @@ export class CareerOrchestratorService {
     candidateMessage: string
     candidateName: string
     candidateElo: number
-    job: Omit<SimulatedJobListing, 'matchAffinityScore' | 'matchedSkills' | 'missingSkills' | 'telemetryAlignment'>
+    job: Omit<
+      SimulatedJobListing,
+      'matchAffinityScore' | 'matchedSkills' | 'missingSkills' | 'telemetryAlignment'
+    >
   }): {
     content: string
     sentimentTag: 'ENTHUSIASTIC' | 'NEUTRAL' | 'CRITICAL' | 'NEGOTIATION_TIGHT'
@@ -487,7 +542,12 @@ export class CareerOrchestratorService {
     const text = params.candidateMessage.toLowerCase()
 
     if (params.personaRole === 'EXECUTIVE_TALENT_LEAD') {
-      if (text.includes('salary') || text.includes('base') || text.includes('compensation') || text.includes('equity')) {
+      if (
+        text.includes('salary') ||
+        text.includes('base') ||
+        text.includes('compensation') ||
+        text.includes('equity')
+      ) {
         return {
           content: `I appreciate you laying out your expectations with clarity, ${params.candidateName}. Given your verified credentials, our compensation committee is receptive to adjusting the structure. We can pull on the equity grant or bump the upfront sign-on bonus to bridge any delta. Let's see what compromise feels optimal for you.`,
           sentimentTag: 'NEGOTIATION_TIGHT',

@@ -1,10 +1,5 @@
 import React from 'react'
-import {
-  ShieldAlert,
-  ShieldCheck,
-  ShieldX,
-  TrendingDown,
-} from 'lucide-react'
+import { ShieldAlert, ShieldCheck, ShieldX, TrendingDown } from 'lucide-react'
 import { ClusterTopology, ServiceNode, CircuitBreakerState } from '../../types/chaosCluster'
 
 interface CircuitBreakerStatusHUDProps {
@@ -18,9 +13,9 @@ export const CircuitBreakerStatusHUD: React.FC<CircuitBreakerStatusHUDProps> = (
   selectedNodeId,
   onSelectNode,
 }) => {
-  const closedBreakers = topology.nodes.filter((n) => n.circuitBreaker.state === 'CLOSED')
-  const openBreakers = topology.nodes.filter((n) => n.circuitBreaker.state === 'OPEN')
-  const halfOpenBreakers = topology.nodes.filter((n) => n.circuitBreaker.state === 'HALF_OPEN')
+  const closedBreakers = topology.nodes.filter(n => n.circuitBreaker.state === 'CLOSED')
+  const openBreakers = topology.nodes.filter(n => n.circuitBreaker.state === 'OPEN')
+  const halfOpenBreakers = topology.nodes.filter(n => n.circuitBreaker.state === 'HALF_OPEN')
 
   const totalFallbacks = topology.nodes.reduce(
     (sum, n) => sum + (n.circuitBreaker.fallbackInvocations || 0),
@@ -71,7 +66,8 @@ export const CircuitBreakerStatusHUD: React.FC<CircuitBreakerStatusHUDProps> = (
             Circuit Breaker Heads-Up Display (HUD)
           </h3>
           <p className="text-xs text-slate-400 mt-0.5">
-            Distributed failure isolation state machine monitoring Little&apos;s Law queue saturation.
+            Distributed failure isolation state machine monitoring Little&apos;s Law queue
+            saturation.
           </p>
         </div>
 
@@ -106,7 +102,7 @@ export const CircuitBreakerStatusHUD: React.FC<CircuitBreakerStatusHUDProps> = (
 
       {/* Node Circuit Breaker Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {topology.nodes.map((node) => {
+        {topology.nodes.map(node => {
           const isSelected = selectedNodeId === node.id
           const cb = node.circuitBreaker
 
@@ -118,8 +114,8 @@ export const CircuitBreakerStatusHUD: React.FC<CircuitBreakerStatusHUDProps> = (
                 cb.state === 'OPEN'
                   ? 'bg-rose-950/20 border-rose-500/40 hover:border-rose-500/70'
                   : cb.state === 'HALF_OPEN'
-                  ? 'bg-amber-950/20 border-amber-500/40 hover:border-amber-500/70'
-                  : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700'
+                    ? 'bg-amber-950/20 border-amber-500/40 hover:border-amber-500/70'
+                    : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700'
               } ${isSelected ? 'ring-2 ring-cyan-500/50' : ''}`}
             >
               <div className="flex items-center justify-between">
@@ -138,8 +134,8 @@ export const CircuitBreakerStatusHUD: React.FC<CircuitBreakerStatusHUDProps> = (
                     cb.state === 'OPEN'
                       ? 'bg-rose-500/10 text-rose-400 border-rose-500/30 animate-pulse'
                       : cb.state === 'HALF_OPEN'
-                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                      : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                        : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                   }`}
                 >
                   {cb.state}
@@ -171,9 +167,7 @@ export const CircuitBreakerStatusHUD: React.FC<CircuitBreakerStatusHUDProps> = (
               {/* Strategy Badge */}
               <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
                 {getStrategyBadge(cb.fallbackStrategy)}
-                <span className="text-[10px] text-slate-500 font-mono">
-                  {node.cpuPercent}% CPU
-                </span>
+                <span className="text-[10px] text-slate-500 font-mono">{node.cpuPercent}% CPU</span>
               </div>
             </div>
           )

@@ -202,7 +202,14 @@ export default function PeerReviewPage() {
                       {item.submissionTitle}
                     </h3>
                     <p className="text-xs text-gray-500">
-                      Author: <span className="font-semibold text-gray-700 dark:text-gray-300">{item.authorName}</span> • Language: <span className="font-semibold uppercase">{item.language || 'TypeScript'}</span>
+                      Author:{' '}
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">
+                        {item.authorName}
+                      </span>{' '}
+                      • Language:{' '}
+                      <span className="font-semibold uppercase">
+                        {item.language || 'TypeScript'}
+                      </span>
                     </p>
 
                     {item.codeSnippet && (

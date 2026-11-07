@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle, X } from 'lucide-react'
+import { CheckCircle, X, WifiOff } from 'lucide-react'
 import { Button } from '../ui/Button'
 
 export interface TestSubmitModalProps {
@@ -12,6 +12,7 @@ export interface TestSubmitModalProps {
   unansweredCount: number
   flaggedCount: number
   timeRemaining: number
+  isOnline?: boolean
 }
 
 export const TestSubmitModal = memo(function TestSubmitModal({
@@ -23,6 +24,7 @@ export const TestSubmitModal = memo(function TestSubmitModal({
   unansweredCount,
   flaggedCount,
   timeRemaining,
+  isOnline = true,
 }: TestSubmitModalProps) {
   if (!isOpen) return null
 
@@ -60,8 +62,8 @@ export const TestSubmitModal = memo(function TestSubmitModal({
           </div>
 
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Are you sure you want to submit your test? Once submitted, your answers will be
-            graded deterministically.
+            Are you sure you want to submit your test? Once submitted, your answers will be graded
+            deterministically.
           </p>
 
           <div className="grid grid-cols-3 gap-3">
@@ -92,13 +94,21 @@ export const TestSubmitModal = memo(function TestSubmitModal({
             </span>
           </div>
 
+          {!isOnline && (
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 flex items-start gap-2.5 text-xs text-amber-900 dark:text-amber-200">
+              <WifiOff className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold block text-amber-950 dark:text-amber-100">
+                  Offline Resilience Protected
+                </span>
+                You are currently disconnected. Submitting now will seal and safely buffer your test
+                encrypted locally. It will auto-sync the moment your connection restores.
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-3 pt-2">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="flex-1"
-              disabled={isSubmitting}
-            >
+            <Button variant="outline" onClick={onClose} className="flex-1" disabled={isSubmitting}>
               Return to Test
             </Button>
             <Button
@@ -107,7 +117,11 @@ export const TestSubmitModal = memo(function TestSubmitModal({
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Submitting...' : 'Confirm Submit'}
+              {isSubmitting
+                ? 'Submitting...'
+                : !isOnline
+                  ? 'Submit & Buffer Offline'
+                  : 'Confirm Submit'}
             </Button>
           </div>
         </motion.div>

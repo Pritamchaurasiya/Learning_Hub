@@ -20,7 +20,8 @@ export const InvariantAnomalyCard: React.FC<InvariantAnomalyCardProps> = ({
             Algorithmic Invariants Verified
           </h4>
           <p className="text-xs text-slate-300">
-            No infinite loops, off-by-one errors, or unbounded recursion detected across all execution steps.
+            No infinite loops, off-by-one errors, or unbounded recursion detected across all
+            execution steps.
           </p>
         </div>
       </div>
@@ -45,9 +46,7 @@ export const InvariantAnomalyCard: React.FC<InvariantAnomalyCardProps> = ({
         </div>
       </div>
 
-      <p className="text-xs text-slate-300 leading-relaxed">
-        {primary.description}
-      </p>
+      <p className="text-xs text-slate-300 leading-relaxed">{primary.description}</p>
 
       {/* Culprit Variables Snapshot */}
       {Object.keys(primary.culpritVariables).length > 0 && (
@@ -74,9 +73,7 @@ export const InvariantAnomalyCard: React.FC<InvariantAnomalyCardProps> = ({
           <Lightbulb className="w-4 h-4" />
           <span>Socratic Remediation & Recommended Fix</span>
         </div>
-        <p className="text-xs text-slate-200">
-          {primary.suggestedFix}
-        </p>
+        <p className="text-xs text-slate-200">{primary.suggestedFix}</p>
         {primary.katexMathematicalScaffolding && (
           <div className="p-2 rounded-lg bg-slate-950/70 text-[11px] font-mono text-amber-300 border border-amber-500/20">
             {primary.katexMathematicalScaffolding}

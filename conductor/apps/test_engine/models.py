@@ -261,10 +261,41 @@ class Test(models.Model):
         return sum(questions) / len(questions)
 
 
+class TestSection(models.Model):
+    """
+    Sections within a test (e.g. Section A: MCQs, Section B: Numericals,
+    or Physics, Chemistry, Mathematics).
+    Supports section-level timing, cutoffs, and locked navigation gates.
+    """
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
+    test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='sections')
+    name = models.CharField(max_length=150)
+    description = models.TextField(blank=True, default='')
+    order = models.IntegerField(default=1)
+    duration_minutes = models.IntegerField(null=True, blank=True, help_text="Section-specific time limit in minutes")
+    cutoff_score = models.FloatField(null=True, blank=True, help_text="Section cutoff mark requirement")
+    is_timed = models.BooleanField(default=False)
+    allow_backward_navigation = models.BooleanField(default=True)
+    is_locked = models.BooleanField(default=False, help_text="Whether navigation is locked until previous section submitted")
+    max_questions_to_attempt = models.IntegerField(null=True, blank=True, help_text="e.g. Attempt ANY 5 of 10")
+    section_type = models.CharField(max_length=50, default='MANDATORY')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'test_sections'
+        ordering = ['order']
+        unique_together = ['test', 'name']
+
+    def __str__(self):
+        return f"{self.test.title} - {self.name} (Section {self.order})"
+
+
 class TestQuestion(models.Model):
     """Maps questions to a test with ordering and marks assignment."""
     id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='test_questions')
+    section = models.ForeignKey(TestSection, on_delete=models.SET_NULL, null=True, blank=True, related_name='test_questions')
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     order = models.IntegerField()
     marks = models.FloatField(default=1)
@@ -360,7 +391,8 @@ class TestAttempt(models.Model):
         if self.status != 'in_progress':
             return 0
         elapsed = (timezone.now() - self.started_at).total_seconds()
-        remaining = (self.test.time_limit_minutes * 60) - elapsed
+        ext_secs = (self.metadata or {}).get('time_extension_seconds', 0)
+        remaining = ((self.test.time_limit_minutes * 60) + ext_secs) - elapsed
         return max(0, int(remaining))
 
     @property
@@ -429,7 +461,30 @@ class AttemptAnswer(models.Model):
         return f"{self.attempt.user.email} - Q{self.question.text[:30]}..."
 
 
+class QuestionBookmark(models.Model):
+    """
+    Dedicated bookmark model for saving questions for later revision,
+    even before or independently of any test attempt.
+    """
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='question_bookmarks')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='bookmarks')
+    test = models.ForeignKey(Test, on_delete=models.SET_NULL, null=True, blank=True, related_name='question_bookmarks')
+    notes = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'question_bookmarks'
+        unique_together = ['user', 'question']
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user} - Bookmark: {self.question_id}"
+
+
 # Disable pytest test runner collection for Django models with 'Test*' prefix
 Test.__test__ = False
 TestQuestion.__test__ = False
+TestSection.__test__ = False
 TestAttempt.__test__ = False

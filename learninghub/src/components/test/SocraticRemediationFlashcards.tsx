@@ -50,12 +50,15 @@ export function SocraticRemediationFlashcards({
 
     if (incorrect.length > 0) {
       return incorrect.map((ans, idx) => {
-        const topic = ans.topic || (attempt.test_title ? attempt.test_title.split(' ')[0] : 'Curriculum Core')
+        const topic =
+          ans.topic || (attempt.test_title ? attempt.test_title.split(' ')[0] : 'Curriculum Core')
         return {
           id: ans.id || `card-${idx}`,
           topic,
           front: `Socratic Probe: In "${ans.question_text || 'this assessment problem'}", why was your selected choice insufficient? What fundamental invariant was violated?`,
-          back: ans.text_answer || 'Review the correct condition and verify boundary constraints before executing.',
+          back:
+            ans.text_answer ||
+            'Review the correct condition and verify boundary constraints before executing.',
           explanation:
             (ans as any).explanation ||
             'Deep conceptual remediation: examine the underlying formal definition, algorithmic invariants, and potential edge-case branches.',
@@ -92,7 +95,8 @@ export function SocraticRemediationFlashcards({
       {
         id: 'socratic-default-3',
         topic: 'Error Resilience',
-        front: 'Socratic Probe: How does the Transactional Outbox pattern prevent dual-write anomalies across relational databases and message brokers?',
+        front:
+          'Socratic Probe: How does the Transactional Outbox pattern prevent dual-write anomalies across relational databases and message brokers?',
         back: 'By persisting events directly into an "outbox" table within the same ACID database transaction as business entities, ensuring 100% atomicity.',
         explanation:
           'An asynchronous background relay process (e.g., Debezium CDC or polling publisher) delivers the outbox events to Kafka with at-least-once semantics.',
@@ -228,10 +232,7 @@ export function SocraticRemediationFlashcards({
             </div>
           ) : (
             /* Back Face */
-            <div
-              className="space-y-3"
-              style={{ transform: 'rotateY(180deg)' }}
-            >
+            <div className="space-y-3" style={{ transform: 'rotateY(180deg)' }}>
               <div className="flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 font-semibold uppercase tracking-wider">
                 <span className="flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
@@ -307,9 +308,7 @@ export function SocraticRemediationFlashcards({
             <div
               key={i}
               className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === currentIndex
-                  ? 'w-5 bg-indigo-600'
-                  : 'w-1.5 bg-slate-300 dark:bg-slate-700'
+                i === currentIndex ? 'w-5 bg-indigo-600' : 'w-1.5 bg-slate-300 dark:bg-slate-700'
               }`}
             />
           ))}

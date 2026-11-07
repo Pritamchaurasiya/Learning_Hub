@@ -7,7 +7,6 @@ import {
   Code2,
   Swords,
   Award,
-
   BarChart3,
   Calendar,
   MessageSquare,
@@ -95,11 +94,20 @@ const COMMANDS: CommandItem[] = [
   {
     id: 'practice-visualizer',
     title: 'Algorithm Visualizer',
-    description: 'Interactive stepping and animated execution of sorting, graph, and tree algorithms',
+    description:
+      'Interactive stepping and animated execution of sorting, graph, and tree algorithms',
     category: 'Practice',
     icon: Code2,
     path: '/problems',
-    keywords: ['visualizer', 'algorithm visualizer', 'sorting', 'graph', 'tree', 'animation', 'step'],
+    keywords: [
+      'visualizer',
+      'algorithm visualizer',
+      'sorting',
+      'graph',
+      'tree',
+      'animation',
+      'step',
+    ],
   },
   {
     id: 'practice-arena-duel',
@@ -266,7 +274,17 @@ const COMMANDS: CommandItem[] = [
     category: 'Admin',
     icon: Briefcase,
     path: '/institutions',
-    keywords: ['lti', 'lms', 'canvas', 'moodle', 'blackboard', 'sso', 'institution', 'university', 'grade passback'],
+    keywords: [
+      'lti',
+      'lms',
+      'canvas',
+      'moodle',
+      'blackboard',
+      'sso',
+      'institution',
+      'university',
+      'grade passback',
+    ],
   },
   {
     id: 'admin-panel',

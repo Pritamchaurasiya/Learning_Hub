@@ -262,8 +262,8 @@ test.describe('Tests A+ Module', () => {
     // Click option "4"
     await page.getByRole('button', { name: '4' }).click({ force: true })
 
-    // Click Next
-    await page.getByRole('button', { name: 'Next' }).click({ force: true })
+    // Click Save & Next
+    await page.getByRole('button', { name: 'Save & Next' }).click({ force: true })
 
     // Should see Question 2
     await expect(page.locator('text=Capital of France?')).toBeVisible()
@@ -271,8 +271,11 @@ test.describe('Tests A+ Module', () => {
     // Click option "Paris"
     await page.getByRole('button', { name: 'Paris' }).click()
 
-    // Click Submit
-    await page.getByRole('button', { name: 'Submit', exact: true }).click()
+    // Click Submit Test in header to open confirmation modal
+    await page.getByRole('button', { name: 'Submit Test' }).click()
+
+    // Confirm submission inside TestSubmitModal
+    await page.getByRole('button', { name: 'Confirm Submit' }).click()
 
     // Should navigate to success / results or show toast
     // After submission the app may show results, a score, or navigate back to the tests list

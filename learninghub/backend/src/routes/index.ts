@@ -50,6 +50,7 @@ import supportRoutes from './v1/support.routes'
 import notesRoutes from './v1/notes.routes'
 import remediationRoutes from './v1/remediation.routes'
 import ltiRoutes from './v1/lti.routes'
+import updatesRoutes from './v1/updates.routes'
 import { examContentController } from '../controllers/examContentController'
 
 import { bodySizeLimiter } from '../middleware/requestLogger'
@@ -141,6 +142,7 @@ router.use('/support', supportRoutes)
 router.use('/notes', notesRoutes)
 router.use('/remediation', remediationRoutes)
 router.use('/lti', ltiRoutes)
+router.use('/updates', updatesRoutes)
 
 // Health check
 import { healthCheck, livenessProbe, readinessProbe } from '../monitoring/healthCheck'

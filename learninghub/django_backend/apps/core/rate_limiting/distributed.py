@@ -134,16 +134,25 @@ class DistributedRateLimiter:
         self.default_window = default_window
 
         if REDIS_AVAILABLE:
-            self.redis_url = redis_url or getattr(settings, 'REDIS_URL', 'redis://localhost:6379/0')
-            self._redis = redis.from_url(
-                self.redis_url,
-                decode_responses=True,
-                max_connections=20,
-            )
-            # Register Lua scripts
-            self._token_bucket_sha = self._redis.script_load(TOKEN_BUCKET_SCRIPT)
-            self._sliding_window_sha = self._redis.script_load(SLIDING_WINDOW_SCRIPT)
-            self._fixed_window_sha = self._redis.script_load(FIXED_WINDOW_SCRIPT)
+            redis_url_value = redis_url or getattr(settings, 'REDIS_URL', None) or 'redis://localhost:6379/0'
+            try:
+                self.redis_url = redis_url_value
+                self._redis = redis.from_url(
+                    self.redis_url,
+                    decode_responses=True,
+                    max_connections=20,
+                )
+                # Test connection
+                self._redis.ping()
+                # Register Lua scripts
+                self._token_bucket_sha = self._redis.script_load(TOKEN_BUCKET_SCRIPT)
+                self._sliding_window_sha = self._redis.script_load(SLIDING_WINDOW_SCRIPT)
+                self._fixed_window_sha = self._redis.script_load(FIXED_WINDOW_SCRIPT)
+            except Exception as e:
+                logger.warning(f"Redis connection failed, using in-memory fallback: {e}")
+                self._redis = None
+                self._local_buckets = {}
+                self._lock = __import__('threading').Lock()
         else:
             logger.warning("Redis not available, using in-memory fallback")
             self._redis = None
@@ -322,40 +331,90 @@ class DistributedRateLimiter:
         return False
 
 
-# Pre-configured rate limiters for common use cases
-class RateLimitPresets:
-    """Pre-configured rate limiters for common endpoints."""
+# Pre-configured rate limiters for common use cases (lazy initialization)
+class _RateLimitPresets:
+    """Pre-configured rate limiters for common endpoints (lazy initialization)."""
+
+    _instances = {}
+
+    @classmethod
+    def _get(cls, name: str, **kwargs) -> DistributedRateLimiter:
+        """Get or create a rate limiter instance lazily."""
+        if name not in cls._instances:
+            cls._instances[name] = DistributedRateLimiter(**kwargs)
+        return cls._instances[name]
 
     # API endpoints
-    API_DEFAULT = DistributedRateLimiter(algorithm="token_bucket", default_limit=1000, default_window=60)
-    API_STRICT = DistributedRateLimiter(algorithm="token_bucket", default_limit=100, default_window=60)
+    @property
+    def API_DEFAULT(self):
+        return self._get("api_default", algorithm="token_bucket", default_limit=1000, default_window=60)
+
+    @property
+    def API_STRICT(self):
+        return self._get("api_strict", algorithm="token_bucket", default_limit=100, default_window=60)
 
     # Authentication
-    LOGIN = DistributedRateLimiter(algorithm="fixed_window", default_limit=5, default_window=60)
-    REGISTER = DistributedRateLimiter(algorithm="fixed_window", default_limit=10, default_window=3600)
-    PASSWORD_RESET = DistributedRateLimiter(algorithm="fixed_window", default_limit=3, default_window=3600)
+    @property
+    def LOGIN(self):
+        return self._get("login", algorithm="fixed_window", default_limit=5, default_window=60)
+
+    @property
+    def REGISTER(self):
+        return self._get("register", algorithm="fixed_window", default_limit=10, default_window=3600)
+
+    @property
+    def PASSWORD_RESET(self):
+        return self._get("password_reset", algorithm="fixed_window", default_limit=3, default_window=3600)
 
     # AI Tutor (cost control)
-    AI_TUTOR = DistributedRateLimiter(algorithm="token_bucket", default_limit=15, default_window=60)
-    AI_TUTOR_ANON = DistributedRateLimiter(algorithm="token_bucket", default_limit=3, default_window=60)
-    AI_GENERATION = DistributedRateLimiter(algorithm="token_bucket", default_limit=20, default_window=3600)
+    @property
+    def AI_TUTOR(self):
+        return self._get("ai_tutor", algorithm="token_bucket", default_limit=15, default_window=60)
+
+    @property
+    def AI_TUTOR_ANON(self):
+        return self._get("ai_tutor_anon", algorithm="token_bucket", default_limit=3, default_window=60)
+
+    @property
+    def AI_GENERATION(self):
+        return self._get("ai_generation", algorithm="token_bucket", default_limit=20, default_window=3600)
 
     # DSA/Code execution
-    DSA_SUBMISSION = DistributedRateLimiter(algorithm="fixed_window", default_limit=5, default_window=60)
-    DSA_RUN = DistributedRateLimiter(algorithm="token_bucket", default_limit=30, default_window=60)
+    @property
+    def DSA_SUBMISSION(self):
+        return self._get("dsa_submission", algorithm="fixed_window", default_limit=5, default_window=60)
+
+    @property
+    def DSA_RUN(self):
+        return self._get("dsa_run", algorithm="token_bucket", default_limit=30, default_window=60)
 
     # Search
-    SEARCH = DistributedRateLimiter(algorithm="token_bucket", default_limit=100, default_window=60)
-    SEMANTIC_SEARCH = DistributedRateLimiter(algorithm="token_bucket", default_limit=30, default_window=60)
+    @property
+    def SEARCH(self):
+        return self._get("search", algorithm="token_bucket", default_limit=100, default_window=60)
+
+    @property
+    def SEMANTIC_SEARCH(self):
+        return self._get("semantic_search", algorithm="token_bucket", default_limit=30, default_window=60)
 
     # Payments
-    PAYMENT = DistributedRateLimiter(algorithm="fixed_window", default_limit=10, default_window=3600)
+    @property
+    def PAYMENT(self):
+        return self._get("payment", algorithm="fixed_window", default_limit=10, default_window=3600)
 
     # WebSocket
-    WS_CONNECT = DistributedRateLimiter(algorithm="fixed_window", default_limit=10, default_window=60)
+    @property
+    def WS_CONNECT(self):
+        return self._get("ws_connect", algorithm="fixed_window", default_limit=10, default_window=60)
 
     # File upload
-    FILE_UPLOAD = DistributedRateLimiter(algorithm="fixed_window", default_limit=20, default_window=3600)
+    @property
+    def FILE_UPLOAD(self):
+        return self._get("file_upload", algorithm="fixed_window", default_limit=20, default_window=3600)
+
+
+# Global instance
+RateLimitPresets = _RateLimitPresets()
 
 
 # Decorator for easy rate limiting on views

@@ -10,10 +10,7 @@ import {
   HardDrive,
   FileCode,
 } from 'lucide-react'
-import {
-  CollabRoomState,
-  CrdtOperation,
-} from '../../types/crdtCollab'
+import { CollabRoomState, CrdtOperation } from '../../types/crdtCollab'
 
 interface CrdtStateVectorInspectorProps {
   room: CollabRoomState | null
@@ -58,7 +55,9 @@ export const CrdtStateVectorInspector: React.FC<CrdtStateVectorInspectorProps> =
           </div>
           <div>
             <h4 className="text-sm font-bold text-white">CRDT State Vector & Consensus</h4>
-            <p className="text-[11px] text-slate-400">Lamport clock vector state & deterministic LWW resolution</p>
+            <p className="text-[11px] text-slate-400">
+              Lamport clock vector state & deterministic LWW resolution
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -96,7 +95,7 @@ export const CrdtStateVectorInspector: React.FC<CrdtStateVectorInspectorProps> =
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {clockEntries.map(([peerId, clockVal]) => {
             const isLocal = peerId === currentPeerId
-            const peerObj = room.peers.find((p) => p.peerId === peerId)
+            const peerObj = room.peers.find(p => p.peerId === peerId)
             const name = peerObj ? peerObj.displayName : peerId.slice(0, 8)
 
             return (
@@ -110,7 +109,8 @@ export const CrdtStateVectorInspector: React.FC<CrdtStateVectorInspectorProps> =
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] truncate font-medium text-slate-300">
-                    {name} {isLocal && <span className="text-[9px] text-purple-400 font-bold">(You)</span>}
+                    {name}{' '}
+                    {isLocal && <span className="text-[9px] text-purple-400 font-bold">(You)</span>}
                   </span>
                   <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300">
                     L:{clockVal}
@@ -147,12 +147,17 @@ export const CrdtStateVectorInspector: React.FC<CrdtStateVectorInspectorProps> =
               className="p-1 hover:text-white transition"
               title="Copy IPFS CID"
             >
-              {copiedCid ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              {copiedCid ? (
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
             </button>
           </div>
         ) : (
           <p className="text-[11px] text-slate-500">
-            No snapshot pinned yet. Click &quot;Pin Snapshot&quot; to synthesize an immutable IPFS multihash.
+            No snapshot pinned yet. Click &quot;Pin Snapshot&quot; to synthesize an immutable IPFS
+            multihash.
           </p>
         )}
       </div>
@@ -170,27 +175,27 @@ export const CrdtStateVectorInspector: React.FC<CrdtStateVectorInspectorProps> =
         <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
           {recentOperations.length === 0 ? (
             <div className="p-3 text-center text-xs text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800/60">
-              No operations dispatched yet. Draw on the whiteboard or edit code blocks to generate CRDT deltas.
+              No operations dispatched yet. Draw on the whiteboard or edit code blocks to generate
+              CRDT deltas.
             </div>
           ) : (
-            recentOperations.slice(-6).reverse().map((op) => (
-              <div
-                key={op.id}
-                className="flex items-center justify-between p-2 rounded-lg bg-slate-950/70 border border-slate-800/80 text-[11px] font-mono"
-              >
-                <div className="flex items-center gap-2 truncate">
-                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-500/20 text-indigo-300">
-                    {op.opType}
-                  </span>
-                  <span className="text-slate-400 truncate">
-                    peer: {op.peerId.slice(-4)}
-                  </span>
+            recentOperations
+              .slice(-6)
+              .reverse()
+              .map(op => (
+                <div
+                  key={op.id}
+                  className="flex items-center justify-between p-2 rounded-lg bg-slate-950/70 border border-slate-800/80 text-[11px] font-mono"
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-500/20 text-indigo-300">
+                      {op.opType}
+                    </span>
+                    <span className="text-slate-400 truncate">peer: {op.peerId.slice(-4)}</span>
+                  </div>
+                  <span className="text-purple-300 font-bold ml-2">L:{op.lamportClock}</span>
                 </div>
-                <span className="text-purple-300 font-bold ml-2">
-                  L:{op.lamportClock}
-                </span>
-              </div>
-            ))
+              ))
           )}
         </div>
       </div>

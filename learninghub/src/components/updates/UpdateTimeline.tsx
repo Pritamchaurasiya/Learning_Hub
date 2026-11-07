@@ -1,10 +1,10 @@
-import React from 'react';
-import { Calendar, Clock, ArrowUpRight, Flame } from 'lucide-react';
-import type { StudentUpdate } from '../../types/updates';
+import React from 'react'
+import { Calendar, Clock, ArrowUpRight, Flame } from 'lucide-react'
+import type { StudentUpdate } from '../../types/updates'
 
 interface UpdateTimelineProps {
-  updates: StudentUpdate[];
-  onSelectUpdate: (update: StudentUpdate) => void;
+  updates: StudentUpdate[]
+  onSelectUpdate: (update: StudentUpdate) => void
 }
 
 export const UpdateTimeline: React.FC<UpdateTimelineProps> = ({ updates, onSelectUpdate }) => {
@@ -12,8 +12,8 @@ export const UpdateTimeline: React.FC<UpdateTimelineProps> = ({ updates, onSelec
   const sortedDeadlines = React.useMemo(() => {
     return updates
       .filter(u => !!u.deadline)
-      .sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime());
-  }, [updates]);
+      .sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime())
+  }, [updates])
 
   if (sortedDeadlines.length === 0) {
     return (
@@ -24,30 +24,32 @@ export const UpdateTimeline: React.FC<UpdateTimelineProps> = ({ updates, onSelec
           Check back later as universities release new examination and form schedules.
         </p>
       </div>
-    );
+    )
   }
 
   const formatDeadline = (isoString?: string) => {
-    if (!isoString) return '';
-    const date = new Date(isoString);
+    if (!isoString) return ''
+    const date = new Date(isoString)
     return date.toLocaleDateString('en-IN', {
       weekday: 'short',
       day: 'numeric',
       month: 'short',
       year: 'numeric',
-    });
-  };
+    })
+  }
 
   const getUrgencyBadge = (deadlineStr?: string) => {
-    if (!deadlineStr) return null;
-    const diffDays = Math.ceil((new Date(deadlineStr).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    if (!deadlineStr) return null
+    const diffDays = Math.ceil(
+      (new Date(deadlineStr).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    )
 
     if (diffDays <= 0) {
       return (
         <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-red-500/15 text-red-500 border border-red-500/30">
           Due Today
         </span>
-      );
+      )
     }
     if (diffDays <= 3) {
       return (
@@ -55,21 +57,21 @@ export const UpdateTimeline: React.FC<UpdateTimelineProps> = ({ updates, onSelec
           <Flame className="w-3 h-3" />
           {diffDays}d left
         </span>
-      );
+      )
     }
     if (diffDays <= 7) {
       return (
         <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20">
           {diffDays} days left
         </span>
-      );
+      )
     }
     return (
       <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted text-muted-foreground border border-border/60">
         {diffDays} days left
       </span>
-    );
-  };
+    )
+  }
 
   return (
     <div className="relative pl-6 before:absolute before:left-2.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-border/60 space-y-4">
@@ -99,9 +101,7 @@ export const UpdateTimeline: React.FC<UpdateTimelineProps> = ({ updates, onSelec
             {item.title}
           </h4>
 
-          <p className="text-xs text-muted-foreground line-clamp-1">
-            {item.summary}
-          </p>
+          <p className="text-xs text-muted-foreground line-clamp-1">{item.summary}</p>
 
           <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground pt-2 border-t border-border/40">
             <span className="bg-muted px-1.5 py-0.5 rounded font-mono text-[10px]">
@@ -114,5 +114,5 @@ export const UpdateTimeline: React.FC<UpdateTimelineProps> = ({ updates, onSelec
         </div>
       ))}
     </div>
-  );
-};
+  )
+}

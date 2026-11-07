@@ -6,6 +6,24 @@ import request from 'supertest'
 import express, { Router } from 'express'
 import { prisma } from '../../src/prismaClient'
 
+// Mock prisma client with testAttemptAnswer.deleteMany
+const mockPrisma = {
+  test: { findUnique: jest.fn() },
+  testResult: {
+    findFirst: jest.fn(),
+    findUnique: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    count: jest.fn(),
+  },
+  testAttemptAnswer: { upsert: jest.fn(), deleteMany: jest.fn() },
+  $transaction: jest.fn((cb: any) => cb(mockPrisma)),
+}
+
+jest.mock('../../src/prismaClient', () => ({
+  prisma: mockPrisma,
+}))
+
 jest.mock('../../src/utils/logger', () => {
   const mockLogger = {
     info: jest.fn(),

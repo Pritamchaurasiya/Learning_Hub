@@ -9,7 +9,9 @@ function getAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null
   try {
     if (!audioCtx) {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
       if (AudioCtx) {
         audioCtx = new AudioCtx()
       }
@@ -239,4 +241,3 @@ export function playArenaChime(type: 'submission-accepted' | 'rank-up' | 'duel-s
     osc.stop(now + 0.35)
   }
 }
-

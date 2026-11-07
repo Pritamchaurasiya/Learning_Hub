@@ -703,9 +703,17 @@ Expected JSON Output:
    */
   async getDebuggingHelp(request: DebuggingHelpRequest): Promise<DebuggingHelpResponse> {
     try {
-      const { problemDescription, language, errorMessage, stackTrace, expectedBehavior, actualBehavior, userCode } = request
+      const {
+        problemDescription,
+        language,
+        errorMessage,
+        stackTrace,
+        expectedBehavior,
+        actualBehavior,
+        userCode,
+      } = request
       const adapter = AIServiceFactory.getAgent()
-      
+
       const prompt = `
       <trusted_instructions>
       You are an expert debugging assistant for LearningHub. A student is asking for help debugging their code.
@@ -755,7 +763,7 @@ Expected JSON Output:
     try {
       const { code, language, focusAreas } = request
       const adapter = AIServiceFactory.getAgent()
-      
+
       const prompt = `
       <trusted_instructions>
       You are an expert programming instructor. Explain the provided code in detail.
@@ -801,7 +809,7 @@ Expected JSON Output:
     try {
       const { concept, context, userLevel } = request
       const adapter = AIServiceFactory.getAgent()
-      
+
       const prompt = `
       <trusted_instructions>
       You are an expert programming educator. Explain the given concept at the specified user level.
@@ -842,7 +850,10 @@ Expected JSON Output:
   /**
    * Generate a personalized study plan based on user's weak areas
    */
-  async generatePersonalizedStudyPlan(userId: string, targetGoal?: string): Promise<{
+  async generatePersonalizedStudyPlan(
+    userId: string,
+    targetGoal?: string
+  ): Promise<{
     focusAreas: string[]
     dailyGoals: { day: number; topic: string; estimatedHours: number; resources: string[] }[]
     milestones: { day: number; goal: string }[]

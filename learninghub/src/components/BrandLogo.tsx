@@ -209,7 +209,12 @@ export const BrandEmblem: React.FC<{
                 ease: 'easeInOut',
               }}
             >
-              <svg width={Math.max(10, size * 0.26)} height={Math.max(10, size * 0.26)} viewBox="0 0 24 24" fill="currentColor">
+              <svg
+                width={Math.max(10, size * 0.26)}
+                height={Math.max(10, size * 0.26)}
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
                 <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4L12 0Z" />
               </svg>
             </motion.div>
@@ -225,7 +230,13 @@ export const BrandEmblem: React.FC<{
         >
           <defs>
             <filter id="svg-cap-shadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="5" stdDeviation="6" floodColor="#1E3A8A" floodOpacity="0.3" />
+              <feDropShadow
+                dx="0"
+                dy="5"
+                stdDeviation="6"
+                floodColor="#1E3A8A"
+                floodOpacity="0.3"
+              />
             </filter>
             <filter id="svg-star-glow" x="-40%" y="-40%" width="180%" height="180%">
               <feGaussianBlur stdDeviation="4" result="blur" />
@@ -295,7 +306,11 @@ export const BrandEmblem: React.FC<{
               d="M200 278 C242 274 295 258 336 226 C344 220 346 209 340 201 C332 188 316 176 296 168 C256 200 222 232 200 254 Z"
               fill="url(#svg-page-purple)"
             />
-            <path d="M196 276 Q200 273 204 276 L202 284 Q200 286 198 284 Z" fill="#0F172A" opacity="0.3" />
+            <path
+              d="M196 276 Q200 273 204 276 L202 284 Q200 286 198 284 Z"
+              fill="#0F172A"
+              opacity="0.3"
+            />
           </g>
           <g id="learner-figure">
             <path
@@ -312,7 +327,13 @@ export const BrandEmblem: React.FC<{
             <path d="M200 52 L268 84 L200 106 L132 84 Z" fill="url(#svg-cap-top)" />
             <path d="M200 52 L268 84 L200 88 L132 84 Z" fill="#FFFFFF" opacity="0.22" />
             <ellipse cx="200" cy="84" rx="5" ry="3.5" fill="#1E3A8A" />
-            <path d="M200 84 Q238 88 252 98 Q260 106 260 118" stroke="#38BDF8" strokeWidth="3" strokeLinecap="round" fill="none" />
+            <path
+              d="M200 84 Q238 88 252 98 Q260 106 260 118"
+              stroke="#38BDF8"
+              strokeWidth="3"
+              strokeLinecap="round"
+              fill="none"
+            />
             <circle cx="260" cy="120" r="3" fill="#38BDF8" />
             <path d="M258 122 L256 138 L264 138 L262 122 Z" fill="#38BDF8" />
           </g>
@@ -390,7 +411,17 @@ export function useTypewriter({
     }
 
     return () => clearTimeout(timeoutId)
-  }, [displayText, isDeleting, index, enabled, isPaused, words, typingSpeed, deletingSpeed, pauseDelay])
+  }, [
+    displayText,
+    isDeleting,
+    index,
+    enabled,
+    isPaused,
+    words,
+    typingSpeed,
+    deletingSpeed,
+    pauseDelay,
+  ])
 
   return {
     currentStage: words[index] || words[0],
@@ -430,7 +461,8 @@ const DynamicBrandWord: React.FC<DynamicBrandWordProps> = ({
         <span
           className={`font-brand-cursive tracking-tight font-extrabold bg-clip-text text-transparent bg-gradient-to-r ${currentStage.gradient} dark:${currentStage.darkGradient} ${currentSize.cursiveSize} drop-shadow-[0_2px_10px_rgba(99,102,241,0.35)] whitespace-nowrap`}
           style={{
-            fontFamily: "'Satisfy', 'Dancing Script', 'Caveat', 'Pacifico', cursive, -apple-system, sans-serif",
+            fontFamily:
+              "'Satisfy', 'Dancing Script', 'Caveat', 'Pacifico', cursive, -apple-system, sans-serif",
             lineHeight: 1.2,
             paddingRight: '4px',
             WebkitTextStroke: '0.4px currentColor',
@@ -468,18 +500,14 @@ const DynamicBrandWord: React.FC<DynamicBrandWordProps> = ({
 
       {/* Subtle gold sparkle star when Cursive LearningHub finishes typing */}
       {currentStage.isCursive && isComplete && (
-        <span
-          className="text-[11px] font-bold text-amber-400 dark:text-amber-300 ml-1 select-none animate-bounce-soft"
-        >
+        <span className="text-[11px] font-bold text-amber-400 dark:text-amber-300 ml-1 select-none animate-bounce-soft">
           ✦
         </span>
       )}
 
       {/* Micro badge for Learn, Practice, Grow */}
       {!currentStage.isCursive && isComplete && currentStage.badge && (
-        <span
-          className="hidden sm:inline-block ml-1 px-1 py-0.2 rounded text-[7.5px] font-mono font-bold bg-slate-200/60 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border border-slate-300/40 dark:border-slate-700/40"
-        >
+        <span className="hidden sm:inline-block ml-1 px-1 py-0.2 rounded text-[7.5px] font-mono font-bold bg-slate-200/60 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border border-slate-300/40 dark:border-slate-700/40">
           {currentStage.badge}
         </span>
       )}
@@ -553,7 +581,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       >
         <div className="absolute inset-0 bg-gradient-to-tr from-sky-500/10 via-purple-500/15 to-transparent pointer-events-none" />
         <BrandEmblem size={currentSize.iconSize * 1.35} animate={shouldAnimate} />
-        
+
         <div className="mt-3 flex items-center justify-center min-h-[32px]">
           <DynamicBrandWord
             currentStage={currentStage}
@@ -601,12 +629,16 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         </div>
 
         {/* Tagline / Subtitle */}
-        <p className={`font-bold tracking-widest text-slate-400 dark:text-slate-400 uppercase mt-1 ${currentSize.taglineSize}`}>
+        <p
+          className={`font-bold tracking-widest text-slate-400 dark:text-slate-400 uppercase mt-1 ${currentSize.taglineSize}`}
+        >
           {effectiveTagline}
         </p>
 
         {subtitle && subtitle !== effectiveTagline && (
-          <p className={`font-medium text-slate-500 dark:text-slate-400 mt-1 ${currentSize.subSize}`}>
+          <p
+            className={`font-medium text-slate-500 dark:text-slate-400 mt-1 ${currentSize.subSize}`}
+          >
             {subtitle}
           </p>
         )}

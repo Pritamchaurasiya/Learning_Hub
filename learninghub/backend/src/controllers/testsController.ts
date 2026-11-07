@@ -47,7 +47,22 @@ const normalizeCacheKey = (query: Record<string, unknown>): string => {
 }
 
 export const listTests = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { mode, difficulty, search, examId, countryId, exam, country, subjectId, subjectIds, includeGeneral, isPYQ, year, shift, paper } = req.query
+  const {
+    mode,
+    difficulty,
+    search,
+    examId,
+    countryId,
+    exam,
+    country,
+    subjectId,
+    subjectIds,
+    includeGeneral,
+    isPYQ,
+    year,
+    shift,
+    paper,
+  } = req.query
   const { page, limit, skip } = getPaginationParams(req.query)
   const userId = req.user?.userId // This endpoint might allow unauthenticated access (optionalAuth)
 
@@ -616,6 +631,15 @@ export const getTestAttempts = asyncHandler(async (req: Request, res: Response):
           ? getRemainingSeconds(attempt.startedAt, attempt.test?.timeLimit ?? 0)
           : 0,
       attempt_number: attempt.attemptNumber,
+      total_questions:
+        attempt.test?._count?.questions ??
+        (attempt.totalPoints > 0 ? Math.round(attempt.totalPoints / 4) : 10),
+      answers: attempt.attemptAnswers.map((a: any) => ({
+        question_id: a.questionId,
+        is_correct: a.isCorrect,
+        selected_options: a.selectedOptions,
+        text_answer: a.textAnswer,
+      })),
       answered_count: Object.values(answers).filter(hasSubmittedAnswer).length,
       started_at: attempt.startedAt.toISOString(),
       submitted_at: attempt.completedAt?.toISOString() ?? null,
@@ -971,7 +995,7 @@ export const autosaveTest = asyncHandler(async (req: Request, res: Response): Pr
     return
   }
 
-  const savedCount = typeof result === 'number' ? result : (result as any).count ?? 0
+  const savedCount = typeof result === 'number' ? result : ((result as any).count ?? 0)
 
   // Canonical contract: include both `saved: true` (boolean) and `saved_count` (number)
   // so frontend TypeScript types align with backend response.
@@ -1095,7 +1119,7 @@ export const submitTest = asyncHandler(async (req: Request, res: Response): Prom
       attempt_id: result.id,
       attemptId: result.id, // canonical: camelCase alias
       test_id: testId,
-      testId: testId, // canonical: camelCase alias
+      testId, // canonical: camelCase alias
       test_title: test.title,
       mode: test.mode,
       score: result.score,
@@ -1150,26 +1174,28 @@ export const submitTest = asyncHandler(async (req: Request, res: Response): Prom
   }
 })
 
-export const receiveTestTelemetry = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const userId = req.user!.userId
-  const testId = req.params.id as string
-  const { attempt_id, violations = [] } = req.body
+export const receiveTestTelemetry = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user!.userId
+    const testId = req.params.id as string
+    const { attempt_id, violations = [] } = req.body
 
-  const telemetry = calculateAssessmentTelemetry(violations, userId, testId, attempt_id)
+    const telemetry = calculateAssessmentTelemetry(violations, userId, testId, attempt_id)
 
-  sendSuccess(
-    res,
-    {
-      received: true,
-      attempt_id: attempt_id ?? null,
-      test_id: testId,
-      telemetry_summary: telemetry,
-      integrity_score: telemetry.integrity_score,
-      integrity_risk: telemetry.risk_level,
-    },
-    'Assessment telemetry logged successfully'
-  )
-})
+    sendSuccess(
+      res,
+      {
+        received: true,
+        attempt_id: attempt_id ?? null,
+        test_id: testId,
+        telemetry_summary: telemetry,
+        integrity_score: telemetry.integrity_score,
+        integrity_risk: telemetry.risk_level,
+      },
+      'Assessment telemetry logged successfully'
+    )
+  }
+)
 
 export const getOfflineBundle = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const userId = req.user!.userId
@@ -1179,57 +1205,66 @@ export const getOfflineBundle = asyncHandler(async (req: Request, res: Response)
   sendSuccess(res, bundle, 'Offline bundle generated successfully')
 })
 
-export const submitOfflineSync = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const userId = req.user!.userId
-  const testId = req.params.id as string
+export const submitOfflineSync = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user!.userId
+    const testId = req.params.id as string
 
-  const result = await offlineAssessmentService.reconcileOfflineSubmission({
-    userId,
-    payload: { ...req.body, testId },
-  })
+    const result = await offlineAssessmentService.reconcileOfflineSubmission({
+      userId,
+      payload: { ...req.body, testId },
+    })
 
-  sendSuccess(res, result, 'Offline assessment reconciled successfully')
-})
-
-export const processAdaptiveStep = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const userId = req.user!.userId
-  const testId = req.params.id as string
-  const { attempt_id, question_id, selected_option_id, time_spent_seconds } = req.body
-
-  if (!attempt_id || !question_id || selected_option_id === undefined) {
-    sendValidationError(res, 'attempt_id, question_id, and selected_option_id are required')
-    return
+    sendSuccess(res, result, 'Offline assessment reconciled successfully')
   }
+)
 
-  const result = await adaptiveAssessmentEngine.processAdaptiveStep({
-    testId,
-    userId,
-    attemptId: attempt_id,
-    questionId: question_id,
-    selectedOptionId: selected_option_id,
-    timeSpentSeconds: typeof time_spent_seconds === 'number' ? time_spent_seconds : 0,
-  })
+export const processAdaptiveStep = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user!.userId
+    const testId = req.params.id as string
+    const { attempt_id, question_id, selected_option_id, time_spent_seconds } = req.body
 
-  sendSuccess(res, result)
-})
+    if (!attempt_id || !question_id || selected_option_id === undefined) {
+      sendValidationError(res, 'attempt_id, question_id, and selected_option_id are required')
+      return
+    }
 
-export const diagnoseMisconception = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { question_text, selected_option_text, correct_option_text, topic } = req.body
+    const result = await adaptiveAssessmentEngine.processAdaptiveStep({
+      testId,
+      userId,
+      attemptId: attempt_id,
+      questionId: question_id,
+      selectedOptionId: selected_option_id,
+      timeSpentSeconds: typeof time_spent_seconds === 'number' ? time_spent_seconds : 0,
+    })
 
-  if (!question_text || !selected_option_text || !correct_option_text) {
-    sendValidationError(res, 'question_text, selected_option_text, and correct_option_text are required')
-    return
+    sendSuccess(res, result)
   }
+)
 
-  const diagnosis = await socraticDiagnosticService.diagnoseMisconception({
-    questionText: question_text,
-    selectedOptionText: selected_option_text,
-    correctOptionText: correct_option_text,
-    topic: topic || 'General',
-  })
+export const diagnoseMisconception = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { question_text, selected_option_text, correct_option_text, topic } = req.body
 
-  sendSuccess(res, diagnosis)
-})
+    if (!question_text || !selected_option_text || !correct_option_text) {
+      sendValidationError(
+        res,
+        'question_text, selected_option_text, and correct_option_text are required'
+      )
+      return
+    }
+
+    const diagnosis = await socraticDiagnosticService.diagnoseMisconception({
+      questionText: question_text,
+      selectedOptionText: selected_option_text,
+      correctOptionText: correct_option_text,
+      topic: topic || 'General',
+    })
+
+    sendSuccess(res, diagnosis)
+  }
+)
 
 export const createTest = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const {
@@ -1250,7 +1285,8 @@ export const createTest = asyncHandler(async (req: Request, res: Response): Prom
   } = req.body
 
   const normalizedMode = (normalizeEnumFilter(mode, TEST_MODES) as TestMode) || TestMode.PRACTICE
-  const normalizedDifficulty = (normalizeEnumFilter(difficulty, TEST_DIFFICULTIES) as TestDifficulty) || TestDifficulty.MIXED
+  const normalizedDifficulty =
+    (normalizeEnumFilter(difficulty, TEST_DIFFICULTIES) as TestDifficulty) || TestDifficulty.MIXED
 
   const computedTotalMarks =
     totalMarks !== undefined
@@ -1290,7 +1326,8 @@ export const createTest = asyncHandler(async (req: Request, res: Response): Prom
         if (rawType === 'MULTIPLE_SELECT' || rawType === 'MSQ') qType = QuestionType.MSQ
         else if (rawType === 'TRUE_FALSE') qType = QuestionType.MCQ
         else if (rawType === 'NUMERICAL') qType = QuestionType.NUMERICAL
-        else if (rawType === 'SHORT_ANSWER' || rawType === 'SUBJECTIVE') qType = QuestionType.SUBJECTIVE
+        else if (rawType === 'SHORT_ANSWER' || rawType === 'SUBJECTIVE')
+          qType = QuestionType.SUBJECTIVE
         else if (rawType === 'CODING') qType = QuestionType.CODING
 
         const rawBloom = String(q.bloomLevel || 'UNDERSTAND').toUpperCase()
@@ -1415,12 +1452,9 @@ export const gradeSubjectiveAnswerEndpoint = asyncHandler(
 
     // If answer is completely empty
     if (!resolvedAnswerText.trim()) {
-      sendValidationError(
-        res,
-        'Subjective answer cannot be empty',
-        'VALIDATION_ERROR',
-        [{ field: 'answerText', message: 'Subjective answer cannot be empty' }]
-      )
+      sendValidationError(res, 'Subjective answer cannot be empty', 'VALIDATION_ERROR', [
+        { field: 'answerText', message: 'Subjective answer cannot be empty' },
+      ])
       return
     }
 
@@ -1564,9 +1598,7 @@ export const verifyScorecardEndpoint = asyncHandler(
           test: { select: { id: true, title: true, mode: true, totalMarks: true } },
         },
       })
-    } else if (
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(code)
-    ) {
+    } else if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(code)) {
       attempt = await prisma.testResult.findUnique({
         where: { id: code },
         include: {
@@ -1574,11 +1606,27 @@ export const verifyScorecardEndpoint = asyncHandler(
           test: { select: { id: true, title: true, mode: true, totalMarks: true } },
         },
       })
+    } else if (/^LH-[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}$/i.test(code)) {
+      const candidates = await prisma.testResult.findMany({
+        take: 200,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: { select: { id: true, username: true, email: true } },
+          test: { select: { id: true, title: true, mode: true, totalMarks: true } },
+        },
+      })
+      for (const cand of candidates) {
+        const ts = cand.completedAt?.toISOString() || cand.createdAt.toISOString()
+        const dig = computeAuditDigest(cand.id, cand.score, cand.percentage, ts)
+        if (dig.toUpperCase() === code.toUpperCase()) {
+          attempt = cand
+          break
+        }
+      }
     }
 
     if (attempt) {
-      const timestamp =
-        attempt.completedAt?.toISOString() || attempt.createdAt.toISOString()
+      const timestamp = attempt.completedAt?.toISOString() || attempt.createdAt.toISOString()
       const computedDigest = computeAuditDigest(
         attempt.id,
         attempt.score,
@@ -1587,8 +1635,7 @@ export const verifyScorecardEndpoint = asyncHandler(
       )
 
       const isDigestMatch =
-        code.toUpperCase() === computedDigest.toUpperCase() ||
-        code === attempt.id
+        code.toUpperCase() === computedDigest.toUpperCase() || code === attempt.id
 
       if (!attempt || !isDigestMatch) {
         sendValidationError(
@@ -1599,10 +1646,7 @@ export const verifyScorecardEndpoint = asyncHandler(
         return
       }
 
-      const candidateName =
-        attempt.user?.name ||
-        attempt.user?.email?.split('@')[0] ||
-        'Candidate'
+      const candidateName = attempt.user?.name || attempt.user?.email?.split('@')[0] || 'Candidate'
 
       sendSuccess(
         res,
@@ -1634,7 +1678,6 @@ export const verifyScorecardEndpoint = asyncHandler(
     )
   }
 )
-
 
 export const getPyqCatalog = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const { exam, year, shift, difficulty, search, page, limit } = req.query
@@ -1795,13 +1838,15 @@ export const getPyqCatalog = asyncHandler(async (req: Request, res: Response): P
   })
 })
 
-export const getPyqPercentilePrediction = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { rawScore, benchmarkKey } = req.body
-  if (typeof rawScore !== 'number' || !benchmarkKey) {
-    sendValidationError(res, 'rawScore (number) and benchmarkKey (string) are required')
-    return
-  }
+export const getPyqPercentilePrediction = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { rawScore, benchmarkKey } = req.body
+    if (typeof rawScore !== 'number' || !benchmarkKey) {
+      sendValidationError(res, 'rawScore (number) and benchmarkKey (string) are required')
+      return
+    }
 
-  const prediction = pyqPaperService.calculateShiftPercentile(rawScore, benchmarkKey)
-  sendSuccess(res, prediction)
-})
+    const prediction = pyqPaperService.calculateShiftPercentile(rawScore, benchmarkKey)
+    sendSuccess(res, prediction)
+  }
+)

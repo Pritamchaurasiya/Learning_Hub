@@ -5,22 +5,16 @@ import { ResumePreviewCard } from '../components/resume/ResumePreviewCard'
 import { ResumeCustomizerPanel } from '../components/resume/ResumeCustomizerPanel'
 import { VerifiablePortfolioBadge } from '../components/resume/VerifiablePortfolioBadge'
 import { ResumeExportActions } from '../components/resume/ResumeExportActions'
-import {
-  FileText,
-  Shield,
-  Code,
-  Sparkles,
-  Award,
-  Layers,
-  ArrowRight,
-} from 'lucide-react'
+import { FileText, Shield, Code, Sparkles, Award, Layers, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export const ResumePortfolioPage: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<TargetRole>('FULL_STACK_LEAD')
   const [resume, setResume] = useState<VerifiableResumePayload | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [activeTab, setActiveTab] = useState<'preview' | 'portfolio' | 'ats_text' | 'json_schema' | 'latex'>('preview')
+  const [activeTab, setActiveTab] = useState<
+    'preview' | 'portfolio' | 'ats_text' | 'json_schema' | 'latex'
+  >('preview')
   const [isAnchoring, setIsAnchoring] = useState<boolean>(false)
   const [anchorSuccess, setAnchorSuccess] = useState<string | null>(null)
   const [showLinkedInModal, setShowLinkedInModal] = useState<boolean>(false)
@@ -50,7 +44,9 @@ export const ResumePortfolioPage: React.FC = () => {
             ...prev,
             skillsMatrix: {
               ...prev.skillsMatrix,
-              languages: Array.from(new Set([...prev.skillsMatrix.languages, ...result.importedSkills])),
+              languages: Array.from(
+                new Set([...prev.skillsMatrix.languages, ...result.importedSkills])
+              ),
             },
             verifiedPlatformHighlights: [
               ...prev.verifiedPlatformHighlights,
@@ -116,7 +112,8 @@ export const ResumePortfolioPage: React.FC = () => {
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
             ATS-optimized, cryptographically verifiable career credentials that automatically ingest
-            your 1v1 Arena Duel Elo ratings, Bayesian Knowledge Tracing skills, and Mock Interview telemetry.
+            your 1v1 Arena Duel Elo ratings, Bayesian Knowledge Tracing skills, and Mock Interview
+            telemetry.
           </p>
         </div>
 
@@ -381,7 +378,8 @@ export const ResumePortfolioPage: React.FC = () => {
               <pre className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-emerald-400 font-mono text-xs whitespace-pre-wrap max-h-[600px] overflow-y-auto select-all">
                 {JSON.stringify(
                   {
-                    $schema: 'https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json',
+                    $schema:
+                      'https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json',
                     basics: {
                       name: resume.profile.fullName,
                       label: resume.roleTitle,

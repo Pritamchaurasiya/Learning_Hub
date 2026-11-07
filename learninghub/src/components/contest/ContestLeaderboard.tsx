@@ -535,9 +535,7 @@ export default function ContestLeaderboard({
                       <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-lg">
                         <CheckCircle2 className="w-3 h-3" />
                         {entry.problems_solved}{' '}
-                        {selectedContest?.problem_count
-                          ? `/ ${selectedContest.problem_count}`
-                          : ''}
+                        {selectedContest?.problem_count ? `/ ${selectedContest.problem_count}` : ''}
                       </span>
                     </div>
 

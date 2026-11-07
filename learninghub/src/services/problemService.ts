@@ -1,5 +1,12 @@
 import { fetchApi } from '../utils/api'
-import type { Problem, Submission, DSAStats, ProblemEditorial, ProblemHints, CuratedTrack } from '../types/dsa'
+import type {
+  Problem,
+  Submission,
+  DSAStats,
+  ProblemEditorial,
+  ProblemHints,
+  CuratedTrack,
+} from '../types/dsa'
 
 const FALLBACK_DSA_PROBLEMS: Problem[] = [
   {
@@ -233,7 +240,7 @@ const FALLBACK_DSA_PROBLEMS: Problem[] = [
       },
     ],
     description:
-      'Given a 2D integer array `matrix`, return the transpose of `matrix`.\n\nThe transpose of a matrix is the matrix flipped over its main diagonal, switching the matrix\'s row and column indices.',
+      "Given a 2D integer array `matrix`, return the transpose of `matrix`.\n\nThe transpose of a matrix is the matrix flipped over its main diagonal, switching the matrix's row and column indices.",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     is_active: true,
@@ -252,8 +259,7 @@ const FALLBACK_DSA_PROBLEMS: Problem[] = [
       { id: 't-1', name: 'Array', slug: 'array' },
       { id: 't-14', name: 'Math', slug: 'math' },
     ],
-    constraints:
-      '1 <= m, k, n <= 100\n-100 <= matA[i][j], matB[i][j] <= 100',
+    constraints: '1 <= m, k, n <= 100\n-100 <= matA[i][j], matB[i][j] <= 100',
     input_format: 'matA: number[][], matB: number[][]',
     output_format: 'number[][]',
     examples: [
@@ -317,9 +323,12 @@ const FALLBACK_DSA_PROBLEMS: Problem[] = [
     output_format: 'Array<{ rollNo: number, name: string, marks: number }>',
     examples: [
       {
-        input: 'students = [{rollNo: 101, name: "Alice", marks: 85}, {rollNo: 102, name: "Bob", marks: 92}, {rollNo: 103, name: "Charlie", marks: 85}]',
-        output: '[{rollNo: 102, name: "Bob", marks: 92}, {rollNo: 101, name: "Alice", marks: 85}, {rollNo: 103, name: "Charlie", marks: 85}]',
-        explanation: 'Sorted by marks descending (92 > 85). For ties (85 == 85), sorted by rollNo ascending (101 < 103).',
+        input:
+          'students = [{rollNo: 101, name: "Alice", marks: 85}, {rollNo: 102, name: "Bob", marks: 92}, {rollNo: 103, name: "Charlie", marks: 85}]',
+        output:
+          '[{rollNo: 102, name: "Bob", marks: 92}, {rollNo: 101, name: "Alice", marks: 85}, {rollNo: 103, name: "Charlie", marks: 85}]',
+        explanation:
+          'Sorted by marks descending (92 > 85). For ties (85 == 85), sorted by rollNo ascending (101 < 103).',
       },
     ],
     description:
@@ -341,7 +350,8 @@ const FALLBACK_DSA_PROBLEMS: Problem[] = [
       { id: 't-18', name: 'Binary Search', slug: 'binary-search' },
       { id: 't-1', name: 'Array', slug: 'array' },
     ],
-    constraints: '1 <= nums.length <= 10^4\n-10^4 < nums[i], target < 10^4\nAll integers in nums are unique and sorted in ascending order.',
+    constraints:
+      '1 <= nums.length <= 10^4\n-10^4 < nums[i], target < 10^4\nAll integers in nums are unique and sorted in ascending order.',
     input_format: 'nums: number[], target: number',
     output_format: 'number',
     examples: [
@@ -375,7 +385,8 @@ const FALLBACK_DSA_PROBLEMS: Problem[] = [
       { id: 't-1', name: 'Array', slug: 'array' },
       { id: 't-16', name: 'Sorting', slug: 'sorting' },
     ],
-    constraints: '1 <= intervals.length <= 10^4\nintervals[i].length == 2\n0 <= start <= end <= 10^4',
+    constraints:
+      '1 <= intervals.length <= 10^4\nintervals[i].length == 2\n0 <= start <= end <= 10^4',
     input_format: 'intervals: number[][]',
     output_format: 'number[][]',
     examples: [
@@ -401,7 +412,7 @@ const FALLBACK_DSA_PROBLEMS: Problem[] = [
   },
   {
     id: 'p-14',
-    title: 'Maximum Subarray (Kadane\'s Algorithm)',
+    title: "Maximum Subarray (Kadane's Algorithm)",
     slug: 'maximum-subarray',
     difficulty: 'MEDIUM',
     points: 200,
@@ -429,7 +440,7 @@ const FALLBACK_DSA_PROBLEMS: Problem[] = [
       },
     ],
     description:
-      'Given an integer array `nums`, find the subarray with the largest sum, and return its sum.\n\nAn optimal solution runs in `O(n)` time using Kadane\'s algorithm.',
+      "Given an integer array `nums`, find the subarray with the largest sum, and return its sum.\n\nAn optimal solution runs in `O(n)` time using Kadane's algorithm.",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     is_active: true,
@@ -449,21 +460,24 @@ const FALLBACK_DSA_PROBLEMS: Problem[] = [
       { id: 't-8', name: 'Breadth-First Search', slug: 'bfs' },
       { id: 't-12', name: 'Matrix', slug: 'matrix' },
     ],
-    constraints: 'm == grid.length\nn == grid[i].length\n1 <= m, n <= 300\ngrid[i][j] is "0" or "1".',
+    constraints:
+      'm == grid.length\nn == grid[i].length\n1 <= m, n <= 300\ngrid[i][j] is "0" or "1".',
     input_format: 'grid: string[][]',
     output_format: 'number',
     examples: [
       {
-        input: 'grid = [["1","1","1","1","0"],["1","1","0","1","0"],["1","1","0","0","0"],["0","0","0","0","0"]]',
+        input:
+          'grid = [["1","1","1","1","0"],["1","1","0","1","0"],["1","1","0","0","0"],["0","0","0","0","0"]]',
         output: '1',
       },
       {
-        input: 'grid = [["1","1","0","0","0"],["1","1","0","0","0"],["0","0","1","0","0"],["0","0","0","1","1"]]',
+        input:
+          'grid = [["1","1","0","0","0"],["1","1","0","0","0"],["0","0","1","0","0"],["0","0","0","1","1"]]',
         output: '3',
       },
     ],
     description:
-      'Given an `m x n` 2D binary grid `grid` which represents a map of `\'1\'`s (land) and `\'0\'`s (water), return the number of islands.\n\nAn island is surrounded by water and is formed by connecting adjacent lands horizontally or vertically. You may assume all four edges of the grid are all surrounded by water.',
+      "Given an `m x n` 2D binary grid `grid` which represents a map of `'1'`s (land) and `'0'`s (water), return the number of islands.\n\nAn island is surrounded by water and is formed by connecting adjacent lands horizontally or vertically. You may assume all four edges of the grid are all surrounded by water.",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     is_active: true,
@@ -507,7 +521,6 @@ const FALLBACK_DSA_PROBLEMS: Problem[] = [
     user_status: 'UNATTEMPTED',
   },
 ]
-
 
 export const problemService = {
   getProblems: async (params?: {
@@ -769,7 +782,12 @@ export const problemService = {
         title: 'Dynamic Programming Mastery',
         slug: 'dp-mastery',
         description: 'From 1D memoization to multi-dimensional state transitions',
-        problemSlugs: ['coin-change', 'maximum-subarray', 'longest-substring-without-repeating-characters', 'trapping-rain-water'],
+        problemSlugs: [
+          'coin-change',
+          'maximum-subarray',
+          'longest-substring-without-repeating-characters',
+          'trapping-rain-water',
+        ],
         color: '#ec4899',
       },
       {
@@ -783,7 +801,12 @@ export const problemService = {
     ]
   },
 
-  getRandomProblemSlug: async (currentSlug?: string, difficulty?: string, tag?: string, trackSlug?: string): Promise<string> => {
+  getRandomProblemSlug: async (
+    currentSlug?: string,
+    difficulty?: string,
+    tag?: string,
+    trackSlug?: string
+  ): Promise<string> => {
     let pool = [...FALLBACK_DSA_PROBLEMS]
     if (trackSlug && trackSlug !== 'all') {
       const tracks = problemService.getCuratedTracks()
@@ -797,25 +820,38 @@ export const problemService = {
     }
     if (tag && tag !== 'ALL') {
       const q = tag.toLowerCase()
-      pool = pool.filter(p => p.tags.some(t => t.name.toLowerCase() === q || t.slug.toLowerCase() === q))
+      pool = pool.filter(p =>
+        p.tags.some(t => t.name.toLowerCase() === q || t.slug.toLowerCase() === q)
+      )
     }
     if (pool.length === 0) pool = [...FALLBACK_DSA_PROBLEMS]
     // Filter out current slug if multiple choices exist
     const candidates = pool.filter(p => p.slug !== currentSlug)
-    const selected = candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : pool[0]
+    const selected =
+      candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : pool[0]
     return selected?.slug || 'two-sum'
   },
 
-  getDailyChallenge: async (): Promise<{ problem: Problem; streakBonusXp: number; dateString: string }> => {
+  getDailyChallenge: async (): Promise<{
+    problem: Problem
+    streakBonusXp: number
+    dateString: string
+  }> => {
     // Deterministic daily challenge based on day of year
     const now = new Date()
-    const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24)
+    const dayOfYear = Math.floor(
+      (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24
+    )
     const problemIndex = dayOfYear % FALLBACK_DSA_PROBLEMS.length
     const problem = FALLBACK_DSA_PROBLEMS[problemIndex] || FALLBACK_DSA_PROBLEMS[0]!
     return {
       problem,
       streakBonusXp: 50,
-      dateString: now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      dateString: now.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }),
     }
   },
 
@@ -844,19 +880,24 @@ export const problemService = {
     const editorials: Record<string, ProblemEditorial> = {
       'two-sum': {
         problemSlug: 'two-sum',
-        overview: 'The Two Sum problem asks us to find indices of two numbers that add up to a target. A brute force approach checks all pairs in O(n²), whereas a Hash Map reduces the lookup to O(1) time per element.',
+        overview:
+          'The Two Sum problem asks us to find indices of two numbers that add up to a target. A brute force approach checks all pairs in O(n²), whereas a Hash Map reduces the lookup to O(1) time per element.',
         approaches: [
           {
             id: 'app-1',
             title: 'Brute Force (Nested Loops)',
             difficulty: 'BRUTE_FORCE',
-            intuition: 'Check every possible pair of elements (i, j) where i < j and verify if nums[i] + nums[j] == target.',
-            algorithm: '1. Iterate through index i from 0 to n-1.\n2. In an inner loop, iterate through index j from i+1 to n-1.\n3. If nums[i] + nums[j] == target, return [i, j].',
+            intuition:
+              'Check every possible pair of elements (i, j) where i < j and verify if nums[i] + nums[j] == target.',
+            algorithm:
+              '1. Iterate through index i from 0 to n-1.\n2. In an inner loop, iterate through index j from i+1 to n-1.\n3. If nums[i] + nums[j] == target, return [i, j].',
             timeComplexity: 'O(N²) — Two nested loops each iterating up to N times.',
             spaceComplexity: 'O(1) — No additional memory required.',
             code: {
-              python: 'class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        n = len(nums)\n        for i in range(n):\n            for j in range(i + 1, n):\n                if nums[i] + nums[j] == target:\n                    return [i, j]\n        return []',
-              javascript: 'function twoSum(nums, target) {\n    for (let i = 0; i < nums.length; i++) {\n        for (let j = i + 1; j < nums.length; j++) {\n            if (nums[i] + nums[j] === target) return [i, j];\n        }\n    }\n    return [];\n}',
+              python:
+                'class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        n = len(nums)\n        for i in range(n):\n            for j in range(i + 1, n):\n                if nums[i] + nums[j] == target:\n                    return [i, j]\n        return []',
+              javascript:
+                'function twoSum(nums, target) {\n    for (let i = 0; i < nums.length; i++) {\n        for (let j = i + 1; j < nums.length; j++) {\n            if (nums[i] + nums[j] === target) return [i, j];\n        }\n    }\n    return [];\n}',
               cpp: 'class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        for (int i = 0; i < nums.size(); ++i) {\n            for (int j = i + 1; j < nums.size(); ++j) {\n                if (nums[i] + nums[j] == target) return {i, j};\n            }\n        }\n        return {};\n    }\n};',
             },
           },
@@ -864,13 +905,18 @@ export const problemService = {
             id: 'app-2',
             title: 'One-Pass Hash Map (Optimal)',
             difficulty: 'OPTIMAL',
-            intuition: 'As we iterate through the array, we check if the complement (target - nums[i]) already exists in our hash table. If yes, we found our pair. If not, we store nums[i] with its index.',
-            algorithm: '1. Initialize an empty hash map `seen` mapping value to index.\n2. Iterate through each element `nums[i]` at index `i`.\n3. Compute `complement = target - nums[i]`.\n4. If `complement` in `seen`, return `[seen[complement], i]`.\n5. Otherwise, record `seen[nums[i]] = i`.',
-            timeComplexity: 'O(N) — Traversing the array once; hash table lookups take O(1) on average.',
+            intuition:
+              'As we iterate through the array, we check if the complement (target - nums[i]) already exists in our hash table. If yes, we found our pair. If not, we store nums[i] with its index.',
+            algorithm:
+              '1. Initialize an empty hash map `seen` mapping value to index.\n2. Iterate through each element `nums[i]` at index `i`.\n3. Compute `complement = target - nums[i]`.\n4. If `complement` in `seen`, return `[seen[complement], i]`.\n5. Otherwise, record `seen[nums[i]] = i`.',
+            timeComplexity:
+              'O(N) — Traversing the array once; hash table lookups take O(1) on average.',
             spaceComplexity: 'O(N) — Hash table stores up to N elements.',
             code: {
-              python: 'class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        seen = {}\n        for i, val in enumerate(nums):\n            comp = target - val\n            if comp in seen:\n                return [seen[comp], i]\n            seen[val] = i\n        return []',
-              javascript: 'function twoSum(nums, target) {\n    const seen = new Map();\n    for (let i = 0; i < nums.length; i++) {\n        const complement = target - nums[i];\n        if (seen.has(complement)) {\n            return [seen.get(complement), i];\n        }\n        seen.set(nums[i], i);\n    }\n    return [];\n}',
+              python:
+                'class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        seen = {}\n        for i, val in enumerate(nums):\n            comp = target - val\n            if comp in seen:\n                return [seen[comp], i]\n            seen[val] = i\n        return []',
+              javascript:
+                'function twoSum(nums, target) {\n    const seen = new Map();\n    for (let i = 0; i < nums.length; i++) {\n        const complement = target - nums[i];\n        if (seen.has(complement)) {\n            return [seen.get(complement), i];\n        }\n        seen.set(nums[i], i);\n    }\n    return [];\n}',
               cpp: 'class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        unordered_map<int, int> seen;\n        for (int i = 0; i < nums.size(); ++i) {\n            int comp = target - nums[i];\n            if (seen.find(comp) != seen.end()) {\n                return {seen[comp], i};\n            }\n            seen[nums[i]] = i;\n        }\n        return {};\n    }\n};',
             },
           },
@@ -882,20 +928,25 @@ export const problemService = {
       },
       'valid-parentheses': {
         problemSlug: 'valid-parentheses',
-        overview: 'Valid Parentheses is the quintessential stack problem. Every closing parenthesis must match the most recently opened parenthesis of the same type.',
+        overview:
+          'Valid Parentheses is the quintessential stack problem. Every closing parenthesis must match the most recently opened parenthesis of the same type.',
         approaches: [
           {
             id: 'vp-1',
             title: 'Stack with Hash Map Mapping (Optimal)',
             difficulty: 'OPTIMAL',
-            intuition: 'Use a LIFO Stack. Push opening brackets; when encountering a closing bracket, verify that the stack is non-empty and the top matches the corresponding opening bracket.',
-            algorithm: '1. Map each closing bracket to its opening counterpart: `{\')\': \'(\', \'}\': \'{\', \']\': \'[\'}`.\n2. Iterate through string characters.\n3. If closing bracket: pop top of stack and verify match. If empty or mismatched, return false.\n4. If opening bracket: push onto stack.\n5. Return true if stack is empty at end.',
+            intuition:
+              'Use a LIFO Stack. Push opening brackets; when encountering a closing bracket, verify that the stack is non-empty and the top matches the corresponding opening bracket.',
+            algorithm:
+              "1. Map each closing bracket to its opening counterpart: `{')': '(', '}': '{', ']': '['}`.\n2. Iterate through string characters.\n3. If closing bracket: pop top of stack and verify match. If empty or mismatched, return false.\n4. If opening bracket: push onto stack.\n5. Return true if stack is empty at end.",
             timeComplexity: 'O(N) — Single pass over string length N.',
             spaceComplexity: 'O(N) — In the worst case (e.g. "(((("), stack stores N characters.',
             code: {
-              python: 'class Solution:\n    def isValid(self, s: str) -> bool:\n        stack = []\n        pairs = {")": "(", "}": "{", "]": "["}\n        for char in s:\n            if char in pairs:\n                if not stack or stack[-1] != pairs[char]:\n                    return False\n                stack.pop()\n            else:\n                stack.append(char)\n        return len(stack) == 0',
-              javascript: 'function isValid(s) {\n    const stack = [];\n    const pairs = { ")": "(", "}": "{", "]": "[" };\n    for (const char of s) {\n        if (pairs[char]) {\n            if (stack.pop() !== pairs[char]) return false;\n        } else {\n            stack.push(char);\n        }\n    }\n    return stack.length === 0;\n}',
-              cpp: 'class Solution {\npublic:\n    bool isValid(string s) {\n        stack<char> st;\n        unordered_map<char, char> pairs = {{\')\', \'(\'}, {\'}\', \'{\'}, {\']\', \'[\'}};\n        for (char c : s) {\n            if (pairs.count(c)) {\n                if (st.empty() || st.top() != pairs[c]) return false;\n                st.pop();\n            } else {\n                st.push(c);\n            }\n        }\n        return st.empty();\n    }\n};',
+              python:
+                'class Solution:\n    def isValid(self, s: str) -> bool:\n        stack = []\n        pairs = {")": "(", "}": "{", "]": "["}\n        for char in s:\n            if char in pairs:\n                if not stack or stack[-1] != pairs[char]:\n                    return False\n                stack.pop()\n            else:\n                stack.append(char)\n        return len(stack) == 0',
+              javascript:
+                'function isValid(s) {\n    const stack = [];\n    const pairs = { ")": "(", "}": "{", "]": "[" };\n    for (const char of s) {\n        if (pairs[char]) {\n            if (stack.pop() !== pairs[char]) return false;\n        } else {\n            stack.push(char);\n        }\n    }\n    return stack.length === 0;\n}',
+              cpp: "class Solution {\npublic:\n    bool isValid(string s) {\n        stack<char> st;\n        unordered_map<char, char> pairs = {{')', '('}, {'}', '{'}, {']', '['}};\n        for (char c : s) {\n            if (pairs.count(c)) {\n                if (st.empty() || st.top() != pairs[c]) return false;\n                st.pop();\n            } else {\n                st.push(c);\n            }\n        }\n        return st.empty();\n    }\n};",
             },
           },
         ],
@@ -906,19 +957,24 @@ export const problemService = {
       },
       'binary-search': {
         problemSlug: 'binary-search',
-        overview: 'Binary Search halves the search space at each comparison on a sorted sequence, achieving logarithmic O(log N) time.',
+        overview:
+          'Binary Search halves the search space at each comparison on a sorted sequence, achieving logarithmic O(log N) time.',
         approaches: [
           {
             id: 'bs-1',
             title: 'Iterative Two-Pointers (Optimal)',
             difficulty: 'OPTIMAL',
-            intuition: 'Maintain left and right boundaries. Calculate mid = left + (right - left) // 2 to prevent integer overflow. Compare nums[mid] with target.',
-            algorithm: '1. Set left = 0, right = len(nums) - 1.\n2. While left <= right:\n   mid = left + (right - left) // 2\n   If nums[mid] == target, return mid\n   Else if nums[mid] < target, left = mid + 1\n   Else right = mid - 1\n3. Return -1 if not found.',
+            intuition:
+              'Maintain left and right boundaries. Calculate mid = left + (right - left) // 2 to prevent integer overflow. Compare nums[mid] with target.',
+            algorithm:
+              '1. Set left = 0, right = len(nums) - 1.\n2. While left <= right:\n   mid = left + (right - left) // 2\n   If nums[mid] == target, return mid\n   Else if nums[mid] < target, left = mid + 1\n   Else right = mid - 1\n3. Return -1 if not found.',
             timeComplexity: 'O(log N) — Search interval divided by 2 at each step.',
             spaceComplexity: 'O(1) — Iterative solution uses constant auxiliary variables.',
             code: {
-              python: 'class Solution:\n    def search(self, nums: list[int], target: int) -> int:\n        left, right = 0, len(nums) - 1\n        while left <= right:\n            mid = left + (right - left) // 2\n            if nums[mid] == target:\n                return mid\n            elif nums[mid] < target:\n                left = mid + 1\n            else:\n                right = mid - 1\n        return -1',
-              javascript: 'function search(nums, target) {\n    let left = 0, right = nums.length - 1;\n    while (left <= right) {\n        const mid = Math.floor(left + (right - left) / 2);\n        if (nums[mid] === target) return mid;\n        if (nums[mid] < target) left = mid + 1;\n        else right = mid - 1;\n    }\n    return -1;\n}',
+              python:
+                'class Solution:\n    def search(self, nums: list[int], target: int) -> int:\n        left, right = 0, len(nums) - 1\n        while left <= right:\n            mid = left + (right - left) // 2\n            if nums[mid] == target:\n                return mid\n            elif nums[mid] < target:\n                left = mid + 1\n            else:\n                right = mid - 1\n        return -1',
+              javascript:
+                'function search(nums, target) {\n    let left = 0, right = nums.length - 1;\n    while (left <= right) {\n        const mid = Math.floor(left + (right - left) / 2);\n        if (nums[mid] === target) return mid;\n        if (nums[mid] < target) left = mid + 1;\n        else right = mid - 1;\n    }\n    return -1;\n}',
             },
           },
         ],
@@ -945,7 +1001,12 @@ export const problemService = {
           difficulty: 'OPTIMAL',
           intuition: `Break down the problem constraints and leverage efficient data structures to achieve optimal asymptotic complexity.`,
           algorithm: `1. Parse and validate problem constraints.\n2. Initialize required state structures.\n3. Process input and return target formatted answer.`,
-          timeComplexity: problem.difficulty === 'EASY' ? 'O(N)' : problem.difficulty === 'MEDIUM' ? 'O(N log N)' : 'O(N)',
+          timeComplexity:
+            problem.difficulty === 'EASY'
+              ? 'O(N)'
+              : problem.difficulty === 'MEDIUM'
+                ? 'O(N log N)'
+                : 'O(N)',
           spaceComplexity: 'O(N)',
           code: {
             python: `# Solution for ${problem.title}\nclass Solution:\n    def solve(self):\n        pass`,
@@ -969,7 +1030,8 @@ export const problemService = {
           'For each number x, what is the value needed to reach target? That value is target - x.',
           'Can you check if that needed value has already been visited in O(1) time? What data structure offers O(1) average lookup?',
         ],
-        pseudocode: 'seen = {}\nfor index, num in enumerate(nums):\n    complement = target - num\n    if complement in seen:\n        return [seen[complement], index]\n    seen[num] = index',
+        pseudocode:
+          'seen = {}\nfor index, num in enumerate(nums):\n    complement = target - num\n    if complement in seen:\n        return [seen[complement], index]\n    seen[num] = index',
         pitfalls: [
           'You cannot use the same element twice (e.g. if nums=[3, 3] and target=6, you must return indices [0, 1]).',
           'Make sure you return 0-based indices, not the array values themselves.',
@@ -982,10 +1044,11 @@ export const problemService = {
           'Which data structure follows Last-In, First-Out (LIFO)?',
           'Push opening brackets onto a stack. When you encounter a closing bracket, compare it with the top of stack.',
         ],
-        pseudocode: 'stack = []\nfor char in s:\n    if is_closing(char):\n        if stack.isEmpty() or stack.pop() != matching_open(char):\n            return False\n    else:\n        stack.push(char)\nreturn stack.isEmpty()',
+        pseudocode:
+          'stack = []\nfor char in s:\n    if is_closing(char):\n        if stack.isEmpty() or stack.pop() != matching_open(char):\n            return False\n    else:\n        stack.push(char)\nreturn stack.isEmpty()',
         pitfalls: [
           'Strings starting with a closing bracket like ")(" must immediately be rejected.',
-          'Don\'t forget to verify if the stack is completely empty at the end.',
+          "Don't forget to verify if the stack is completely empty at the end.",
         ],
       },
       'binary-search': {
@@ -995,17 +1058,19 @@ export const problemService = {
           'If target > nums[mid], in which half must target reside?',
           'Be careful with the while condition (left <= right) and how you compute mid without overflow.',
         ],
-        pseudocode: 'left = 0, right = n - 1\nwhile left <= right:\n    mid = left + (right - left) // 2\n    if nums[mid] == target: return mid\n    if nums[mid] < target: left = mid + 1\n    else: right = mid - 1\nreturn -1',
+        pseudocode:
+          'left = 0, right = n - 1\nwhile left <= right:\n    mid = left + (right - left) // 2\n    if nums[mid] == target: return mid\n    if nums[mid] < target: left = mid + 1\n    else: right = mid - 1\nreturn -1',
         pitfalls: ['Watch out for single element arrays where nums[0] == target.'],
       },
       'reverse-linked-list': {
         problemSlug: 'reverse-linked-list',
         hints: [
-          'To reverse a singly linked list iteratively, you need to change each node\'s next pointer to point to its predecessor.',
+          "To reverse a singly linked list iteratively, you need to change each node's next pointer to point to its predecessor.",
           'Since changing curr.next loses the reference to the original next node, save next_node = curr.next before rewiring.',
           'Keep track of prev (initially None) and curr (initially head).',
         ],
-        pseudocode: 'prev = None\ncurr = head\nwhile curr:\n    nxt = curr.next\n    curr.next = prev\n    prev = curr\n    curr = nxt\nreturn prev',
+        pseudocode:
+          'prev = None\ncurr = head\nwhile curr:\n    nxt = curr.next\n    curr.next = prev\n    prev = curr\n    curr = nxt\nreturn prev',
         pitfalls: ['Returning curr instead of prev (curr will be None when loop terminates).'],
       },
     }

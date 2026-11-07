@@ -1,8 +1,8 @@
 import { mockDeep, mockClear, mockReset } from 'jest-mock-extended'
-import { prisma } from '../src/prismaClient'
+import { prisma } from '@/prismaClient'
 
 // Mock the prisma client
-jest.mock('../src/prismaClient', () => {
+jest.mock('@/prismaClient', () => {
   const mockPrisma = mockDeep<any>()
   mockPrisma.$transaction.mockImplementation(async (arg: any) => {
     if (Array.isArray(arg)) {

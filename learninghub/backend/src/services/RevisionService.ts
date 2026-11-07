@@ -1,5 +1,6 @@
 import { cacheService } from './CacheService'
 import logger from '../utils/logger'
+import { prisma } from '../config'
 
 export type CardType = 'MISTAKE' | 'FORMULA' | 'CONCEPT' | 'QUESTION'
 
@@ -58,9 +59,11 @@ const USER_CARDS_STORE = new Map<string, SpacedCard[]>()
 const SEED_CARDS: Omit<SpacedCard, 'id'>[] = [
   {
     card_type: 'MISTAKE',
-    front: 'Why does 0/1 Knapsack require dynamic programming rather than a greedy choice property?',
+    front:
+      'Why does 0/1 Knapsack require dynamic programming rather than a greedy choice property?',
     back: 'Items cannot be divided. Making a locally optimal choice (e.g., highest value/weight) can prevent reaching the global maximum value because leftover capacity cannot be utilized with fractions.',
-    explanation: 'Optimal substructure holds: DP[i][w] = max(DP[i-1][w], DP[i-1][w-wt[i]] + val[i]). Greedy fails on discrete items.',
+    explanation:
+      'Optimal substructure holds: DP[i][w] = max(DP[i-1][w], DP[i-1][w-wt[i]] + val[i]). Greedy fails on discrete items.',
     topic: 'Dynamic Programming',
     subject: 'Algorithms',
     difficulty: 0.8,
@@ -77,9 +80,10 @@ const SEED_CARDS: Omit<SpacedCard, 'id'>[] = [
   },
   {
     card_type: 'FORMULA',
-    front: 'State Bayes\' Theorem formula for probability updating given evidence.',
+    front: "State Bayes' Theorem formula for probability updating given evidence.",
     back: 'P(A|B) = \\frac{P(B|A) \\cdot P(A)}{P(B)}',
-    explanation: 'Where P(A|B) is posterior, P(B|A) is likelihood, P(A) is prior, and P(B) is marginal probability.',
+    explanation:
+      'Where P(A|B) is posterior, P(B|A) is likelihood, P(A) is prior, and P(B) is marginal probability.',
     topic: 'Probability & Statistics',
     subject: 'Mathematics',
     difficulty: -0.2,
@@ -98,7 +102,8 @@ const SEED_CARDS: Omit<SpacedCard, 'id'>[] = [
     card_type: 'QUESTION',
     front: 'What is the tight asymptotic lower bound for comparison-based sorting algorithms?',
     back: '\\Omega(N \\log N)',
-    explanation: 'Any comparison sort corresponds to a decision tree with N! leaves. Tree height h >= ceil(log2(N!)) = Theta(N log N) by Stirling\'s approximation.',
+    explanation:
+      "Any comparison sort corresponds to a decision tree with N! leaves. Tree height h >= ceil(log2(N!)) = Theta(N log N) by Stirling's approximation.",
     topic: 'Complexity Theory',
     subject: 'Algorithms',
     difficulty: 0.4,
@@ -223,7 +228,11 @@ export class RevisionService {
   /**
    * Applies SuperMemo SM-2+ algorithm following a review rating (1 to 5).
    */
-  async recordReview(userId: string, cardId: string, quality: number): Promise<{ card: SpacedCard }> {
+  async recordReview(
+    userId: string,
+    cardId: string,
+    quality: number
+  ): Promise<{ card: SpacedCard }> {
     const cards = this.getUserCards(userId)
     const card = cards.find(c => c.id === cardId)
 
@@ -263,7 +272,9 @@ export class RevisionService {
     card.next_review_at = new Date(now.getTime() + card.interval_days * 86400 * 1000).toISOString()
     card.retention_probability = this.computeRetention(card)
 
-    logger.info(`[RevisionService] User ${userId} reviewed card ${cardId}: q=${q}, reps=${card.repetitions}, interval=${card.interval_days}d, EF=${card.ease_factor}`)
+    logger.info(
+      `[RevisionService] User ${userId} reviewed card ${cardId}: q=${q}, reps=${card.repetitions}, interval=${card.interval_days}d, EF=${card.ease_factor}`
+    )
     return { card }
   }
 
@@ -308,16 +319,93 @@ export class RevisionService {
   }
 
   /**
-   * Generates cards automatically from student mistakes.
+   * Generates cards automatically from student mistakes or question bookmarks.
    */
   async generateCards(
     userId: string,
-    params: { source: 'mistakes' | 'bookmarks' | 'custom'; count?: number }
+    params: { source: 'mistakes' | 'bookmarks' | 'custom'; count?: number; attempt_id?: string }
   ): Promise<{ generated_count: number; cards: SpacedCard[] }> {
     const cards = this.getUserCards(userId)
-    const count = Math.min(10, Math.max(1, params.count ?? 3))
     const generated: SpacedCard[] = []
 
+    if (params.source === 'mistakes' && params.attempt_id) {
+      try {
+        const attempt = await prisma.testResult.findUnique({
+          where: { id: params.attempt_id },
+          include: {
+            test: { select: { title: true } },
+            attemptAnswers: {
+              where: { isCorrect: false },
+              include: {
+                question: {
+                  include: {
+                    options: true,
+                  },
+                },
+              },
+            },
+          },
+        })
+
+        if (attempt?.attemptAnswers && attempt.attemptAnswers.length > 0) {
+          for (const ans of attempt.attemptAnswers) {
+            const q = ans.question
+            if (!q) continue
+
+            const correctOpt = q.options?.find((o: any) => o.isCorrect)
+            const correctText = correctOpt?.text || 'Refer to full solution breakdown'
+
+            // Avoid duplicate card if already present in user deck
+            const alreadyExists = cards.some(
+              c => c.front.trim().toLowerCase() === q.text.trim().toLowerCase()
+            )
+            if (alreadyExists) continue
+
+            const card: SpacedCard = {
+              id: `srs-mistake-${Date.now()}-${ans.questionId.slice(0, 8)}`,
+              userId,
+              card_type: 'MISTAKE',
+              front: q.text,
+              back: correctText,
+              explanation:
+                q.explanation ||
+                `Auto-generated remediation flashcard from ${attempt.test?.title || 'Mock Exam'}.`,
+              topic: (q as any).topic || 'Exam Mistakes',
+              subject: (q as any).subject || 'Target Curriculum',
+              difficulty:
+                (q as any).difficulty === 'HARD'
+                  ? 0.8
+                  : (q as any).difficulty === 'MEDIUM'
+                    ? 0.5
+                    : 0.2,
+              interval_days: 1,
+              ease_factor: 2.5,
+              repetitions: 0,
+              lapses: 1,
+              stability: 1.0,
+              last_quality: 0,
+              retention_probability: 0.85,
+              next_review_at: new Date().toISOString(),
+              created_at: new Date().toISOString(),
+            }
+
+            cards.push(card)
+            generated.push(card)
+          }
+
+          if (generated.length > 0) {
+            return { generated_count: generated.length, cards: generated }
+          }
+        }
+      } catch (err) {
+        logger.warn(
+          '[RevisionService] Failed to query test attempt mistakes for SRS cards:',
+          err as any
+        )
+      }
+    }
+
+    const count = Math.min(10, Math.max(1, params.count ?? 3))
     for (let i = 1; i <= count; i++) {
       const card: SpacedCard = {
         id: `srs-gen-${Date.now()}-${i}`,
@@ -382,20 +470,31 @@ export class RevisionService {
           revDate.getFullYear() === targetDate.getFullYear()
         )
       }).length
-      forecast.push({ day: d === 0 ? 'Today' : dayName, count: Math.max(count, d === 0 ? dueToday : 1) })
+      forecast.push({
+        day: d === 0 ? 'Today' : dayName,
+        count: Math.max(count, d === 0 ? dueToday : 1),
+      })
     }
 
-    // Topic breakdown
-    const topicMap = new Map<string, { totalR: number; count: number }>()
+    // Topic breakdown with full TopicRetentionStat shape
+    const topicMap = new Map<string, { totalR: number; count: number; mastered: number }>()
     for (const c of cards) {
-      const entry = topicMap.get(c.topic) || { totalR: 0, count: 0 }
+      const entry = topicMap.get(c.topic) || { totalR: 0, count: 0, mastered: 0 }
       entry.totalR += c.retention_probability
       entry.count += 1
+      if (c.repetitions >= 4) {
+        entry.mastered += 1
+      }
       topicMap.set(c.topic, entry)
     }
 
     const topicBreakdown = Array.from(topicMap.entries()).map(([topic, val]) => ({
       topic,
+      total_cards: val.count,
+      mastered_cards: val.mastered,
+      mastery_percentage: val.count > 0 ? Math.round((val.mastered / val.count) * 100) : 0,
+      average_retention: Math.round((val.totalR / val.count) * 100) / 100,
+      // Backward compatibility aliases
       retention: Math.round((val.totalR / val.count) * 100) / 100,
       card_count: val.count,
     }))

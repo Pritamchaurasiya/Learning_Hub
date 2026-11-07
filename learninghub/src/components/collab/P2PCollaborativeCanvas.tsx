@@ -90,7 +90,7 @@ export const P2PCollaborativeCanvas: React.FC<P2PCollaborativeCanvasProps> = ({
     }
 
     // Render non-deleted CRDT strokes
-    const visibleStrokes = strokes.filter((s) => !s.isDeleted)
+    const visibleStrokes = strokes.filter(s => !s.isDeleted)
     for (const stroke of visibleStrokes) {
       if (stroke.points.length === 0) continue
 
@@ -194,10 +194,8 @@ export const P2PCollaborativeCanvas: React.FC<P2PCollaborativeCanvasProps> = ({
     if (activeTool === 'eraser') {
       // Find stroke near point and delete
       const hitRadius = 15
-      const hitStroke = strokes.find((s) =>
-        s.points.some(
-          (p) => Math.hypot(p.x - pt.x, p.y - pt.y) <= hitRadius && !s.isDeleted
-        )
+      const hitStroke = strokes.find(s =>
+        s.points.some(p => Math.hypot(p.x - pt.x, p.y - pt.y) <= hitRadius && !s.isDeleted)
       )
       if (hitStroke) {
         onDeleteStroke(hitStroke.id)
@@ -292,9 +290,7 @@ export const P2PCollaborativeCanvas: React.FC<P2PCollaborativeCanvasProps> = ({
   }
 
   // Active remote peers with cursors
-  const remotePeers = peers.filter(
-    (p) => p.peerId !== currentPeerId && p.cursor && p.cursor.x > 0
-  )
+  const remotePeers = peers.filter(p => p.peerId !== currentPeerId && p.cursor && p.cursor.x > 0)
 
   return (
     <div className="relative flex flex-col w-full h-[620px] rounded-2xl bg-slate-950 border border-slate-800 shadow-2xl overflow-hidden select-none">
@@ -333,7 +329,11 @@ export const P2PCollaborativeCanvas: React.FC<P2PCollaborativeCanvasProps> = ({
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
             }`}
           >
-            {activeShape === 'circle' ? <Circle className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+            {activeShape === 'circle' ? (
+              <Circle className="w-4 h-4" />
+            ) : (
+              <Square className="w-4 h-4" />
+            )}
           </button>
           <button
             onClick={() => setActiveTool('eraser')}
@@ -377,7 +377,7 @@ export const P2PCollaborativeCanvas: React.FC<P2PCollaborativeCanvasProps> = ({
 
         {/* Color Palette */}
         <div className="flex items-center gap-1.5 pr-2 border-r border-slate-800">
-          {COLOR_PALETTE.map((c) => (
+          {COLOR_PALETTE.map(c => (
             <button
               key={c}
               onClick={() => setSelectedColor(c)}
@@ -396,7 +396,7 @@ export const P2PCollaborativeCanvas: React.FC<P2PCollaborativeCanvasProps> = ({
             min="2"
             max="16"
             value={strokeWidth}
-            onChange={(e) => setStrokeWidth(Number(e.target.value))}
+            onChange={e => setStrokeWidth(Number(e.target.value))}
             className="w-16 accent-indigo-500 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
           />
           <span className="text-[10px] font-mono text-slate-400 w-4">{strokeWidth}px</span>
@@ -434,7 +434,7 @@ export const P2PCollaborativeCanvas: React.FC<P2PCollaborativeCanvasProps> = ({
         />
 
         {/* Peer Remote Cursor Beacons */}
-        {remotePeers.map((peer) => {
+        {remotePeers.map(peer => {
           if (!peer.cursor) return null
           return (
             <div
@@ -465,7 +465,7 @@ export const P2PCollaborativeCanvas: React.FC<P2PCollaborativeCanvasProps> = ({
       <div className="absolute bottom-3 left-4 right-4 z-20 flex items-center justify-between text-[11px] text-slate-500 pointer-events-none">
         <div className="flex items-center gap-2">
           <span className="px-2 py-0.5 rounded bg-slate-900/80 border border-slate-800 font-mono">
-            CRDT Strokes: {strokes.filter((s) => !s.isDeleted).length}
+            CRDT Strokes: {strokes.filter(s => !s.isDeleted).length}
           </span>
           <span className="px-2 py-0.5 rounded bg-slate-900/80 border border-slate-800 font-mono">
             Active Tool: {activeTool.toUpperCase()}

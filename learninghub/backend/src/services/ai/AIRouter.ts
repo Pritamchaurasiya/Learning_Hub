@@ -72,7 +72,9 @@ export class AIRouter implements IAIAgent {
     if (process.env.OLLAMA_ENABLED !== 'false') {
       try {
         this.providers.set('ollama', new OllamaAdapter())
-        logger.info('[AIRouter] Registered Ollama local provider (Offline DeepSeek R1 / Qwen / Llama)')
+        logger.info(
+          '[AIRouter] Registered Ollama local provider (Offline DeepSeek R1 / Qwen / Llama)'
+        )
       } catch (err) {
         logger.warn('[AIRouter] Failed to register Ollama provider:', { error: String(err) })
       }
@@ -206,7 +208,10 @@ export class AIRouter implements IAIAgent {
     throw lastError || new Error('[AIRouter] All AI providers in mesh failed')
   }
 
-  async generateChat(messages: AIMessage[], options?: AIProviderOptions): Promise<AIGenerationResult> {
+  async generateChat(
+    messages: AIMessage[],
+    options?: AIProviderOptions
+  ): Promise<AIGenerationResult> {
     const startTime = Date.now()
     const serialized = messages.map(m => `${m.role}:${m.content}`).join('\n')
     const canCache = !options?.skipCache && (options?.temperature ?? 0.7) <= 0.8

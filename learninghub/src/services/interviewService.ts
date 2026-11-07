@@ -18,7 +18,8 @@ export const FALLBACK_TEMPLATES: InterviewTemplate[] = [
     difficulty: 'SENIOR',
     targetRole: 'Senior Staff Systems Software Engineer',
     companyStyle: 'GOOGLE',
-    description: 'Design and implement an in-memory Least Recently Used (LRU) Cache that supports O(1) time complexity for get and put operations with TTL expiration.',
+    description:
+      'Design and implement an in-memory Least Recently Used (LRU) Cache that supports O(1) time complexity for get and put operations with TTL expiration.',
   },
   {
     id: 'system-design-global-feed',
@@ -27,7 +28,8 @@ export const FALLBACK_TEMPLATES: InterviewTemplate[] = [
     difficulty: 'STAFF',
     targetRole: 'Staff Infrastructure & Distributed Systems Engineer',
     companyStyle: 'META',
-    description: 'Design a scalable real-time notification & live activity feed system capable of serving 500 Million Daily Active Users (DAU) with hybrid push/pull fan-out.',
+    description:
+      'Design a scalable real-time notification & live activity feed system capable of serving 500 Million Daily Active Users (DAU) with hybrid push/pull fan-out.',
   },
   {
     id: 'quant-execution-orderbook',
@@ -36,7 +38,8 @@ export const FALLBACK_TEMPLATES: InterviewTemplate[] = [
     difficulty: 'SENIOR',
     targetRole: 'Quantitative Systems Engineer',
     companyStyle: 'CITADEL',
-    description: 'Design an ultra-low-latency in-memory Limit Order Book matching engine supporting standard order types with deterministic Price-Time priority.',
+    description:
+      'Design an ultra-low-latency in-memory Limit Order Book matching engine supporting standard order types with deterministic Price-Time priority.',
   },
 ]
 
@@ -97,10 +100,15 @@ Constraints:
     },
     clarificationAnswers: {
       capacity: 'Capacity is fixed at initialization, e.g. 1000 items.',
-      duplicate: 'Putting an existing key updates its value, resets its TTL, and moves it to most recently used.',
+      duplicate:
+        'Putting an existing key updates its value, resets its TTL, and moves it to most recently used.',
     },
     testCases: [
-      { input: 'put("a", 1, 10000); get("a")', expected: '1', explanation: 'Direct retrieval before expiry' },
+      {
+        input: 'put("a", 1, 10000); get("a")',
+        expected: '1',
+        explanation: 'Direct retrieval before expiry',
+      },
     ],
     hints: [
       {
@@ -129,7 +137,8 @@ class InterviewService {
   async getTemplates(): Promise<InterviewTemplate[]> {
     try {
       const res = await fetchApi<{ templates: InterviewTemplate[] }>('/interview/templates')
-      if (res?.templates?.length) return res.templates
+      const templates = (res as any)?.data?.templates ?? (res as any)?.templates
+      if (Array.isArray(templates) && templates.length > 0) return templates
       return FALLBACK_TEMPLATES
     } catch {
       return FALLBACK_TEMPLATES
@@ -150,7 +159,8 @@ class InterviewService {
         method: 'POST',
         body: JSON.stringify(input),
       })
-      if (res?.session) return res.session
+      const session = (res as any)?.data?.session ?? (res as any)?.session
+      if (session?.id) return session
       return {
         ...FALLBACK_SESSION,
         track: input.track,
@@ -173,7 +183,8 @@ class InterviewService {
   async getSession(sessionId: string): Promise<InterviewSession> {
     try {
       const res = await fetchApi<{ session: InterviewSession }>(`/interview/${sessionId}`)
-      if (res?.session) return res.session
+      const session = (res as any)?.data?.session ?? (res as any)?.session
+      if (session?.id) return session
       return FALLBACK_SESSION
     } catch {
       return FALLBACK_SESSION
@@ -206,7 +217,8 @@ class InterviewService {
           whiteboardNotes: params.whiteboardNotes,
         }),
       })
-      if (res?.interviewerResponse) return res
+      const payload = (res as any)?.data ?? res
+      if (payload?.interviewerResponse && payload?.session) return payload
       return this.fallbackInteract(params)
     } catch {
       return this.fallbackInteract(params)
@@ -227,7 +239,8 @@ class InterviewService {
       }>(`/interview/${sessionId}/hint`, {
         method: 'POST',
       })
-      if (res?.hint) return res
+      const payload = (res as any)?.data ?? res
+      if (payload?.hint) return payload
       return {
         hint: {
           level: 1,
@@ -257,7 +270,8 @@ class InterviewService {
         `/interview/${sessionId}/evaluate`,
         { method: 'POST' }
       )
-      if (res?.evaluation) return res.evaluation
+      const evaluation = (res as any)?.data?.evaluation ?? (res as any)?.evaluation
+      if (evaluation?.overallScore !== undefined) return evaluation
       return this.fallbackEvaluation(sessionId)
     } catch {
       return this.fallbackEvaluation(sessionId)
@@ -280,7 +294,8 @@ class InterviewService {
   > {
     try {
       const res = await fetchApi<{ history: any[] }>('/interview/history')
-      return res?.history || []
+      const history = (res as any)?.data?.history ?? (res as any)?.history
+      return Array.isArray(history) ? history : []
     } catch {
       return []
     }
@@ -296,10 +311,18 @@ class InterviewService {
     let responseText =
       "I hear your point. Let's focus on the asymptotic time and space guarantees. How will you ensure your operations stay bounded at O(1) time without memory leaks?"
 
-    if (textLower.includes('capacity') || textLower.includes('bound') || textLower.includes('limit')) {
+    if (
+      textLower.includes('capacity') ||
+      textLower.includes('bound') ||
+      textLower.includes('limit')
+    ) {
       responseText =
         'Great question on constraints. The capacity is fixed at initialization (e.g. 1000 items). Once reached, the least recently accessed item must be evicted immediately in O(1) time.'
-    } else if (textLower.includes('map') || textLower.includes('hash') || textLower.includes('list')) {
+    } else if (
+      textLower.includes('map') ||
+      textLower.includes('hash') ||
+      textLower.includes('list')
+    ) {
       responseText =
         'A Map structure provides O(1) key lookups. Now outline how you will update the recency order whenever a get or put is performed!'
     }
@@ -338,7 +361,8 @@ class InterviewService {
           factor: 'PROBLEM_SOLVING',
           score: 86,
           weight: 0.25,
-          feedback: 'Effective breakdown of complex prompt requirements into manageable sub-components.',
+          feedback:
+            'Effective breakdown of complex prompt requirements into manageable sub-components.',
           positiveSignals: ['Identified trade-offs early', 'Framed problem invariants cleanly'],
           growthAreas: ['Proactively verify input constraints with sample dry-runs'],
         },
@@ -347,7 +371,8 @@ class InterviewService {
           factor: 'ALGORITHMIC_EFFICIENCY',
           score: 88,
           weight: 0.25,
-          feedback: 'Achieved O(1) asymptotic lookup and eviction without unnecessary auxiliary memory allocations.',
+          feedback:
+            'Achieved O(1) asymptotic lookup and eviction without unnecessary auxiliary memory allocations.',
           positiveSignals: ['Optimal time complexity achieved', 'Preserved space limits'],
           growthAreas: ['Formalize mathematical invariants before committing to state mutations'],
         },
@@ -357,7 +382,10 @@ class InterviewService {
           score: 80,
           weight: 0.2,
           feedback: 'Communicated approach and reasoning coherently throughout the session.',
-          positiveSignals: ['Spoke aloud while reasoning', 'Responded effectively to interviewer probes'],
+          positiveSignals: [
+            'Spoke aloud while reasoning',
+            'Responded effectively to interviewer probes',
+          ],
           growthAreas: ['Summarize architectural decisions before writing large blocks of syntax'],
         },
         {
@@ -366,7 +394,10 @@ class InterviewService {
           score: 82,
           weight: 0.15,
           feedback: 'Clean code style with proper encapsulation and descriptive method names.',
-          positiveSignals: ['Idiomatic language conventions used', 'Self-documenting method signatures'],
+          positiveSignals: [
+            'Idiomatic language conventions used',
+            'Self-documenting method signatures',
+          ],
           growthAreas: ['Extract complex conditionals into semantic helper predicates'],
         },
         {
@@ -380,9 +411,11 @@ class InterviewService {
         },
       ],
       starAnalysis: {
-        situation: 'Challenged to design and implement an LRU cache with TTL eviction in an interview environment.',
+        situation:
+          'Challenged to design and implement an LRU cache with TTL eviction in an interview environment.',
         task: 'Formulate an optimal solution balancing O(1) bounds with reliable edge case handling.',
-        action: 'Maintained collaborative dialogue with the AI specialist and implemented modular code in the live editor.',
+        action:
+          'Maintained collaborative dialogue with the AI specialist and implemented modular code in the live editor.',
         result: 'Achieved score of 84/100 and clear recommendations for revision decks.',
       },
       strengths: [

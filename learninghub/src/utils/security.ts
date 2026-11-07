@@ -97,7 +97,9 @@ export const apiRateLimiter = new RateLimiter(10, 60000)
 const STORAGE_SALT_KEY = 'lh_salt_v2'
 
 function isSubtleCryptoAvailable(): boolean {
-  return typeof window !== 'undefined' && typeof window.crypto !== 'undefined' && !!window.crypto.subtle
+  return (
+    typeof window !== 'undefined' && typeof window.crypto !== 'undefined' && !!window.crypto.subtle
+  )
 }
 
 function getOrCreateSalt(): Uint8Array {
@@ -162,7 +164,7 @@ export class SecureStorage {
     if (!isSubtleCryptoAvailable()) {
       // Fallback for non-secure contexts (e.g. mobile LAN IP testing over HTTP)
       try {
-        localStorage.setItem(STORAGE_KEY_PREFIX + key, 'raw:' + btoa(encodeURIComponent(value)))
+        localStorage.setItem(STORAGE_KEY_PREFIX + key, `raw:${btoa(encodeURIComponent(value))}`)
       } catch (e) {
         console.warn('[SecureStorage] LocalStorage setItem failed:', e)
       }
@@ -186,7 +188,7 @@ export class SecureStorage {
     } catch (err) {
       console.warn('[SecureStorage] Encryption failed, fallback to base64 encoding:', err)
       try {
-        localStorage.setItem(STORAGE_KEY_PREFIX + key, 'raw:' + btoa(encodeURIComponent(value)))
+        localStorage.setItem(STORAGE_KEY_PREFIX + key, `raw:${btoa(encodeURIComponent(value))}`)
       } catch {
         // ignore
       }

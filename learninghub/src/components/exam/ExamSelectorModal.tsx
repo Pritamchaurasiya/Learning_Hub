@@ -81,7 +81,9 @@ export const ExamSelectorModal: React.FC<ExamSelectorModalProps> = ({ isOpen, on
   const [loadingSubjects, setLoadingSubjects] = useState(false)
 
   // Target customization state
-  const [chosenDifficulty, setChosenDifficulty] = useState<ExamDifficulty>(storeDifficulty || 'MEDIUM')
+  const [chosenDifficulty, setChosenDifficulty] = useState<ExamDifficulty>(
+    storeDifficulty || 'MEDIUM'
+  )
   const [chosenDailyGoal, setChosenDailyGoal] = useState<number>(storeDailyGoal || 15)
   const [targetYear, setTargetYear] = useState<string>('2026')
   const [isActivating, setIsActivating] = useState(false)
@@ -131,14 +133,15 @@ export const ExamSelectorModal: React.FC<ExamSelectorModalProps> = ({ isOpen, on
         // Merge with curated exams to maintain rich subjects and formatting
         const mergedExams = [...DEFAULT_EXAMS]
         for (const remote of liveExams) {
-          const idx = mergedExams.findIndex(
-            e => e.id === remote.id || e.slug === remote.slug
-          )
+          const idx = mergedExams.findIndex(e => e.id === remote.id || e.slug === remote.slug)
           if (idx >= 0) {
             mergedExams[idx] = {
               ...mergedExams[idx],
               ...remote,
-              subjects: remote.subjects && remote.subjects.length > 0 ? remote.subjects : mergedExams[idx].subjects,
+              subjects:
+                remote.subjects && remote.subjects.length > 0
+                  ? remote.subjects
+                  : mergedExams[idx].subjects,
             }
           } else {
             mergedExams.push({
@@ -164,8 +167,16 @@ export const ExamSelectorModal: React.FC<ExamSelectorModalProps> = ({ isOpen, on
 
       if (liveCountries.length > 0) {
         // Ensure "All Countries" remains at top
-        const allOption: ActiveCountryInfo = { id: 'all', name: 'All Countries', code: 'ALL', flagEmoji: '🌍' }
-        const mergedCountries = [allOption, ...liveCountries.filter((c: ActiveCountryInfo) => c.id !== 'all')]
+        const allOption: ActiveCountryInfo = {
+          id: 'all',
+          name: 'All Countries',
+          code: 'ALL',
+          flagEmoji: '🌍',
+        }
+        const mergedCountries = [
+          allOption,
+          ...liveCountries.filter((c: ActiveCountryInfo) => c.id !== 'all'),
+        ]
         setCountries(mergedCountries)
       }
     } catch {
@@ -241,8 +252,7 @@ export const ExamSelectorModal: React.FC<ExamSelectorModalProps> = ({ isOpen, on
 
       // 3. Category Match
       const examCat = exam.category || getExamCategory(exam)
-      const matchesCategory =
-        selectedCategory === 'All Categories' || examCat === selectedCategory
+      const matchesCategory = selectedCategory === 'All Categories' || examCat === selectedCategory
 
       return matchesSearch && matchesCountry && matchesCategory
     })
@@ -265,8 +275,7 @@ export const ExamSelectorModal: React.FC<ExamSelectorModalProps> = ({ isOpen, on
     for (const exam of exams) {
       counts[exam.countryId] = (counts[exam.countryId] || 0) + 1
       if (exam.country?.code) {
-        counts[exam.country.code.toLowerCase()] =
-          (counts[exam.country.code.toLowerCase()] || 0) + 1
+        counts[exam.country.code.toLowerCase()] = (counts[exam.country.code.toLowerCase()] || 0) + 1
       }
     }
     return counts
@@ -294,11 +303,7 @@ export const ExamSelectorModal: React.FC<ExamSelectorModalProps> = ({ isOpen, on
     // Try fetching fresh subjects from API in the background
     try {
       const res = await fetchApi(`/exam-content/exams/${exam.id}/subjects`)
-      const liveSubjects = Array.isArray(res?.data)
-        ? res.data
-        : Array.isArray(res)
-          ? res
-          : []
+      const liveSubjects = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : []
 
       if (liveSubjects.length > 0) {
         setExamSubjects(liveSubjects)
@@ -334,9 +339,7 @@ export const ExamSelectorModal: React.FC<ExamSelectorModalProps> = ({ isOpen, on
 
     try {
       setIsActivating(true)
-      const selectedSubjectObjects = examSubjects.filter(s =>
-        selectedSubjectIds.includes(s.id)
-      )
+      const selectedSubjectObjects = examSubjects.filter(s => selectedSubjectIds.includes(s.id))
 
       // 1. Activate exam and selected subjects
       await switchExam(pendingExam, selectedSubjectObjects)
@@ -447,7 +450,9 @@ export const ExamSelectorModal: React.FC<ExamSelectorModalProps> = ({ isOpen, on
                   className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
                   aria-label="Refresh catalog"
                 >
-                  <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin text-indigo-500' : ''}`} />
+                  <RefreshCw
+                    className={`w-4 h-4 ${isSyncing ? 'animate-spin text-indigo-500' : ''}`}
+                  />
                 </button>
               )}
 
@@ -525,7 +530,9 @@ export const ExamSelectorModal: React.FC<ExamSelectorModalProps> = ({ isOpen, on
               {/* Country Tabs */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs text-slate-400 font-medium">
-                  <span className="uppercase text-[10px] font-bold tracking-wider">Filter by Region</span>
+                  <span className="uppercase text-[10px] font-bold tracking-wider">
+                    Filter by Region
+                  </span>
                   <span>{filteredExams.length} exams available</span>
                 </div>
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
@@ -945,9 +952,7 @@ export const ExamSelectorModal: React.FC<ExamSelectorModalProps> = ({ isOpen, on
               {activeExam ? (
                 <span>
                   Active Exam:{' '}
-                  <strong className="text-slate-800 dark:text-slate-200">
-                    {activeExam.name}
-                  </strong>
+                  <strong className="text-slate-800 dark:text-slate-200">{activeExam.name}</strong>
                 </span>
               ) : (
                 <span>No target exam currently active</span>
@@ -968,16 +973,13 @@ export const ExamSelectorModal: React.FC<ExamSelectorModalProps> = ({ isOpen, on
                   type="button"
                   onClick={() => void handleConfirmExam()}
                   disabled={
-                    (selectedSubjectIds.length === 0 && examSubjects.length > 0) ||
-                    isActivating
+                    (selectedSubjectIds.length === 0 && examSubjects.length > 0) || isActivating
                   }
                   className="px-5 py-2.5 rounded-xl text-xs font-extrabold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-600/25 transition-all flex items-center gap-2"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>
-                    {isActivating
-                      ? 'Calibrating...'
-                      : `Activate ${pendingExam?.name || 'Target'}`}
+                    {isActivating ? 'Calibrating...' : `Activate ${pendingExam?.name || 'Target'}`}
                   </span>
                 </button>
               )}

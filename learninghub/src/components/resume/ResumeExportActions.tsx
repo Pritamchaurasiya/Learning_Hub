@@ -108,7 +108,11 @@ export const ResumeExportActions: React.FC<ResumeExportActionsProps> = ({ resume
         onClick={handleCopyMarkdown}
         className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-medium flex items-center gap-1.5 transition-colors"
       >
-        {copiedMd ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+        {copiedMd ? (
+          <Check className="w-3.5 h-3.5 text-emerald-400" />
+        ) : (
+          <Copy className="w-3.5 h-3.5" />
+        )}
         {copiedMd ? 'Markdown Copied' : 'Copy Markdown'}
       </button>
 
@@ -117,7 +121,11 @@ export const ResumeExportActions: React.FC<ResumeExportActionsProps> = ({ resume
         onClick={handleCopyShareLink}
         className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-medium flex items-center gap-1.5 transition-colors"
       >
-        {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
+        {copiedLink ? (
+          <Check className="w-3.5 h-3.5 text-emerald-400" />
+        ) : (
+          <Share2 className="w-3.5 h-3.5" />
+        )}
         {copiedLink ? 'Link Copied' : 'Share Portfolio'}
       </button>
     </div>

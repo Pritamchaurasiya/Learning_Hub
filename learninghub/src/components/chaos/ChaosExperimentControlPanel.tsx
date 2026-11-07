@@ -10,11 +10,7 @@ import {
   Zap,
   Cpu,
 } from 'lucide-react'
-import {
-  ClusterTopology,
-  ChaosExperimentConfig,
-  ChaosFaultType,
-} from '../../types/chaosCluster'
+import { ClusterTopology, ChaosExperimentConfig, ChaosFaultType } from '../../types/chaosCluster'
 
 interface ChaosExperimentControlPanelProps {
   topology: ClusterTopology
@@ -45,7 +41,8 @@ export const ChaosExperimentControlPanel: React.FC<ChaosExperimentControlPanelPr
   const presets: ChaosPreset[] = [
     {
       label: 'Cascading DB Crash',
-      description: 'Terminates primary database process to test read-replica failover & circuit breaker isolation.',
+      description:
+        'Terminates primary database process to test read-replica failover & circuit breaker isolation.',
       config: {
         faultType: 'PROCESS_CRASH',
         targetNodeId: 'svc-db-primary',
@@ -54,7 +51,8 @@ export const ChaosExperimentControlPanel: React.FC<ChaosExperimentControlPanelPr
     },
     {
       label: 'Payment Latency Storm',
-      description: 'Injects 2,000ms latency into 3rd-party payment gateway to verify fast-fail timeout shedding.',
+      description:
+        'Injects 2,000ms latency into 3rd-party payment gateway to verify fast-fail timeout shedding.',
       config: {
         faultType: 'LATENCY_SPIKE',
         targetNodeId: 'svc-payment-ext',
@@ -73,7 +71,8 @@ export const ChaosExperimentControlPanel: React.FC<ChaosExperimentControlPanelPr
     },
     {
       label: 'Event Bus Thread Saturation',
-      description: 'Exhausts worker threads on Event Bus to verify backpressure and circuit tripping.',
+      description:
+        'Exhausts worker threads on Event Bus to verify backpressure and circuit tripping.',
       config: {
         faultType: 'THREAD_POOL_SATURATION',
         targetNodeId: 'svc-event-bus',
@@ -97,7 +96,8 @@ export const ChaosExperimentControlPanel: React.FC<ChaosExperimentControlPanelPr
     if (preset.config.targetNodeId) setTargetNodeId(preset.config.targetNodeId)
     if (preset.config.targetLinkId) setTargetLinkId(preset.config.targetLinkId)
     if (preset.config.injectedLatencyMs) setLatencyMs(preset.config.injectedLatencyMs)
-    if (preset.config.injectedPacketLossPercent) setPacketLossPercent(preset.config.injectedPacketLossPercent)
+    if (preset.config.injectedPacketLossPercent)
+      setPacketLossPercent(preset.config.injectedPacketLossPercent)
     if (preset.config.durationSeconds) setDurationSeconds(preset.config.durationSeconds)
   }
 
@@ -106,10 +106,14 @@ export const ChaosExperimentControlPanel: React.FC<ChaosExperimentControlPanelPr
     const config: ChaosExperimentConfig = {
       faultType,
       durationSeconds,
-      ...(faultType === 'PROCESS_CRASH' || faultType === 'THREAD_POOL_SATURATION' || faultType === 'LATENCY_SPIKE'
+      ...(faultType === 'PROCESS_CRASH' ||
+      faultType === 'THREAD_POOL_SATURATION' ||
+      faultType === 'LATENCY_SPIKE'
         ? { targetNodeId }
         : {}),
-      ...(faultType === 'NETWORK_PARTITION' || faultType === 'PACKET_LOSS' || faultType === 'LATENCY_SPIKE'
+      ...(faultType === 'NETWORK_PARTITION' ||
+      faultType === 'PACKET_LOSS' ||
+      faultType === 'LATENCY_SPIKE'
         ? { targetLinkId }
         : {}),
       ...(faultType === 'LATENCY_SPIKE' ? { injectedLatencyMs: latencyMs } : {}),
@@ -128,7 +132,8 @@ export const ChaosExperimentControlPanel: React.FC<ChaosExperimentControlPanelPr
             Chaos Experiment Injection Console
           </h3>
           <p className="text-xs text-slate-400 mt-0.5">
-            Inject stochastic failure modes to validate system resilience & circuit breaker thresholds.
+            Inject stochastic failure modes to validate system resilience & circuit breaker
+            thresholds.
           </p>
         </div>
         <button
@@ -182,7 +187,7 @@ export const ChaosExperimentControlPanel: React.FC<ChaosExperimentControlPanelPr
             </label>
             <select
               value={faultType}
-              onChange={(e) => setFaultType(e.target.value as ChaosFaultType)}
+              onChange={e => setFaultType(e.target.value as ChaosFaultType)}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 font-mono"
             >
               <option value="NETWORK_PARTITION">NETWORK_PARTITION (Sever Link)</option>
@@ -204,10 +209,10 @@ export const ChaosExperimentControlPanel: React.FC<ChaosExperimentControlPanelPr
               </label>
               <select
                 value={targetNodeId}
-                onChange={(e) => setTargetNodeId(e.target.value)}
+                onChange={e => setTargetNodeId(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 font-mono"
               >
-                {topology.nodes.map((node) => (
+                {topology.nodes.map(node => (
                   <option key={node.id} value={node.id}>
                     {node.name} ({node.id})
                   </option>
@@ -227,12 +232,13 @@ export const ChaosExperimentControlPanel: React.FC<ChaosExperimentControlPanelPr
               </label>
               <select
                 value={targetLinkId}
-                onChange={(e) => setTargetLinkId(e.target.value)}
+                onChange={e => setTargetLinkId(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 font-mono"
               >
-                {topology.links.map((link) => (
+                {topology.links.map(link => (
                   <option key={link.id} value={link.id}>
-                    {link.sourceNodeId.replace('svc-', '')} → {link.targetNodeId.replace('svc-', '')} ({link.id})
+                    {link.sourceNodeId.replace('svc-', '')} →{' '}
+                    {link.targetNodeId.replace('svc-', '')} ({link.id})
                   </option>
                 ))}
               </select>
@@ -254,7 +260,7 @@ export const ChaosExperimentControlPanel: React.FC<ChaosExperimentControlPanelPr
                 max="5000"
                 step="100"
                 value={latencyMs}
-                onChange={(e) => setLatencyMs(Number(e.target.value))}
+                onChange={e => setLatencyMs(Number(e.target.value))}
                 className="w-full accent-rose-500 bg-slate-950"
               />
             </div>
@@ -275,7 +281,7 @@ export const ChaosExperimentControlPanel: React.FC<ChaosExperimentControlPanelPr
                 max="100"
                 step="5"
                 value={packetLossPercent}
-                onChange={(e) => setPacketLossPercent(Number(e.target.value))}
+                onChange={e => setPacketLossPercent(Number(e.target.value))}
                 className="w-full accent-rose-500 bg-slate-950"
               />
             </div>
@@ -295,7 +301,7 @@ export const ChaosExperimentControlPanel: React.FC<ChaosExperimentControlPanelPr
               max="60"
               step="5"
               value={durationSeconds}
-              onChange={(e) => setDurationSeconds(Number(e.target.value))}
+              onChange={e => setDurationSeconds(Number(e.target.value))}
               className="w-full accent-rose-500 bg-slate-950"
             />
           </div>

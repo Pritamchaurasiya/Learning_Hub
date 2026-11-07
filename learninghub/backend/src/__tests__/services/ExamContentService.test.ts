@@ -392,9 +392,13 @@ describe('ExamContentService (Milestone 33 International Exam Tracks & Curriculu
 
       const result = await service.getSubjects('exam-gate-cse')
 
-      expect(result.length).toBe(3)
+      expect(result.length).toBe(6)
       expect(result.some((s: any) => s.slug === 'gate-dsa')).toBe(true)
       expect(result.some((s: any) => s.slug === 'gate-os')).toBe(true)
+      expect(result.some((s: any) => s.slug === 'gate-dbms')).toBe(true)
+      expect(result.some((s: any) => s.slug === 'gate-toc-compilers')).toBe(true)
+      expect(result.some((s: any) => s.slug === 'gate-computer-networks')).toBe(true)
+      expect(result.some((s: any) => s.slug === 'gate-engineering-mathematics')).toBe(true)
     })
 
     it('returns fallback SAT subjects', async () => {

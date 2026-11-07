@@ -34,7 +34,8 @@ export const ZkProofVerificationHUD: React.FC<ZkProofVerificationHUDProps> = ({
         <Lock className="w-10 h-10 text-slate-600 mx-auto" />
         <h3 className="text-sm font-semibold text-slate-300">No ZK Proof Generated Yet</h3>
         <p className="text-xs text-slate-500 max-w-sm mx-auto">
-          Configure circuit thresholds in the Prover Studio above and generate a Groth16 proof to inspect mathematical invariants and on-chain verification.
+          Configure circuit thresholds in the Prover Studio above and generate a Groth16 proof to
+          inspect mathematical invariants and on-chain verification.
         </p>
       </div>
     )
@@ -137,11 +138,15 @@ export const ZkProofVerificationHUD: React.FC<ZkProofVerificationHUDProps> = ({
           </div>
           <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1 overflow-hidden">
             <span className="text-[10px] text-slate-500 block uppercase">Issuer DID</span>
-            <span className="text-slate-300 truncate block text-[11px]">{proof.publicInputs.issuerDid}</span>
+            <span className="text-slate-300 truncate block text-[11px]">
+              {proof.publicInputs.issuerDid}
+            </span>
           </div>
           <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1 overflow-hidden sm:col-span-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] text-slate-500 block uppercase">Salted Poseidon Commitment Hash</span>
+              <span className="text-[10px] text-slate-500 block uppercase">
+                Salted Poseidon Commitment Hash
+              </span>
               <button
                 type="button"
                 onClick={() => copyToClipboard(proof.publicInputs.commitmentHash)}
@@ -151,7 +156,9 @@ export const ZkProofVerificationHUD: React.FC<ZkProofVerificationHUDProps> = ({
                 <Copy className="w-3 h-3" />
               </button>
             </div>
-            <span className="text-purple-400 text-[11px] break-all block">{proof.publicInputs.commitmentHash}</span>
+            <span className="text-purple-400 text-[11px] break-all block">
+              {proof.publicInputs.commitmentHash}
+            </span>
           </div>
         </div>
       </div>
@@ -164,13 +171,17 @@ export const ZkProofVerificationHUD: React.FC<ZkProofVerificationHUDProps> = ({
         </h4>
         <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] space-y-2 text-slate-400 overflow-x-auto">
           <div>
-            <span className="text-indigo-400 font-bold">π_A (G1):</span> [{proof.proof.piA[0].slice(0, 16)}..., {proof.proof.piA[1].slice(0, 16)}...]
+            <span className="text-indigo-400 font-bold">π_A (G1):</span> [
+            {proof.proof.piA[0].slice(0, 16)}..., {proof.proof.piA[1].slice(0, 16)}...]
           </div>
           <div>
-            <span className="text-purple-400 font-bold">π_B (G2):</span> [[{proof.proof.piB[0][0].slice(0, 12)}..., {proof.proof.piB[0][1].slice(0, 12)}...], [...]]
+            <span className="text-purple-400 font-bold">π_B (G2):</span> [[
+            {proof.proof.piB[0][0].slice(0, 12)}..., {proof.proof.piB[0][1].slice(0, 12)}...],
+            [...]]
           </div>
           <div>
-            <span className="text-emerald-400 font-bold">π_C (G1):</span> [{proof.proof.piC[0].slice(0, 16)}..., {proof.proof.piC[1].slice(0, 16)}...]
+            <span className="text-emerald-400 font-bold">π_C (G1):</span> [
+            {proof.proof.piC[0].slice(0, 16)}..., {proof.proof.piC[1].slice(0, 16)}...]
           </div>
         </div>
       </div>

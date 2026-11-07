@@ -206,7 +206,10 @@ export const ebooksController = {
         }
       } catch {}
 
-      const chapters = (FALLBACK_CHAPTERS as Record<string, any[]>)[ebookId] || FALLBACK_CHAPTERS['ebook-dsa-handbook'] || []
+      const chapters =
+        (FALLBACK_CHAPTERS as Record<string, any[]>)[ebookId] ||
+        FALLBACK_CHAPTERS['ebook-dsa-handbook'] ||
+        []
       return res.json({ status: 'success', data: chapters })
     } catch (err) {
       return next(err)
@@ -226,7 +229,10 @@ export const ebooksController = {
         }
       } catch {}
 
-      const chapters = (FALLBACK_CHAPTERS as Record<string, any[]>)[ebookId] || FALLBACK_CHAPTERS['ebook-dsa-handbook'] || []
+      const chapters =
+        (FALLBACK_CHAPTERS as Record<string, any[]>)[ebookId] ||
+        FALLBACK_CHAPTERS['ebook-dsa-handbook'] ||
+        []
       const chapter = chapters.find((c: any) => c.id === chapterId) || chapters[0]
       return res.json({ status: 'success', data: chapter })
     } catch (err) {
@@ -338,7 +344,7 @@ export const ebooksController = {
     try {
       const title = req.body.chapterTitle || req.body.title || 'Chapter'
       const content = req.body.chapterContent || req.body.content || ''
-      
+
       const payload = {
         summary: `Executive Synthesis of "${title}":\n- Core principles and axiomatic foundations establish clear theoretical guarantees.\n- Rigorous algorithmic asymptotic analysis bounds runtime and memory constraints as input scales.\n- Practical implementation techniques ensure numerical stability and optimal resource utilization.`,
         keyTakeaways: [
@@ -349,15 +355,18 @@ export const ebooksController = {
         definitions: [
           {
             term: 'Asymptotic Tight Bound (Θ)',
-            definition: 'Characterizes the exact growth rate matching both upper and lower boundaries.',
+            definition:
+              'Characterizes the exact growth rate matching both upper and lower boundaries.',
           },
           {
             term: 'Amortized Cost',
-            definition: 'Average computational cost per operation over a worst-case sequence of actions.',
+            definition:
+              'Average computational cost per operation over a worst-case sequence of actions.',
           },
           {
             term: 'Invariant',
-            definition: 'A condition that remains true across every iteration or state transition of an algorithm.',
+            definition:
+              'A condition that remains true across every iteration or state transition of an algorithm.',
           },
         ],
       }
@@ -375,11 +384,12 @@ export const ebooksController = {
   async explainParagraphAI(req: Request, res: Response, next: NextFunction) {
     try {
       const paragraph = req.body.paragraphText || req.body.paragraph || ''
-      const snippet = paragraph.length > 120 ? paragraph.slice(0, 117) + '...' : paragraph
+      const snippet = paragraph.length > 120 ? `${paragraph.slice(0, 117)}...` : paragraph
 
       const payload = {
         explanation: `In straightforward terms: "${snippet || 'This concept'}" indicates that the system guarantees predictable scalability and avoids unexpected performance degradation under heavy load.`,
-        analogy: 'Imagine an express highway designed so traffic flow remains consistent regardless of whether 100 or 10,000 cars enter simultaneously.',
+        analogy:
+          'Imagine an express highway designed so traffic flow remains consistent regardless of whether 100 or 10,000 cars enter simultaneously.',
         bulletPoints: [
           'Deconstructs the core concept into simple, modular building blocks.',
           'Highlights the direct relationship between input size and processing overhead.',

@@ -733,10 +733,7 @@ def dijkstra(graph, start_node):
 
           {/* Notes Panel */}
           {sidebarTab === 'notes' && (
-            <LiveSessionNotesPanel
-              sessionId={sessionId}
-              sessionTitle={session.title}
-            />
+            <LiveSessionNotesPanel sessionId={sessionId} sessionTitle={session.title} />
           )}
 
           {/* People Panel */}

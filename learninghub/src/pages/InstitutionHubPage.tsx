@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { InstitutionService } from '../services/institutionService'
-import { Institution, InstitutionAnalytics, LtiLaunchSession, GradePassbackResult } from '../types/institution'
+import {
+  Institution,
+  InstitutionAnalytics,
+  LtiLaunchSession,
+  GradePassbackResult,
+} from '../types/institution'
 
 export const InstitutionHubPage: React.FC = () => {
   const [institutions, setInstitutions] = useState<Institution[]>([])
@@ -103,7 +108,6 @@ export const InstitutionHubPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10 font-sans">
       <div className="max-w-7xl mx-auto space-y-8">
-        
         {/* Top Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900/80 p-6 rounded-2xl border border-slate-800 backdrop-blur-md">
           <div>
@@ -111,15 +115,20 @@ export const InstitutionHubPage: React.FC = () => {
               <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
               1EdTech LTI 1.3 Advantage & Multi-Tenant Hub
             </div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">Enterprise Institution Portal</h1>
+            <h1 className="text-3xl font-extrabold text-white tracking-tight">
+              Enterprise Institution Portal
+            </h1>
             <p className="text-slate-400 text-sm mt-1">
-              Seamless LMS SSO, OIDC Asymmetric JWKS Authentication, and Automated Grade Passback (AGS v2.0)
+              Seamless LMS SSO, OIDC Asymmetric JWKS Authentication, and Automated Grade Passback
+              (AGS v2.0)
             </p>
           </div>
 
           {/* Tenant Switcher */}
           <div className="flex items-center gap-3">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tenant:</label>
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Tenant:
+            </label>
             <select
               value={selectedInstId}
               onChange={e => setSelectedInstId(e.target.value)}
@@ -136,7 +145,7 @@ export const InstitutionHubPage: React.FC = () => {
 
         {/* Selected Institution Banner */}
         {activeInst && (
-          <div 
+          <div
             className="p-6 rounded-2xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden"
             style={{
               backgroundColor: '#0f172a',
@@ -144,7 +153,7 @@ export const InstitutionHubPage: React.FC = () => {
             }}
           >
             <div className="flex items-center gap-5">
-              <div 
+              <div
                 className="w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl text-white shadow-lg shrink-0"
                 style={{ backgroundColor: activeInst.branding.primaryColor || '#0284c7' }}
               >
@@ -158,17 +167,27 @@ export const InstitutionHubPage: React.FC = () => {
                   </span>
                 </div>
                 <div className="text-xs text-slate-400 mt-1 flex flex-wrap gap-4">
-                  <span>Domain: <strong className="text-slate-200">{activeInst.domain}</strong></span>
-                  <span>LMS Issuer: <code className="text-cyan-400">{activeInst.issuer}</code></span>
-                  <span>Client ID: <code className="text-slate-300">{activeInst.clientId}</code></span>
-                  <span>Deployment: <code className="text-indigo-400">{activeInst.deploymentId}</code></span>
+                  <span>
+                    Domain: <strong className="text-slate-200">{activeInst.domain}</strong>
+                  </span>
+                  <span>
+                    LMS Issuer: <code className="text-cyan-400">{activeInst.issuer}</code>
+                  </span>
+                  <span>
+                    Client ID: <code className="text-slate-300">{activeInst.clientId}</code>
+                  </span>
+                  <span>
+                    Deployment: <code className="text-indigo-400">{activeInst.deploymentId}</code>
+                  </span>
                 </div>
               </div>
             </div>
 
             <div className="text-right shrink-0">
               <span className="text-xs text-slate-400 block">Portal Title</span>
-              <span className="text-sm font-semibold text-slate-200">{activeInst.branding.portalTitle}</span>
+              <span className="text-sm font-semibold text-slate-200">
+                {activeInst.branding.portalTitle}
+              </span>
             </div>
           </div>
         )}
@@ -177,27 +196,49 @@ export const InstitutionHubPage: React.FC = () => {
         {analytics && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-slate-900 border border-slate-800 p-5 rounded-xl">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Active Learners</span>
-              <span className="text-3xl font-black text-white mt-2 block">{analytics.totalLearners.toLocaleString()}</span>
-              <span className="text-xs text-emerald-400 mt-1 block">Across {analytics.activeCohortsCount} cohorts</span>
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+                Active Learners
+              </span>
+              <span className="text-3xl font-black text-white mt-2 block">
+                {analytics.totalLearners.toLocaleString()}
+              </span>
+              <span className="text-xs text-emerald-400 mt-1 block">
+                Across {analytics.activeCohortsCount} cohorts
+              </span>
             </div>
 
             <div className="bg-slate-900 border border-slate-800 p-5 rounded-xl">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Faculty & Instructors</span>
-              <span className="text-3xl font-black text-white mt-2 block">{analytics.totalInstructors}</span>
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+                Faculty & Instructors
+              </span>
+              <span className="text-3xl font-black text-white mt-2 block">
+                {analytics.totalInstructors}
+              </span>
               <span className="text-xs text-slate-400 mt-1 block">Full LTI Invigilator access</span>
             </div>
 
             <div className="bg-slate-900 border border-slate-800 p-5 rounded-xl">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Assessments Done</span>
-              <span className="text-3xl font-black text-cyan-400 mt-2 block">{analytics.totalAssessmentsCompleted.toLocaleString()}</span>
-              <span className="text-xs text-slate-400 mt-1 block">{analytics.totalLaunches.toLocaleString()} total launches</span>
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+                Assessments Done
+              </span>
+              <span className="text-3xl font-black text-cyan-400 mt-2 block">
+                {analytics.totalAssessmentsCompleted.toLocaleString()}
+              </span>
+              <span className="text-xs text-slate-400 mt-1 block">
+                {analytics.totalLaunches.toLocaleString()} total launches
+              </span>
             </div>
 
             <div className="bg-slate-900 border border-slate-800 p-5 rounded-xl">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Average Cohort Score</span>
-              <span className="text-3xl font-black text-emerald-400 mt-2 block">{analytics.averageScorePercent}%</span>
-              <span className="text-xs text-slate-400 mt-1 block">{analytics.passRatePercent}% pass rate</span>
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+                Average Cohort Score
+              </span>
+              <span className="text-3xl font-black text-emerald-400 mt-2 block">
+                {analytics.averageScorePercent}%
+              </span>
+              <span className="text-xs text-slate-400 mt-1 block">
+                {analytics.passRatePercent}% pass rate
+              </span>
             </div>
           </div>
         )}
@@ -245,33 +286,42 @@ export const InstitutionHubPage: React.FC = () => {
                 <span>🔐</span> LMS Registration Endpoints (Canvas / Moodle)
               </h3>
               <p className="text-xs text-slate-400">
-                Configure these endpoints inside your institutional LMS Developer Keys console to establish an LTI 1.3 Advantage tool registration.
+                Configure these endpoints inside your institutional LMS Developer Keys console to
+                establish an LTI 1.3 Advantage tool registration.
               </p>
 
               <div className="space-y-3 text-xs font-mono">
                 <div>
-                  <span className="text-slate-400 block font-sans font-semibold mb-1">Target Link URI (Launch URL)</span>
+                  <span className="text-slate-400 block font-sans font-semibold mb-1">
+                    Target Link URI (Launch URL)
+                  </span>
                   <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-cyan-400 break-all select-all">
                     https://learninghub.io/api/v1/lti/launch
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block font-sans font-semibold mb-1">OpenID Connect (OIDC) Initiation URL</span>
+                  <span className="text-slate-400 block font-sans font-semibold mb-1">
+                    OpenID Connect (OIDC) Initiation URL
+                  </span>
                   <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-cyan-400 break-all select-all">
                     https://learninghub.io/api/v1/lti/login
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block font-sans font-semibold mb-1">Public Keyset (JWKS) URL</span>
+                  <span className="text-slate-400 block font-sans font-semibold mb-1">
+                    Public Keyset (JWKS) URL
+                  </span>
                   <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-indigo-400 break-all select-all">
                     https://learninghub.io/api/v1/lti/jwks
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block font-sans font-semibold mb-1">Assigned Client ID</span>
+                  <span className="text-slate-400 block font-sans font-semibold mb-1">
+                    Assigned Client ID
+                  </span>
                   <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-slate-200 select-all">
                     {activeInst?.clientId}
                   </div>
@@ -285,7 +335,8 @@ export const InstitutionHubPage: React.FC = () => {
                 <span>🚀</span> Interactive LTI 1.3 Launch Simulator
               </h3>
               <p className="text-xs text-slate-400">
-                Simulate an incoming OIDC launch from {activeInst?.name}. Tests claim parsing, nonce replay protection, role provisioning, and session establishment.
+                Simulate an incoming OIDC launch from {activeInst?.name}. Tests claim parsing, nonce
+                replay protection, role provisioning, and session establishment.
               </p>
 
               <form onSubmit={handleSimulateLaunch} className="space-y-4">
@@ -303,7 +354,9 @@ export const InstitutionHubPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1">Candidate Name</label>
+                    <label className="text-xs font-semibold text-slate-300 block mb-1">
+                      Candidate Name
+                    </label>
                     <input
                       type="text"
                       value={simName}
@@ -314,7 +367,9 @@ export const InstitutionHubPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Institutional Email</label>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">
+                    Institutional Email
+                  </label>
                   <input
                     type="email"
                     value={simEmail}
@@ -328,7 +383,9 @@ export const InstitutionHubPage: React.FC = () => {
                   disabled={isSimulating}
                   className="w-full bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-bold py-2.5 rounded-lg text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
                 >
-                  {isSimulating ? 'Establishing Secure Handshake...' : 'Simulate Incoming LTI 1.3 Launch'}
+                  {isSimulating
+                    ? 'Establishing Secure Handshake...'
+                    : 'Simulate Incoming LTI 1.3 Launch'}
                 </button>
               </form>
 
@@ -343,14 +400,32 @@ export const InstitutionHubPage: React.FC = () => {
                 <div className="mt-4 p-4 rounded-xl bg-slate-950 border border-emerald-500/40 text-xs space-y-2 animate-fadeIn">
                   <div className="flex items-center justify-between text-emerald-400 font-bold">
                     <span>✅ LTI Session Established</span>
-                    <span className="font-mono text-[10px] text-slate-400">ID: {simSession.sessionId}</span>
+                    <span className="font-mono text-[10px] text-slate-400">
+                      ID: {simSession.sessionId}
+                    </span>
                   </div>
                   <div className="text-slate-300 space-y-1">
-                    <div><strong>User:</strong> {simSession.name} ({simSession.email})</div>
-                    <div><strong>Role:</strong> {simSession.isInstructor ? '👨‍🏫 Faculty / Instructor' : '👨‍🎓 Student / Examinee'}</div>
-                    <div><strong>Context:</strong> {simSession.contextTitle} ({simSession.contextId})</div>
-                    <div><strong>Resource Link:</strong> {simSession.resourceLinkTitle}</div>
-                    <div><strong>Session Token:</strong> <code className="text-cyan-400 break-all">{simSession.token.slice(0, 32)}...</code></div>
+                    <div>
+                      <strong>User:</strong> {simSession.name} ({simSession.email})
+                    </div>
+                    <div>
+                      <strong>Role:</strong>{' '}
+                      {simSession.isInstructor
+                        ? '👨‍🏫 Faculty / Instructor'
+                        : '👨‍🎓 Student / Examinee'}
+                    </div>
+                    <div>
+                      <strong>Context:</strong> {simSession.contextTitle} ({simSession.contextId})
+                    </div>
+                    <div>
+                      <strong>Resource Link:</strong> {simSession.resourceLinkTitle}
+                    </div>
+                    <div>
+                      <strong>Session Token:</strong>{' '}
+                      <code className="text-cyan-400 break-all">
+                        {simSession.token.slice(0, 32)}...
+                      </code>
+                    </div>
                   </div>
                 </div>
               )}
@@ -363,25 +438,35 @@ export const InstitutionHubPage: React.FC = () => {
           <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-6">
             <div>
               <h3 className="text-lg font-bold text-white">Institutional Cohort Performance</h3>
-              <p className="text-xs text-slate-400">Top-performing competitive exams and CBT benchmarks for this tenant.</p>
+              <p className="text-xs text-slate-400">
+                Top-performing competitive exams and CBT benchmarks for this tenant.
+              </p>
             </div>
 
             <div className="space-y-4">
               {analytics.topExams.map(exam => (
-                <div key={exam.examId} className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div
+                  key={exam.examId}
+                  className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                >
                   <div>
                     <h4 className="font-bold text-white text-sm">{exam.examTitle}</h4>
-                    <span className="text-xs text-slate-400">ID: <code className="text-cyan-400">{exam.examId}</code> &bull; Total Attempts: <strong>{exam.attempts}</strong></span>
+                    <span className="text-xs text-slate-400">
+                      ID: <code className="text-cyan-400">{exam.examId}</code> &bull; Total
+                      Attempts: <strong>{exam.attempts}</strong>
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-4">
                     <div className="w-36 bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                      <div 
-                        className="bg-emerald-400 h-2.5 rounded-full" 
+                      <div
+                        className="bg-emerald-400 h-2.5 rounded-full"
                         style={{ width: `${exam.avgScore}%` }}
                       />
                     </div>
-                    <span className="text-sm font-bold text-emerald-400 min-w-[50px] text-right">{exam.avgScore}%</span>
+                    <span className="text-sm font-bold text-emerald-400 min-w-[50px] text-right">
+                      {exam.avgScore}%
+                    </span>
                   </div>
                 </div>
               ))}
@@ -394,8 +479,13 @@ export const InstitutionHubPage: React.FC = () => {
           <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
-                <h3 className="text-lg font-bold text-white">Assignment & Grade Services (AGS) Passback Telemetry</h3>
-                <p className="text-xs text-slate-400">Cryptographically signed server-to-server scores synchronized back to LMS Gradebook.</p>
+                <h3 className="text-lg font-bold text-white">
+                  Assignment & Grade Services (AGS) Passback Telemetry
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Cryptographically signed server-to-server scores synchronized back to LMS
+                  Gradebook.
+                </p>
               </div>
 
               {/* Trigger Manual Test Passback */}
@@ -423,7 +513,9 @@ export const InstitutionHubPage: React.FC = () => {
               <div className="p-4 bg-emerald-950/40 border border-emerald-500/50 rounded-xl text-xs space-y-1">
                 <span className="font-bold text-emerald-400">✅ Score Synchronized to LMS!</span>
                 <div className="text-slate-300">
-                  Transaction: <code className="text-cyan-400">{passbackStatus.transactionId}</code> &bull; Normalized: <strong>{(passbackStatus.normalizedScore * 100).toFixed(1)}%</strong>
+                  Transaction: <code className="text-cyan-400">{passbackStatus.transactionId}</code>{' '}
+                  &bull; Normalized:{' '}
+                  <strong>{(passbackStatus.normalizedScore * 100).toFixed(1)}%</strong>
                 </div>
                 <div className="text-slate-400 font-mono text-[10px]">
                   Proof Digest: {passbackStatus.proofDigest}
@@ -449,9 +541,15 @@ export const InstitutionHubPage: React.FC = () => {
                     <tr key={pb.transactionId} className="hover:bg-slate-800/40 transition-colors">
                       <td className="p-3 text-cyan-400">{pb.transactionId}</td>
                       <td className="p-3 text-slate-200">{pb.studentLtiUserId}</td>
-                      <td className="p-3 font-bold text-white">{pb.scoreGiven} / {pb.scoreMaximum}</td>
-                      <td className="p-3 text-emerald-400 font-bold">{(pb.normalizedScore * 100).toFixed(1)}%</td>
-                      <td className="p-3 text-slate-400 text-[10px] truncate max-w-[150px]">{pb.proofDigest}</td>
+                      <td className="p-3 font-bold text-white">
+                        {pb.scoreGiven} / {pb.scoreMaximum}
+                      </td>
+                      <td className="p-3 text-emerald-400 font-bold">
+                        {(pb.normalizedScore * 100).toFixed(1)}%
+                      </td>
+                      <td className="p-3 text-slate-400 text-[10px] truncate max-w-[150px]">
+                        {pb.proofDigest}
+                      </td>
                       <td className="p-3 text-slate-400 text-[10px] font-sans">
                         {new Date(pb.timestamp).toLocaleTimeString()}
                       </td>
@@ -462,7 +560,6 @@ export const InstitutionHubPage: React.FC = () => {
             </div>
           </div>
         )}
-
       </div>
     </div>
   )

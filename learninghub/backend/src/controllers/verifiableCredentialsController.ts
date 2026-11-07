@@ -76,7 +76,11 @@ export const verifyCredential = asyncHandler(async (req: Request, res: Response)
   }
 
   const result = await verifiableCredentialService.verifyCredential(target)
-  sendSuccess(res, result, result.valid ? 'Credential verified' : 'Verification completed with warnings')
+  sendSuccess(
+    res,
+    result,
+    result.valid ? 'Credential verified' : 'Verification completed with warnings'
+  )
 })
 
 export const getMyCredentials = asyncHandler(async (req: Request, res: Response) => {

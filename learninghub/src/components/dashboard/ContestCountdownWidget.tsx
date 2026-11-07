@@ -30,9 +30,7 @@ export function ContestCountdownWidget({
 
   useEffect(() => {
     // If targetDate not provided, lock to a stable 36h from first mount
-    const target = targetDate
-      ? new Date(targetDate).getTime()
-      : Date.now() + 1000 * 60 * 60 * 36
+    const target = targetDate ? new Date(targetDate).getTime() : Date.now() + 1000 * 60 * 60 * 36
 
     const update = () => {
       const diff = Math.max(0, target - Date.now())

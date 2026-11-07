@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { ProctoringSummaryReport } from '../../types/proctoring'
 import { proctoringService } from '../../services/proctoringService'
-import {
-  ShieldCheck,
-  ShieldAlert,
-  X,
-  FileCheck,
-  Fingerprint,
-} from 'lucide-react'
+import { ShieldCheck, ShieldAlert, X, FileCheck, Fingerprint } from 'lucide-react'
 
 interface ProctoringReportModalProps {
   sessionId: string
@@ -71,8 +65,8 @@ export const ProctoringReportModal: React.FC<ProctoringReportModalProps> = ({
                 report.verdict === 'VERIFIED_CLEAN'
                   ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
                   : report.verdict === 'FLAGGED_FOR_MANUAL_REVIEW'
-                  ? 'bg-amber-500/10 border-amber-500/20 text-amber-300'
-                  : 'bg-rose-500/10 border-rose-500/20 text-rose-300'
+                    ? 'bg-amber-500/10 border-amber-500/20 text-amber-300'
+                    : 'bg-rose-500/10 border-rose-500/20 text-rose-300'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -100,7 +94,9 @@ export const ProctoringReportModal: React.FC<ProctoringReportModalProps> = ({
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                 <div className="text-xs text-slate-400">Duration</div>
-                <div className="text-base font-bold text-white mt-0.5">{report.durationMinutes}m</div>
+                <div className="text-base font-bold text-white mt-0.5">
+                  {report.durationMinutes}m
+                </div>
               </div>
               <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                 <div className="text-xs text-slate-400">Gaze Compliance</div>

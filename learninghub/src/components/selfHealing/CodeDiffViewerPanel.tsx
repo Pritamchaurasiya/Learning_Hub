@@ -1,14 +1,6 @@
 import React, { useState } from 'react'
 import { SelfHealingPatch } from '../../types/selfHealing'
-import {
-  Code,
-  Copy,
-  Check,
-  FileCheck,
-  Split,
-  Eye,
-  Wand2,
-} from 'lucide-react'
+import { Code, Copy, Check, FileCheck, Split, Eye, Wand2 } from 'lucide-react'
 
 interface CodeDiffViewerPanelProps {
   fileName: string
@@ -45,7 +37,9 @@ export const CodeDiffViewerPanel: React.FC<CodeDiffViewerPanelProps> = ({
                 {fileName}
               </span>
             </h4>
-            <p className="text-xs text-slate-400">Deterministic code remediation with verified invariant preservation.</p>
+            <p className="text-xs text-slate-400">
+              Deterministic code remediation with verified invariant preservation.
+            </p>
           </div>
         </div>
 
@@ -56,7 +50,9 @@ export const CodeDiffViewerPanel: React.FC<CodeDiffViewerPanelProps> = ({
               type="button"
               onClick={() => setViewMode('split')}
               className={`px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 ${
-                viewMode === 'split' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                viewMode === 'split'
+                  ? 'bg-emerald-600 text-white'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <Split className="w-3.5 h-3.5" />
@@ -66,7 +62,9 @@ export const CodeDiffViewerPanel: React.FC<CodeDiffViewerPanelProps> = ({
               type="button"
               onClick={() => setViewMode('patched')}
               className={`px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 ${
-                viewMode === 'patched' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                viewMode === 'patched'
+                  ? 'bg-emerald-600 text-white'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <Eye className="w-3.5 h-3.5" />
@@ -76,7 +74,9 @@ export const CodeDiffViewerPanel: React.FC<CodeDiffViewerPanelProps> = ({
               type="button"
               onClick={() => setViewMode('diff')}
               className={`px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 ${
-                viewMode === 'diff' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                viewMode === 'diff'
+                  ? 'bg-emerald-600 text-white'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <FileCheck className="w-3.5 h-3.5" />
@@ -90,7 +90,11 @@ export const CodeDiffViewerPanel: React.FC<CodeDiffViewerPanelProps> = ({
             className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
             title="Copy patched code to clipboard"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? (
+              <Check className="w-3.5 h-3.5 text-emerald-400" />
+            ) : (
+              <Copy className="w-3.5 h-3.5" />
+            )}
             <span>{copied ? 'Copied' : 'Copy'}</span>
           </button>
         </div>

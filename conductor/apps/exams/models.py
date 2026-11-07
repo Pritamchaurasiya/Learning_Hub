@@ -217,6 +217,11 @@ class PYQ(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.SET_NULL, null=True, blank=True, related_name='pyqs')
     year = models.IntegerField(db_index=True)
     paper_number = models.CharField(max_length=50, blank=True)
+    shift = models.CharField(max_length=50, blank=True, default='', help_text="e.g. Shift 1, Morning")
+    exam_date = models.DateField(null=True, blank=True, help_text="Actual examination date")
+    paper_code = models.CharField(max_length=50, blank=True, default='', help_text="e.g. Paper 1, Code A")
+    source_metadata = models.JSONField(default=dict, blank=True, help_text="Verified source metadata, conducting body, answer key hash")
+    is_verified = models.BooleanField(default=True)
     question_text = models.TextField()
     solution_text = models.TextField(blank=True)
     difficulty = models.CharField(max_length=20, default='MEDIUM')
@@ -230,6 +235,7 @@ class PYQ(models.Model):
         indexes = [
             models.Index(fields=['exam', 'year']),
             models.Index(fields=['subject', 'year']),
+            models.Index(fields=['exam', 'year', 'shift']),
         ]
 
     def __str__(self):

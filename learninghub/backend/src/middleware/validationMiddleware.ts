@@ -58,10 +58,7 @@ export const validate =
         }))
         return sendValidationError(res, 'Validation failed', 'VALIDATION_ERROR', details)
       }
-      logger.error(
-        '[Validation Error]',
-        error instanceof Error ? error : new Error(String(error))
-      )
+      logger.error('[Validation Error]', error instanceof Error ? error : new Error(String(error)))
       return sendInternalError(res, 'Internal server error during validation')
     }
   }

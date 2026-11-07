@@ -15,8 +15,8 @@ export function PublicFooter() {
           </Link>
           <p className="text-xs sm:text-sm text-slate-400 max-w-sm leading-relaxed">
             The dual-track practice platform for Competitive STEM Entrance (JEE/NEET/BITSAT) and
-            Software Engineering Mastery. 100,000+ chapter-wise PYQs, sub-15ms browser AST execution,
-            and verified proofs audited by senior faculty.
+            Software Engineering Mastery. 100,000+ chapter-wise PYQs, sub-15ms browser AST
+            execution, and verified proofs audited by senior faculty.
           </p>
           <div className="flex flex-wrap items-center gap-3 pt-2 text-xs">
             <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
@@ -48,7 +48,10 @@ export function PublicFooter() {
               </Link>
             </li>
             <li>
-              <Link to="/library?search=JEE%20Advanced" className="hover:text-white transition-colors">
+              <Link
+                to="/library?search=JEE%20Advanced"
+                className="hover:text-white transition-colors"
+              >
                 JEE Advanced Multi-Correct
               </Link>
             </li>
@@ -142,7 +145,8 @@ export function PublicFooter() {
       {/* Bottom Bar */}
       <div className="max-w-7xl mx-auto pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
         <p>
-          © {currentYear} LearningHub Academic & Systems Engineering Foundation. All rights reserved.
+          © {currentYear} LearningHub Academic & Systems Engineering Foundation. All rights
+          reserved.
         </p>
         <p className="flex items-center gap-1.5">
           Crafted with{' '}

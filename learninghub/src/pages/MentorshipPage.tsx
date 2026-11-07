@@ -86,9 +86,7 @@ const MOCK_MENTORS_FALLBACK: Mentor[] = [
     rating: 4.99,
     total_reviews: 215,
     is_available: true,
-    availability: [
-      { day: 'Daily', start_time: '16:00', end_time: '20:00' },
-    ],
+    availability: [{ day: 'Daily', start_time: '16:00', end_time: '20:00' }],
     created_at: new Date().toISOString(),
   },
   {
@@ -105,9 +103,7 @@ const MOCK_MENTORS_FALLBACK: Mentor[] = [
     rating: 4.92,
     total_reviews: 73,
     is_available: false,
-    availability: [
-      { day: 'Friday', start_time: '14:00', end_time: '18:00' },
-    ],
+    availability: [{ day: 'Friday', start_time: '14:00', end_time: '18:00' }],
     created_at: new Date().toISOString(),
   },
 ]
@@ -165,8 +161,7 @@ export default function MentorshipPage() {
       m.expertise.some(e => e.toLowerCase().includes(searchQuery.toLowerCase()))
 
     const matchesTag =
-      selectedTag === 'All' ||
-      m.expertise.some(e => e.toLowerCase() === selectedTag.toLowerCase())
+      selectedTag === 'All' || m.expertise.some(e => e.toLowerCase() === selectedTag.toLowerCase())
 
     return matchesSearch && matchesTag
   })
@@ -339,7 +334,10 @@ export default function MentorshipPage() {
                     <div className="flex items-start gap-4">
                       <div className="relative">
                         <img
-                          src={mentor.user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${mentor.id}`}
+                          src={
+                            mentor.user.avatar ||
+                            `https://api.dicebear.com/7.x/bottts/svg?seed=${mentor.id}`
+                          }
                           alt={mentor.user.display_name}
                           className="w-16 h-16 rounded-2xl object-cover ring-2 ring-primary-500/20"
                         />
@@ -450,7 +448,10 @@ export default function MentorshipPage() {
                 >
                   <div className="flex items-start gap-4">
                     <img
-                      src={sess.mentor.user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${sess.mentor.id}`}
+                      src={
+                        sess.mentor.user.avatar ||
+                        `https://api.dicebear.com/7.x/bottts/svg?seed=${sess.mentor.id}`
+                      }
                       alt={sess.mentor.user.display_name}
                       className="w-12 h-12 rounded-2xl object-cover ring-2 ring-primary-500/20"
                     />
@@ -539,7 +540,10 @@ export default function MentorshipPage() {
 
             <div className="flex items-center gap-4">
               <img
-                src={bookingMentor.user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${bookingMentor.id}`}
+                src={
+                  bookingMentor.user.avatar ||
+                  `https://api.dicebear.com/7.x/bottts/svg?seed=${bookingMentor.id}`
+                }
                 alt={bookingMentor.user.display_name}
                 className="w-14 h-14 rounded-2xl object-cover ring-2 ring-primary-500/20"
               />
@@ -548,7 +552,8 @@ export default function MentorshipPage() {
                   Book 1-on-1 with {bookingMentor.user.display_name}
                 </h3>
                 <p className="text-xs text-gray-500">
-                  Rate: ${bookingMentor.hourly_rate}/hr • Rating: {bookingMentor.rating.toFixed(2)} ★
+                  Rate: ${bookingMentor.hourly_rate}/hr • Rating: {bookingMentor.rating.toFixed(2)}{' '}
+                  ★
                 </p>
               </div>
             </div>

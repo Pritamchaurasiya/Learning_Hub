@@ -1,14 +1,6 @@
 import React from 'react'
 import { VisionTelemetryFrame } from '../../types/multimodal'
-import {
-  Camera,
-  Eye,
-  ShieldCheck,
-  AlertTriangle,
-  UserCheck,
-  Users,
-  UserX,
-} from 'lucide-react'
+import { Camera, Eye, ShieldCheck, AlertTriangle, UserCheck, Users, UserX } from 'lucide-react'
 
 interface VisionTelemetryHUDProps {
   telemetry: VisionTelemetryFrame | null
@@ -38,7 +30,9 @@ export const VisionTelemetryHUD: React.FC<VisionTelemetryHUDProps> = ({
           </div>
           <div>
             <h3 className="text-sm font-bold text-white">Vision AI Telemetry & Gaze HUD</h3>
-            <p className="text-[11px] text-slate-400">Head posture, eye tracking & presence verification</p>
+            <p className="text-[11px] text-slate-400">
+              Head posture, eye tracking & presence verification
+            </p>
           </div>
         </div>
 
@@ -51,7 +45,9 @@ export const VisionTelemetryHUD: React.FC<VisionTelemetryHUDProps> = ({
               : 'bg-slate-800 text-slate-400 hover:text-slate-200'
           }`}
         >
-          <div className={`w-2 h-2 rounded-full ${isCameraActive ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
+          <div
+            className={`w-2 h-2 rounded-full ${isCameraActive ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`}
+          />
           {isCameraActive ? 'Live Camera Feed' : 'Camera Paused'}
         </button>
       </div>
@@ -78,7 +74,9 @@ export const VisionTelemetryHUD: React.FC<VisionTelemetryHUDProps> = ({
             }, ${gaze === 'LOOKING_DOWN' ? '30px' : gaze === 'LOOKING_AWAY' ? '-30px' : '0px'})`,
           }}
         >
-          <div className={`w-1.5 h-1.5 rounded-full ${isFlagged ? 'bg-rose-400' : 'bg-emerald-400'}`} />
+          <div
+            className={`w-1.5 h-1.5 rounded-full ${isFlagged ? 'bg-rose-400' : 'bg-emerald-400'}`}
+          />
         </div>
 
         {/* HUD Overlay Badges */}
@@ -120,8 +118,8 @@ export const VisionTelemetryHUD: React.FC<VisionTelemetryHUDProps> = ({
                 attentiveness >= 85
                   ? 'text-emerald-400'
                   : attentiveness >= 60
-                  ? 'text-amber-400'
-                  : 'text-rose-400'
+                    ? 'text-amber-400'
+                    : 'text-rose-400'
               }`}
             >
               {attentiveness}%
@@ -134,8 +132,8 @@ export const VisionTelemetryHUD: React.FC<VisionTelemetryHUDProps> = ({
                 attentiveness >= 85
                   ? 'bg-emerald-400'
                   : attentiveness >= 60
-                  ? 'bg-amber-400'
-                  : 'bg-rose-400'
+                    ? 'bg-amber-400'
+                    : 'bg-rose-400'
               }`}
               style={{ width: `${attentiveness}%` }}
             />

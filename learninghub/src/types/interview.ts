@@ -26,7 +26,8 @@ export interface InterviewMessage {
   text: string
   timestamp: string
   codeSnippet?: string
-  suggestedAction?: 'ask_clarification' | 'sketch_approach' | 'write_code' | 'test_edge_cases' | 'submit_solution'
+  suggestedAction?:
+    'ask_clarification' | 'sketch_approach' | 'write_code' | 'test_edge_cases' | 'submit_solution'
 }
 
 export interface ProgressiveHint {
@@ -38,7 +39,12 @@ export interface ProgressiveHint {
 
 export interface RubricFactorScore {
   name: string
-  factor: 'PROBLEM_SOLVING' | 'ALGORITHMIC_EFFICIENCY' | 'TECHNICAL_COMMUNICATION' | 'CODE_QUALITY' | 'SYSTEM_SCALABILITY'
+  factor:
+    | 'PROBLEM_SOLVING'
+    | 'ALGORITHMIC_EFFICIENCY'
+    | 'TECHNICAL_COMMUNICATION'
+    | 'CODE_QUALITY'
+    | 'SYSTEM_SCALABILITY'
   score: number
   weight: number
   feedback: string

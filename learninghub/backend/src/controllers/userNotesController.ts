@@ -23,7 +23,8 @@ export const getNote = asyncHandler(async (req: Request, res: Response) => {
 
 export const createNote = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.userId
-  const { title, content, sourceType, sourceTitle, courseId, lessonId, timestampSeconds, tags } = req.body
+  const { title, content, sourceType, sourceTitle, courseId, lessonId, timestampSeconds, tags } =
+    req.body
   if (!title || !content) {
     sendValidationError(res, 'title and content are required')
     return

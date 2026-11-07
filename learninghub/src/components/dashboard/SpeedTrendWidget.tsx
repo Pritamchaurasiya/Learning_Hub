@@ -46,12 +46,8 @@ export function SpeedTrendWidget({ data }: Props) {
             <Zap className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-bold text-xs text-gray-900 dark:text-white">
-              Solving Speed
-            </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Avg seconds per question
-            </p>
+            <h3 className="font-bold text-xs text-gray-900 dark:text-white">Solving Speed</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Avg seconds per question</p>
           </div>
         </div>
         {improvement && (
@@ -107,7 +103,7 @@ export function SpeedTrendWidget({ data }: Props) {
                 color: '#fff',
                 fontSize: '11px',
               }}
-              formatter={(((val: any) => [`${val}s`, 'Avg Time']) as any)}
+              formatter={((val: any) => [`${val}s`, 'Avg Time']) as any}
             />
             <Area
               type="monotone"

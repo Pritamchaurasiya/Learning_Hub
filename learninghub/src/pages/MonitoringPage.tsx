@@ -356,13 +356,16 @@ export default function MonitoringPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
                   {processes?.map(
-                    (proc: {
-                      pid?: number | string
-                      name: string
-                      cpu_percent?: number
-                      memory_percent?: number
-                      status: string
-                    }, pIndex: number) => (
+                    (
+                      proc: {
+                        pid?: number | string
+                        name: string
+                        cpu_percent?: number
+                        memory_percent?: number
+                        status: string
+                      },
+                      pIndex: number
+                    ) => (
                       <tr
                         key={proc.pid ?? `proc-${pIndex}-${proc.name}`}
                         className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"

@@ -11,14 +11,7 @@ import { careerService } from '../services/careerService'
 import { JobMatchingGridCard } from '../components/career/JobMatchingGridCard'
 import { RecruiterSimulationPanel } from '../components/career/RecruiterSimulationPanel'
 import { CompensationNegotiatorModal } from '../components/career/CompensationNegotiatorModal'
-import {
-  Sparkles,
-  Shield,
-  Search,
-  Zap,
-  TrendingUp,
-  Award,
-} from 'lucide-react'
+import { Sparkles, Shield, Search, Zap, TrendingUp, Award } from 'lucide-react'
 
 export const CareerOrchestratorPage: React.FC = () => {
   const [jobs, setJobs] = useState<SimulatedJobListing[]>([])
@@ -150,8 +143,9 @@ export const CareerOrchestratorPage: React.FC = () => {
             Autonomous Job Matching & Recruiter Simulation Grid
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
-            Simulate end-to-end frontier engineering hiring pipelines. Matches your verified Arena Elo,
-            BKT concept masteries, and AI interview percentiles against market roles with live multi-agent salary negotiation.
+            Simulate end-to-end frontier engineering hiring pipelines. Matches your verified Arena
+            Elo, BKT concept masteries, and AI interview percentiles against market roles with live
+            multi-agent salary negotiation.
           </p>
         </div>
 
@@ -162,7 +156,9 @@ export const CareerOrchestratorPage: React.FC = () => {
               <Shield className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-[10px] uppercase font-mono text-slate-500">Simulation Digest Seal</div>
+              <div className="text-[10px] uppercase font-mono text-slate-500">
+                Simulation Digest Seal
+              </div>
               <div className="font-mono text-emerald-400 text-xs truncate max-w-[180px]">
                 {simulationDigest.slice(0, 16)}...
               </div>
@@ -220,25 +216,33 @@ export const CareerOrchestratorPage: React.FC = () => {
           <div className="text-[10px] uppercase font-mono text-slate-500 flex items-center gap-1">
             <Zap className="w-3 h-3 text-amber-400" /> Arena Verified Elo
           </div>
-          <div className="text-lg font-black text-amber-400 font-mono mt-0.5">2,100 <span className="text-[10px] font-sans text-slate-400">GM</span></div>
+          <div className="text-lg font-black text-amber-400 font-mono mt-0.5">
+            2,100 <span className="text-[10px] font-sans text-slate-400">GM</span>
+          </div>
         </div>
         <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
           <div className="text-[10px] uppercase font-mono text-slate-500 flex items-center gap-1">
             <TrendingUp className="w-3 h-3 text-emerald-400" /> BKT Mastery Rate
           </div>
-          <div className="text-lg font-black text-emerald-400 font-mono mt-0.5">94.6% <span className="text-[10px] font-sans text-slate-400">Top 2%</span></div>
+          <div className="text-lg font-black text-emerald-400 font-mono mt-0.5">
+            94.6% <span className="text-[10px] font-sans text-slate-400">Top 2%</span>
+          </div>
         </div>
         <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
           <div className="text-[10px] uppercase font-mono text-slate-500 flex items-center gap-1">
             <Award className="w-3 h-3 text-cyan-400" /> Offer Velocity
           </div>
-          <div className="text-lg font-black text-cyan-400 font-mono mt-0.5">3.8x <span className="text-[10px] font-sans text-slate-400">vs Market</span></div>
+          <div className="text-lg font-black text-cyan-400 font-mono mt-0.5">
+            3.8x <span className="text-[10px] font-sans text-slate-400">vs Market</span>
+          </div>
         </div>
         <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
           <div className="text-[10px] uppercase font-mono text-slate-500 flex items-center gap-1">
             <Sparkles className="w-3 h-3 text-purple-400" /> Upside Potential
           </div>
-          <div className="text-lg font-black text-purple-400 font-mono mt-0.5">+$45,000 <span className="text-[10px] font-sans text-slate-400">Negotiable</span></div>
+          <div className="text-lg font-black text-purple-400 font-mono mt-0.5">
+            +$45,000 <span className="text-[10px] font-sans text-slate-400">Negotiable</span>
+          </div>
         </div>
       </div>
 

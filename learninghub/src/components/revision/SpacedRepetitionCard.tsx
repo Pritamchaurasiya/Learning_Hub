@@ -1,14 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  RotateCw,
-  Sparkles,
-  Brain,
-  AlertCircle,
-  Bookmark,
-  Clock,
-  Zap,
-} from 'lucide-react'
+import { RotateCw, Sparkles, Brain, AlertCircle, Bookmark, Clock, Zap } from 'lucide-react'
 import type { SpacedCard, ReviewGrade } from '../../types/revision'
 import { revisionService } from '../../services/revisionService'
 import { MathRenderer } from '../MathRenderer'
@@ -52,7 +44,8 @@ export const SpacedRepetitionCard: React.FC<SpacedRepetitionCardProps> = ({
       } else if (isFlipped && !isSubmitting) {
         if (e.key === '1') onReview(1)
         else if (e.key === '2') onReview(2)
-        else if (e.key === '3') onReview(4) // Good
+        else if (e.key === '3')
+          onReview(4) // Good
         else if (e.key === '4') onReview(5) // Easy
       }
     }
@@ -147,7 +140,9 @@ export const SpacedRepetitionCard: React.FC<SpacedRepetitionCardProps> = ({
             <div className="flex items-center justify-between text-xs text-gray-400 pt-4 border-t border-gray-100 dark:border-gray-800/60">
               <div className="flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-indigo-500" />
-                <span>Interval: {card.interval_days}d · Reps: {card.repetitions}</span>
+                <span>
+                  Interval: {card.interval_days}d · Reps: {card.repetitions}
+                </span>
               </div>
               <div className="flex items-center gap-1 text-indigo-500 font-bold group-hover:underline">
                 <RotateCw className="w-3.5 h-3.5" />

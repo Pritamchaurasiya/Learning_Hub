@@ -21,7 +21,8 @@ export const VisualMemoryHeapGraph: React.FC<VisualMemoryHeapGraphProps> = ({
           Memory Heap & Pointers
         </h4>
         <p className="text-xs text-slate-500">
-          No dynamic heap objects allocated in this execution frame. Primitives reside in stack memory.
+          No dynamic heap objects allocated in this execution frame. Primitives reside in stack
+          memory.
         </p>
       </div>
     )
@@ -39,7 +40,8 @@ export const VisualMemoryHeapGraph: React.FC<VisualMemoryHeapGraphProps> = ({
         <div className="flex items-center gap-2">
           {Object.keys(activeVariables || {}).length > 0 && (
             <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/40 px-2.5 py-0.5 rounded-full border border-cyan-800/50">
-              {Object.keys(activeVariables).length} Stack Var{Object.keys(activeVariables).length > 1 ? 's' : ''}
+              {Object.keys(activeVariables).length} Stack Var
+              {Object.keys(activeVariables).length > 1 ? 's' : ''}
             </span>
           )}
           <span className="text-[10px] font-mono text-slate-400 bg-slate-950 px-2.5 py-0.5 rounded-full border border-slate-800">
@@ -104,9 +106,7 @@ export const VisualMemoryHeapGraph: React.FC<VisualMemoryHeapGraphProps> = ({
                           </div>
 
                           {/* Index Label Below */}
-                          <span className="text-[10px] font-mono text-slate-500 mt-1">
-                            [{idx}]
-                          </span>
+                          <span className="text-[10px] font-mono text-slate-500 mt-1">[{idx}]</span>
                         </div>
                       )
                     })}
@@ -118,7 +118,10 @@ export const VisualMemoryHeapGraph: React.FC<VisualMemoryHeapGraphProps> = ({
 
           if (obj.type === 'linked_list_node') {
             return (
-              <div key={key} className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center gap-3">
+              <div
+                key={key}
+                className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center gap-3"
+              >
                 <div className="px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 font-mono text-xs font-bold">
                   Node [{obj.id}]
                 </div>
@@ -127,14 +130,18 @@ export const VisualMemoryHeapGraph: React.FC<VisualMemoryHeapGraphProps> = ({
                 </div>
                 <ArrowRight className="w-3.5 h-3.5 text-slate-600" />
                 <div className="text-xs text-slate-400">
-                  Next: <span className="font-mono text-amber-400">{obj.pointers?.next || 'null'}</span>
+                  Next:{' '}
+                  <span className="font-mono text-amber-400">{obj.pointers?.next || 'null'}</span>
                 </div>
               </div>
             )
           }
 
           return (
-            <div key={key} className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono">
+            <div
+              key={key}
+              className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono"
+            >
               <span className="text-slate-400 font-bold">{key}:</span> {JSON.stringify(obj.value)}
             </div>
           )

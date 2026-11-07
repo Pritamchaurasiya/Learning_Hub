@@ -29,7 +29,8 @@ export const ComplexityBenchmarkHUD: React.FC<ComplexityBenchmarkHUDProps> = ({
             Empirical Complexity & Asymptotic Profiler
           </h2>
           <p className="text-sm text-slate-400 mt-1">
-            Execute algorithms across multi-scale input sets to empirically deduce asymptotic Big-O growth curves and bottlenecks.
+            Execute algorithms across multi-scale input sets to empirically deduce asymptotic Big-O
+            growth curves and bottlenecks.
           </p>
         </div>
 
@@ -139,7 +140,9 @@ export const ComplexityBenchmarkHUD: React.FC<ComplexityBenchmarkHUDProps> = ({
               N = {Math.max(...result.empiricalData.map(d => d.n)).toLocaleString()}
             </div>
             <div className="text-[11px] text-slate-400 mt-0.5">
-              Total runtime: {result.empiricalData.reduce((acc, d) => acc + d.executionTimeMicros, 0).toFixed(1)} μs
+              Total runtime:{' '}
+              {result.empiricalData.reduce((acc, d) => acc + d.executionTimeMicros, 0).toFixed(1)}{' '}
+              μs
             </div>
           </div>
         </div>

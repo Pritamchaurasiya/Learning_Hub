@@ -42,7 +42,8 @@ const CURATED_EXAMS: ExamItem[] = [
     id: 'exam-jee-main',
     name: 'JEE Main',
     slug: 'jee-main',
-    description: 'National Testing Agency (NTA) CBT for Engineering Admissions (NITs, IIITs, Top CFTIs)',
+    description:
+      'National Testing Agency (NTA) CBT for Engineering Admissions (NITs, IIITs, Top CFTIs)',
     category: 'engineering',
     countryCode: 'IN',
     badgeText: 'NTA CBT 2026',
@@ -56,7 +57,8 @@ const CURATED_EXAMS: ExamItem[] = [
     id: 'exam-jee-adv',
     name: 'JEE Advanced',
     slug: 'jee-advanced',
-    description: 'Premier Entrance Exam for admissions into all 23 Indian Institutes of Technology (IITs)',
+    description:
+      'Premier Entrance Exam for admissions into all 23 Indian Institutes of Technology (IITs)',
     category: 'engineering',
     countryCode: 'IN',
     badgeText: 'IIT JEE',
@@ -70,7 +72,8 @@ const CURATED_EXAMS: ExamItem[] = [
     id: 'exam-neet-ug',
     name: 'NEET-UG',
     slug: 'neet-ug',
-    description: 'National Eligibility cum Entrance Test for MBBS, BDS, and Premier Medical Admissions',
+    description:
+      'National Eligibility cum Entrance Test for MBBS, BDS, and Premier Medical Admissions',
     category: 'medical',
     countryCode: 'IN',
     badgeText: 'NTA Medical 720M',
@@ -84,7 +87,8 @@ const CURATED_EXAMS: ExamItem[] = [
     id: 'exam-bitsat',
     name: 'BITSAT',
     slug: 'bitsat',
-    description: 'Birla Institute of Technology and Science Admission Test for Pilani, Goa & Hyderabad',
+    description:
+      'Birla Institute of Technology and Science Admission Test for Pilani, Goa & Hyderabad',
     category: 'engineering',
     countryCode: 'IN',
     badgeText: 'BITS Pilani',
@@ -99,7 +103,8 @@ const CURATED_EXAMS: ExamItem[] = [
     id: 'exam-dsa-swe',
     name: 'Software Engineering & DSA',
     slug: 'dsa-software-engineering',
-    description: 'High-Impact Data Structures, Algorithms, System Design, and FAANG/MAANG Technical Interviews',
+    description:
+      'High-Impact Data Structures, Algorithms, System Design, and FAANG/MAANG Technical Interviews',
     category: 'tech',
     countryCode: 'GLOBAL',
     badgeText: 'FAANG / SDE Ready',
@@ -113,19 +118,19 @@ const CURATED_EXAMS: ExamItem[] = [
     id: 'exam-gate-cse',
     name: 'GATE Computer Science',
     slug: 'gate-cse',
-    description: 'Graduate Aptitude Test in Engineering for IIT M.Tech admissions & PSU Recruitments',
+    description:
+      'Graduate Aptitude Test in Engineering for IIT M.Tech admissions & PSU Recruitments',
     category: 'higher',
     countryCode: 'IN',
     badgeText: 'IIT M.Tech / PSU',
-    subjects: [
-      { id: 'sub-gate-cs', name: 'Computer Science & Engineering', slug: 'gate-cs-it' },
-    ],
+    subjects: [{ id: 'sub-gate-cs', name: 'Computer Science & Engineering', slug: 'gate-cs-it' }],
   },
   {
     id: 'exam-cbse-12',
     name: 'CBSE Class 12 Boards',
     slug: 'cbse-class-12',
-    description: 'Class 12th Board Examinations for Science Stream with NCERT Proofs & Numerical Solutions',
+    description:
+      'Class 12th Board Examinations for Science Stream with NCERT Proofs & Numerical Solutions',
     category: 'boards',
     countryCode: 'IN',
     badgeText: 'Class 12 Board',
@@ -197,7 +202,13 @@ export default function OnboardingWizard() {
       }, 1000)
       return () => clearTimeout(timer)
     }
-  }, [auth.isAuthenticated, auth.user?.examPreference, hasSeenOnboarding, location.pathname, isHydrated])
+  }, [
+    auth.isAuthenticated,
+    auth.user?.examPreference,
+    hasSeenOnboarding,
+    location.pathname,
+    isHydrated,
+  ])
 
   const loadBackendExams = async () => {
     try {
@@ -210,9 +221,11 @@ export default function OnboardingWizard() {
           let category = 'engineering'
           const s = (e.slug || e.name || '').toLowerCase()
           if (s.includes('neet') || s.includes('med')) category = 'medical'
-          else if (s.includes('dsa') || s.includes('software') || s.includes('swe')) category = 'tech'
+          else if (s.includes('dsa') || s.includes('software') || s.includes('swe'))
+            category = 'tech'
           else if (s.includes('gate')) category = 'higher'
-          else if (s.includes('cbse') || s.includes('board') || s.includes('school')) category = 'boards'
+          else if (s.includes('cbse') || s.includes('board') || s.includes('school'))
+            category = 'boards'
 
           return {
             id: e.id,
@@ -221,7 +234,12 @@ export default function OnboardingWizard() {
             description: e.description,
             category,
             countryCode: e.country?.code || 'IN',
-            badgeText: category === 'engineering' ? 'NTA Engineering' : category === 'medical' ? 'NTA Medical' : 'Tech SDE',
+            badgeText:
+              category === 'engineering'
+                ? 'NTA Engineering'
+                : category === 'medical'
+                  ? 'NTA Medical'
+                  : 'Tech SDE',
             subjects: e.subjects,
           }
         })
@@ -451,25 +469,39 @@ export default function OnboardingWizard() {
                     Select Your Target Exam & Goal
                   </h2>
                   <p className="text-gray-500 dark:text-gray-400 max-w-lg mx-auto text-sm sm:text-base leading-relaxed">
-                    Tell us what exam you are preparing for. We calibrate high-yield PYQs, NTA CBT mock tests, formula cheat sheets, and daily AI diagnostics specifically for your syllabus.
+                    Tell us what exam you are preparing for. We calibrate high-yield PYQs, NTA CBT
+                    mock tests, formula cheat sheets, and daily AI diagnostics specifically for your
+                    syllabus.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 max-w-xl mx-auto text-left">
                   <div className="p-4 rounded-2xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-800">
                     <span className="text-xl">🎯</span>
-                    <h4 className="font-bold text-xs text-gray-900 dark:text-white mt-1">Verified PYQs</h4>
-                    <p className="text-[11px] text-gray-500">Official past papers with faculty proof steps</p>
+                    <h4 className="font-bold text-xs text-gray-900 dark:text-white mt-1">
+                      Verified PYQs
+                    </h4>
+                    <p className="text-[11px] text-gray-500">
+                      Official past papers with faculty proof steps
+                    </p>
                   </div>
                   <div className="p-4 rounded-2xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-800">
                     <span className="text-xl">⚡</span>
-                    <h4 className="font-bold text-xs text-gray-900 dark:text-white mt-1">CBT Mock Tests</h4>
-                    <p className="text-[11px] text-gray-500">Real exam interface with percentile analytics</p>
+                    <h4 className="font-bold text-xs text-gray-900 dark:text-white mt-1">
+                      CBT Mock Tests
+                    </h4>
+                    <p className="text-[11px] text-gray-500">
+                      Real exam interface with percentile analytics
+                    </p>
                   </div>
                   <div className="p-4 rounded-2xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-800">
                     <span className="text-xl">📖</span>
-                    <h4 className="font-bold text-xs text-gray-900 dark:text-white mt-1">Formula Vault</h4>
-                    <p className="text-[11px] text-gray-500">One-page high-weightage cheat sheets & maps</p>
+                    <h4 className="font-bold text-xs text-gray-900 dark:text-white mt-1">
+                      Formula Vault
+                    </h4>
+                    <p className="text-[11px] text-gray-500">
+                      One-page high-weightage cheat sheets & maps
+                    </p>
                   </div>
                 </div>
               </div>
@@ -484,7 +516,8 @@ export default function OnboardingWizard() {
                     <span>Choose Your Target Examination</span>
                   </h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Select your primary competitive exam to personalize courses, tests, and recommendations.
+                    Select your primary competitive exam to personalize courses, tests, and
+                    recommendations.
                   </p>
                 </div>
 
@@ -547,7 +580,8 @@ export default function OnboardingWizard() {
                             {exam.name}
                           </h4>
                           <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
-                            {exam.description || 'Practice tests, verified PYQs, and topic mastery engine.'}
+                            {exam.description ||
+                              'Practice tests, verified PYQs, and topic mastery engine.'}
                           </p>
                         </div>
 
@@ -579,7 +613,8 @@ export default function OnboardingWizard() {
                     <span>Calibrate Your Target & Batch</span>
                   </h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Personalizing roadmap for <strong className="text-primary-500">{selectedExamObj.name}</strong>.
+                    Personalizing roadmap for{' '}
+                    <strong className="text-primary-500">{selectedExamObj.name}</strong>.
                   </p>
                 </div>
 
@@ -605,7 +640,9 @@ export default function OnboardingWizard() {
                         }`}
                       >
                         <div className="text-lg font-black">{y.year}</div>
-                        <div className="text-[10px] text-gray-400 font-medium">{y.label.split('(')[1]?.replace(')', '')}</div>
+                        <div className="text-[10px] text-gray-400 font-medium">
+                          {y.label.split('(')[1]?.replace(')', '')}
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -617,20 +654,22 @@ export default function OnboardingWizard() {
                     Current Preparation Stage
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    {['Class 11', 'Class 12', 'Dropper / Repeater', 'College / SDE Aspirant'].map(st => (
-                      <button
-                        key={st}
-                        type="button"
-                        onClick={() => setStudentStage(st)}
-                        className={`p-3 rounded-xl border-2 transition-all font-bold text-xs uppercase tracking-tight ${
-                          studentStage === st
-                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400'
-                            : 'border-gray-100 dark:border-slate-800 text-gray-500 hover:border-gray-300'
-                        }`}
-                      >
-                        {st}
-                      </button>
-                    ))}
+                    {['Class 11', 'Class 12', 'Dropper / Repeater', 'College / SDE Aspirant'].map(
+                      st => (
+                        <button
+                          key={st}
+                          type="button"
+                          onClick={() => setStudentStage(st)}
+                          className={`p-3 rounded-xl border-2 transition-all font-bold text-xs uppercase tracking-tight ${
+                            studentStage === st
+                              ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400'
+                              : 'border-gray-100 dark:border-slate-800 text-gray-500 hover:border-gray-300'
+                          }`}
+                        >
+                          {st}
+                        </button>
+                      )
+                    )}
                   </div>
                 </div>
 
@@ -641,7 +680,11 @@ export default function OnboardingWizard() {
                   </label>
                   <div className="grid grid-cols-3 gap-3">
                     {[
-                      { id: 'Hinglish', title: 'Hinglish', subtitle: 'Hindi + English (Recommended)' },
+                      {
+                        id: 'Hinglish',
+                        title: 'Hinglish',
+                        subtitle: 'Hindi + English (Recommended)',
+                      },
                       { id: 'English', title: 'English', subtitle: 'Pure English Content' },
                       { id: 'Hindi', title: 'Hindi', subtitle: 'हिंदी माध्यम' },
                     ].map(med => (
@@ -796,7 +839,8 @@ export default function OnboardingWizard() {
                     {selectedExamObj.name} {targetYear} Locked!
                   </h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                    Your personalized study command center is prepared with target PYQs, mock tests, and high-yield formula sheets.
+                    Your personalized study command center is prepared with target PYQs, mock tests,
+                    and high-yield formula sheets.
                   </p>
                 </div>
 
@@ -804,7 +848,9 @@ export default function OnboardingWizard() {
                 <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-left max-w-md mx-auto space-y-2 text-xs">
                   <div className="flex justify-between">
                     <span className="text-gray-400">Target Exam:</span>
-                    <span className="font-bold text-gray-900 dark:text-white">{selectedExamObj.name} ({targetYear})</span>
+                    <span className="font-bold text-gray-900 dark:text-white">
+                      {selectedExamObj.name} ({targetYear})
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Preparation Stage:</span>
@@ -812,7 +858,9 @@ export default function OnboardingWizard() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Active Subjects:</span>
-                    <span className="font-bold text-emerald-600">{selectedSubjects.length} Subjects Active</span>
+                    <span className="font-bold text-emerald-600">
+                      {selectedSubjects.length} Subjects Active
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Daily Study Target:</span>
@@ -848,7 +896,9 @@ export default function OnboardingWizard() {
               <Button
                 onClick={handleNext}
                 className="px-8 py-3 rounded-xl font-bold uppercase tracking-wider text-xs shadow-lg shadow-primary-500/20 group"
-                rightIcon={<ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />}
+                rightIcon={
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                }
                 disabled={loading}
               >
                 {currentStep === 0 ? 'Start Customization' : 'Advance'}

@@ -152,8 +152,9 @@ export function HeroSection({
                 </>
               ) : (
                 <>
-                  From LeetCode-style algorithmic duels to distributed system architectures. Real-time
-                  browser AST execution, memory profiler, and verifiable cryptographic credentials.
+                  From LeetCode-style algorithmic duels to distributed system architectures.
+                  Real-time browser AST execution, memory profiler, and verifiable cryptographic
+                  credentials.
                 </>
               )}
             </p>
@@ -251,7 +252,8 @@ export function HeroSection({
                     <div className="bg-slate-950/80 rounded-lg p-3 text-slate-300 leading-relaxed border border-slate-800">
                       <div className="text-slate-500">// Problem 001: Optimal Hash Lookup O(N)</div>
                       <div className="text-blue-400">
-                        function <span className="text-yellow-300">twoSum</span>(nums: number[], target: number) &#123;
+                        function <span className="text-yellow-300">twoSum</span>(nums: number[],
+                        target: number) &#123;
                       </div>
                       <div className="pl-4 text-slate-300">
                         const map = new Map&lt;number, number&gt;();
@@ -259,9 +261,7 @@ export function HeroSection({
                       <div className="pl-4 text-purple-400">
                         for (let i = 0; i &lt; nums.length; i++) &#123;
                       </div>
-                      <div className="pl-8 text-slate-300">
-                        const diff = target - nums[i];
-                      </div>
+                      <div className="pl-8 text-slate-300">const diff = target - nums[i];</div>
                       <div className="pl-8 text-emerald-400">
                         if (map.has(diff)) return [map.get(diff)!, i];
                       </div>
@@ -348,7 +348,9 @@ export function HeroSection({
                               : 'bg-slate-950/60 border-slate-800 text-slate-300 hover:border-slate-700'
                           }`}
                         >
-                          <span className="text-slate-500 mr-1.5">{String.fromCharCode(65 + opt.id)}.</span>
+                          <span className="text-slate-500 mr-1.5">
+                            {String.fromCharCode(65 + opt.id)}.
+                          </span>
                           {opt.text}
                         </button>
                       ))}
@@ -362,11 +364,14 @@ export function HeroSection({
                       >
                         {selectedExamOption === 0 ? (
                           <div className="p-2 rounded bg-emerald-950/50 border border-emerald-500/40 text-emerald-300">
-                            <span className="font-bold">Correct! (+4 Marks)</span> — Solid sphere I = (2/5)MR². a = g sinθ / (1 + I/MR²) = (5/7) g sinθ.
+                            <span className="font-bold">Correct! (+4 Marks)</span> — Solid sphere I
+                            = (2/5)MR². a = g sinθ / (1 + I/MR²) = (5/7) g sinθ.
                           </div>
                         ) : (
                           <div className="p-2 rounded bg-rose-950/50 border border-rose-500/40 text-rose-300">
-                            <span className="font-bold">Incorrect (-1 Mark)</span> — Check rotational inertia for solid sphere vs hollow cylinder. Correct option is A.
+                            <span className="font-bold">Incorrect (-1 Mark)</span> — Check
+                            rotational inertia for solid sphere vs hollow cylinder. Correct option
+                            is A.
                           </div>
                         )}
                       </motion.div>

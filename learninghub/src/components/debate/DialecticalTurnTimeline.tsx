@@ -68,7 +68,9 @@ export const DialecticalTurnTimeline: React.FC<DialecticalTurnTimelineProps> = (
     return (
       <div className="bg-slate-900/60 rounded-2xl border border-slate-800 p-8 text-center text-slate-400">
         <MessageSquare className="w-8 h-8 mx-auto text-slate-600 mb-2" />
-        <p className="text-sm">Initiate the debate session to stream dialectical turns from the council.</p>
+        <p className="text-sm">
+          Initiate the debate session to stream dialectical turns from the council.
+        </p>
       </div>
     )
   }
@@ -79,7 +81,9 @@ export const DialecticalTurnTimeline: React.FC<DialecticalTurnTimelineProps> = (
         <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">
           Dialectical Discourse & Rebuttal Stream ({turns.length} turns)
         </h3>
-        <span className="text-xs text-slate-500 font-mono">Real-time Adversarial Argumentation</span>
+        <span className="text-xs text-slate-500 font-mono">
+          Real-time Adversarial Argumentation
+        </span>
       </div>
 
       <div className="space-y-4">
@@ -135,7 +139,7 @@ export const DialecticalTurnTimeline: React.FC<DialecticalTurnTimelineProps> = (
               {/* Claims & Grounded Evidence */}
               {turn.claims.length > 0 && (
                 <div className="space-y-2 pt-2 border-t border-slate-800/80">
-                  {turn.claims.map((claim) => (
+                  {turn.claims.map(claim => (
                     <div
                       key={claim.id}
                       className="p-2.5 rounded-lg bg-slate-950/40 border border-slate-800/60 text-xs space-y-1.5"

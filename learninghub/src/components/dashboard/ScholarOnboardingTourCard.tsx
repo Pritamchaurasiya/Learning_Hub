@@ -127,7 +127,9 @@ export const ScholarOnboardingTourCard: React.FC<ScholarOnboardingTourCardProps>
             {/* Progress Bar */}
             <div className="space-y-1.5">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400 font-medium">Endowed Progress: 2 of 3 steps verified</span>
+                <span className="text-slate-400 font-medium">
+                  Endowed Progress: 2 of 3 steps verified
+                </span>
                 <span className="font-mono text-indigo-400 font-bold">{progressPercent}%</span>
               </div>
               <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden p-0.5">
@@ -152,7 +154,9 @@ export const ScholarOnboardingTourCard: React.FC<ScholarOnboardingTourCardProps>
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-mono uppercase text-slate-400">Step 0{step.id}</span>
+                      <span className="text-[10px] font-mono uppercase text-slate-400">
+                        Step 0{step.id}
+                      </span>
                       {isCompleted ? (
                         <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                       ) : (
@@ -173,7 +177,8 @@ export const ScholarOnboardingTourCard: React.FC<ScholarOnboardingTourCardProps>
               <div className="flex items-center gap-2.5 text-xs text-amber-300">
                 <Gift className="w-4 h-4 shrink-0" />
                 <span>
-                  Complete Step 3 to claim your <strong>+250 XP Welcome Chest</strong> & 1-Week Streak Shield!
+                  Complete Step 3 to claim your <strong>+250 XP Welcome Chest</strong> & 1-Week
+                  Streak Shield!
                 </span>
               </div>
 

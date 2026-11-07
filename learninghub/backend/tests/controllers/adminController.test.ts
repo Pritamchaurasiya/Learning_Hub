@@ -6,6 +6,12 @@ import {
   updateUserRole,
   deleteUser,
   getSystemStatus,
+  getAdminCourses,
+  createAdminCourse,
+  updateAdminCourse,
+  deleteAdminCourse,
+  getCourseAnalytics,
+  generateAICourse,
 } from '../../src/controllers/adminController'
 import { prisma } from '../../src/prismaClient'
 import { createUser, createAdmin } from '../factories/user.factory'
@@ -301,6 +307,273 @@ describe('AdminController', () => {
         status: 'error',
         message: 'System check failed',
         code: 'INTERNAL_ERROR',
+      })
+    })
+  })
+
+  describe('Course Management', () => {
+    const admin = createAdmin({ id: 'admin-123' })
+
+    describe('getAdminCourses', () => {
+      it('should return mapped list of admin courses', async () => {
+        mockReq.user = { userId: admin.id, email: admin.email, role: admin.role }
+        mockReq.query = { status: 'published', category: 'Algorithms' }
+
+        const mockTests = [
+          {
+            id: 'test-1',
+            title: 'DSA Masterclass',
+            description: 'In-depth algorithms',
+            difficulty: 'HARD',
+            isPublished: true,
+            timeLimit: 90,
+            createdAt: new Date('2026-01-01T00:00:00Z'),
+            updatedAt: new Date('2026-01-02T00:00:00Z'),
+            exam: { id: 'exam-1', name: 'Algorithms', slug: 'algorithms' },
+            _count: { results: 42 },
+          },
+        ]
+        ;(prisma.test.findMany as jest.Mock).mockResolvedValue(mockTests)
+
+        await getAdminCourses(mockReq as any, mockRes as any, jest.fn())
+
+        expect(statusMock).toHaveBeenCalledWith(200)
+        expect(jsonMock).toHaveBeenCalledWith({
+          status: 'success',
+          data: [
+            expect.objectContaining({
+              id: 'test-1',
+              title: 'DSA Masterclass',
+              level: 'advanced',
+              difficulty: 'HARD',
+              isPublished: true,
+              published: true,
+              studentCount: 42,
+              enrolledCount: 42,
+            }),
+          ],
+        })
+      })
+    })
+
+    describe('createAdminCourse', () => {
+      it('should validate title and reject empty submission', async () => {
+        mockReq.user = { userId: admin.id, email: admin.email, role: admin.role }
+        mockReq.body = { title: '   ', level: 'Beginner' }
+
+        await createAdminCourse(mockReq as any, mockRes as any, jest.fn())
+
+        expect(statusMock).toHaveBeenCalledWith(400)
+        expect(jsonMock).toHaveBeenCalledWith(
+          expect.objectContaining({
+            status: 'error',
+            message: 'Course title is required',
+          })
+        )
+      })
+
+      it('should successfully create a new course master', async () => {
+        mockReq.user = { userId: admin.id, email: admin.email, role: admin.role }
+        mockReq.body = {
+          title: 'Distributed Systems',
+          description: 'Raft and Paxos consensus',
+          level: 'Advanced',
+          category: 'Backend',
+        }
+
+        ;(prisma.exam.findFirst as jest.Mock).mockResolvedValue({ id: 'exam-99', name: 'Backend' })
+        ;(prisma.test.create as jest.Mock).mockResolvedValue({
+          id: 'test-new-1',
+          title: 'Distributed Systems',
+          description: 'Raft and Paxos consensus',
+          difficulty: 'HARD',
+          isPublished: false,
+          createdAt: new Date('2026-03-01T00:00:00Z'),
+          exam: { id: 'exam-99', name: 'Backend' },
+        })
+
+        await createAdminCourse(mockReq as any, mockRes as any, jest.fn())
+
+        expect(statusMock).toHaveBeenCalledWith(201)
+        expect(jsonMock).toHaveBeenCalledWith(
+          expect.objectContaining({
+            status: 'success',
+            data: expect.objectContaining({
+              id: 'test-new-1',
+              title: 'Distributed Systems',
+              level: 'advanced',
+              status: 'draft',
+            }),
+          })
+        )
+      })
+    })
+
+    describe('updateAdminCourse', () => {
+      it('should return 404 when target course not found', async () => {
+        mockReq.user = { userId: admin.id, email: admin.email, role: admin.role }
+        mockReq.params = { id: 'missing-course-id' }
+        mockReq.body = { published: true }
+
+        ;(prisma.test.findUnique as jest.Mock).mockResolvedValue(null)
+
+        await updateAdminCourse(mockReq as any, mockRes as any, jest.fn())
+
+        expect(statusMock).toHaveBeenCalledWith(404)
+        expect(jsonMock).toHaveBeenCalledWith(
+          expect.objectContaining({
+            status: 'error',
+            message: 'Course not found',
+          })
+        )
+      })
+
+      it('should update course metadata and publishing status', async () => {
+        mockReq.user = { userId: admin.id, email: admin.email, role: admin.role }
+        mockReq.params = { id: 'test-1' }
+        mockReq.body = { published: true, level: 'Intermediate' }
+
+        ;(prisma.test.findUnique as jest.Mock).mockResolvedValue({ id: 'test-1' })
+        ;(prisma.test.update as jest.Mock).mockResolvedValue({
+          id: 'test-1',
+          title: 'Updated Title',
+          description: 'Updated Desc',
+          difficulty: 'MEDIUM',
+          isPublished: true,
+          exam: { id: 'e1', name: 'Engineering' },
+          _count: { results: 10 },
+        })
+
+        await updateAdminCourse(mockReq as any, mockRes as any, jest.fn())
+
+        expect(statusMock).toHaveBeenCalledWith(200)
+        expect(jsonMock).toHaveBeenCalledWith(
+          expect.objectContaining({
+            status: 'success',
+            data: expect.objectContaining({
+              id: 'test-1',
+              level: 'intermediate',
+              isPublished: true,
+              published: true,
+              studentCount: 10,
+            }),
+          })
+        )
+      })
+    })
+
+    describe('deleteAdminCourse', () => {
+      it('should return 404 when course does not exist', async () => {
+        mockReq.user = { userId: admin.id, email: admin.email, role: admin.role }
+        mockReq.params = { id: 'non-existent' }
+
+        ;(prisma.test.findUnique as jest.Mock).mockResolvedValue(null)
+
+        await deleteAdminCourse(mockReq as any, mockRes as any, jest.fn())
+
+        expect(statusMock).toHaveBeenCalledWith(404)
+      })
+
+      it('should soft-delete course successfully', async () => {
+        mockReq.user = { userId: admin.id, email: admin.email, role: admin.role }
+        mockReq.params = { id: 'test-to-delete' }
+
+        ;(prisma.test.findUnique as jest.Mock).mockResolvedValue({
+          id: 'test-to-delete',
+          title: 'Legacy Course',
+        })
+        ;(prisma.test.update as jest.Mock).mockResolvedValue({ id: 'test-to-delete' })
+
+        await deleteAdminCourse(mockReq as any, mockRes as any, jest.fn())
+
+        expect(statusMock).toHaveBeenCalledWith(200)
+        expect(prisma.test.update).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: { id: 'test-to-delete' },
+            data: expect.objectContaining({ isPublished: false }),
+          })
+        )
+      })
+    })
+
+    describe('getCourseAnalytics', () => {
+      it('should return aggregated popular courses and categories', async () => {
+        mockReq.user = { userId: admin.id, email: admin.email, role: admin.role }
+
+        ;(prisma.test.findMany as jest.Mock).mockResolvedValueOnce([
+          { id: 'c1', title: 'Course 1', _count: { results: 50 } },
+          { id: 'c2', title: 'Course 2', _count: { results: 30 } },
+        ])
+        ;(prisma.test.findMany as jest.Mock).mockResolvedValueOnce([
+          { exam: { name: 'Engineering' } },
+          { exam: { name: 'Engineering' } },
+          { exam: { name: 'Mathematics' } },
+        ])
+
+        await getCourseAnalytics(mockReq as any, mockRes as any, jest.fn())
+
+        expect(statusMock).toHaveBeenCalledWith(200)
+        expect(jsonMock).toHaveBeenCalledWith({
+          status: 'success',
+          data: {
+            popular: [
+              { id: 'c1', title: 'Course 1', enrollments: 50 },
+              { id: 'c2', title: 'Course 2', enrollments: 30 },
+            ],
+            byCategory: [
+              { category: 'Engineering', count: 2 },
+              { category: 'Mathematics', count: 1 },
+            ],
+          },
+        })
+      })
+    })
+
+    describe('generateAICourse', () => {
+      it('should reject empty prompts', async () => {
+        mockReq.user = { userId: admin.id, email: admin.email, role: admin.role }
+        mockReq.body = { prompt: '' }
+
+        await generateAICourse(mockReq as any, mockRes as any, jest.fn())
+
+        expect(statusMock).toHaveBeenCalledWith(400)
+        expect(jsonMock).toHaveBeenCalledWith(
+          expect.objectContaining({
+            status: 'error',
+            message: 'Course prompt is required',
+          })
+        )
+      })
+
+      it('should synthesize new course and questions based on prompt', async () => {
+        mockReq.user = { userId: admin.id, email: admin.email, role: admin.role }
+        mockReq.body = {
+          prompt: 'Modern Cloud Architecture in AWS and Kubernetes',
+          difficulty: 'ADVANCED',
+          modulesCount: 2,
+        }
+
+        ;(prisma.exam.findFirst as jest.Mock).mockResolvedValue({ id: 'exam-cloud' })
+        ;(prisma.test.create as jest.Mock).mockResolvedValue({
+          id: 'ai-course-123',
+          title: 'Modern Cloud Architecture in AWS and Kubernetes',
+          isAiGenerated: true,
+        })
+        ;(prisma.question.create as jest.Mock).mockResolvedValue({ id: 'q-mod-1' })
+
+        await generateAICourse(mockReq as any, mockRes as any, jest.fn())
+
+        expect(statusMock).toHaveBeenCalledWith(201)
+        expect(prisma.test.create).toHaveBeenCalled()
+        expect(prisma.question.create).toHaveBeenCalledTimes(2)
+        expect(jsonMock).toHaveBeenCalledWith(
+          expect.objectContaining({
+            status: 'success',
+            data: expect.objectContaining({
+              courseId: 'ai-course-123',
+            }),
+          })
+        )
       })
     })
   })

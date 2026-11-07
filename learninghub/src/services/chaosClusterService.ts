@@ -19,7 +19,8 @@ export const chaosClusterService = {
         {
           clusterId: 'ecommerce-checkout-mesh',
           name: 'E-Commerce Distributed Checkout Pipeline',
-          description: 'Multi-tier microservice architecture: API Gateway -> Order Service -> Payment Service & Postgres with Redis Caching.',
+          description:
+            'Multi-tier microservice architecture: API Gateway -> Order Service -> Payment Service & Postgres with Redis Caching.',
           nodes: [
             {
               id: 'svc-gateway',
@@ -156,7 +157,7 @@ export const chaosClusterService = {
   async getTopology(clusterId?: string): Promise<ClusterTopology> {
     const presets = await this.getPresets()
     if (clusterId) {
-      const match = presets.find((p) => p.clusterId === clusterId)
+      const match = presets.find(p => p.clusterId === clusterId)
       if (match) return match
     }
     return presets[0]
@@ -235,7 +236,8 @@ export const chaosClusterService = {
             'Deploy jittered exponential backoff to eliminate retry thundering herds.',
             'Maintain redundant read replicas for database resilience.',
           ],
-          cryptographicAuditDigest: '8f4c2e6b9a1d4732e5b8d0c3a9f1e847b2c5d1e7a4b9c3e6d8f2a1b5c7e9d2a4',
+          cryptographicAuditDigest:
+            '8f4c2e6b9a1d4732e5b8d0c3a9f1e847b2c5d1e7a4b9c3e6d8f2a1b5c7e9d2a4',
         },
       }
     }

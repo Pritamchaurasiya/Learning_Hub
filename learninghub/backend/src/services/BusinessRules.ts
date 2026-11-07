@@ -30,10 +30,7 @@ export async function assertCartNotFull(userId: string): Promise<void> {
     include: { items: { select: { id: true } } },
   })
   if (cart && cart.items.length >= CART_MAX_ITEMS) {
-    throw new BusinessRuleError(
-      `Cart cannot exceed ${CART_MAX_ITEMS} items`,
-      'CART_LIMIT_EXCEEDED'
-    )
+    throw new BusinessRuleError(`Cart cannot exceed ${CART_MAX_ITEMS} items`, 'CART_LIMIT_EXCEEDED')
   }
 }
 
@@ -45,10 +42,7 @@ export async function assertCourseNotInCart(userId: string, courseId: string): P
     },
   })
   if (cartItem) {
-    throw new BusinessRuleError(
-      'This course is already in your cart',
-      'DUPLICATE_CART_ITEM'
-    )
+    throw new BusinessRuleError('This course is already in your cart', 'DUPLICATE_CART_ITEM')
   }
 }
 
@@ -57,10 +51,7 @@ export async function assertNotAlreadyEnrolled(userId: string, courseId: string)
     where: { userId_courseId: { userId, courseId } },
   })
   if (enrollment && enrollment.status === 'ACTIVE') {
-    throw new BusinessRuleError(
-      'You are already enrolled in this course',
-      'ALREADY_ENROLLED'
-    )
+    throw new BusinessRuleError('You are already enrolled in this course', 'ALREADY_ENROLLED')
   }
 }
 

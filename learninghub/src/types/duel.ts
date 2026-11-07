@@ -1,11 +1,5 @@
 export type RankTier =
-  | 'UNRANKED'
-  | 'BRONZE'
-  | 'SILVER'
-  | 'GOLD'
-  | 'PLATINUM'
-  | 'DIAMOND'
-  | 'GRANDMASTER'
+  'UNRANKED' | 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND' | 'GRANDMASTER'
 
 export interface DuelPlayer {
   userId: string

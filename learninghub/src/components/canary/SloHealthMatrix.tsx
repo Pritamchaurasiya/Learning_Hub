@@ -34,8 +34,8 @@ export const SloHealthMatrix: React.FC<SloHealthMatrixProps> = ({ deployment }) 
               isCritical
                 ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
                 : !isHealthy
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
             }`}
           >
             {isCritical ? (
@@ -67,16 +67,12 @@ export const SloHealthMatrix: React.FC<SloHealthMatrixProps> = ({ deployment }) 
           <div className="flex items-baseline justify-between mt-1">
             <span
               className={`text-lg font-bold font-mono ${
-                cMetrics.p99LatencyMs > slo.maxP99LatencyMs
-                  ? 'text-rose-400'
-                  : 'text-white'
+                cMetrics.p99LatencyMs > slo.maxP99LatencyMs ? 'text-rose-400' : 'text-white'
               }`}
             >
               {cMetrics.p99LatencyMs}ms
             </span>
-            <span className="text-xs text-slate-400">
-              vs Base: {bMetrics.p99LatencyMs}ms
-            </span>
+            <span className="text-xs text-slate-400">vs Base: {bMetrics.p99LatencyMs}ms</span>
           </div>
           <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2.5 overflow-hidden">
             <div
@@ -84,9 +80,7 @@ export const SloHealthMatrix: React.FC<SloHealthMatrixProps> = ({ deployment }) 
                 width: `${Math.min(100, (cMetrics.p99LatencyMs / slo.maxP99LatencyMs) * 100)}%`,
               }}
               className={`h-full ${
-                cMetrics.p99LatencyMs > slo.maxP99LatencyMs
-                  ? 'bg-rose-500'
-                  : 'bg-blue-500'
+                cMetrics.p99LatencyMs > slo.maxP99LatencyMs ? 'bg-rose-500' : 'bg-blue-500'
               }`}
             />
           </div>
@@ -112,7 +106,11 @@ export const SloHealthMatrix: React.FC<SloHealthMatrixProps> = ({ deployment }) 
               {cMetrics.errorRatePercent}%
             </span>
             <span className="text-xs text-slate-400">
-              Delta: {evalData.errorRateDelta >= 0 ? `+${evalData.errorRateDelta}` : evalData.errorRateDelta}%
+              Delta:{' '}
+              {evalData.errorRateDelta >= 0
+                ? `+${evalData.errorRateDelta}`
+                : evalData.errorRateDelta}
+              %
             </span>
           </div>
           <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2.5 overflow-hidden">
@@ -121,9 +119,7 @@ export const SloHealthMatrix: React.FC<SloHealthMatrixProps> = ({ deployment }) 
                 width: `${Math.min(100, evalData.errorBudgetConsumedPercent)}%`,
               }}
               className={`h-full ${
-                evalData.errorBudgetConsumedPercent > 80
-                  ? 'bg-rose-500'
-                  : 'bg-emerald-500'
+                evalData.errorBudgetConsumedPercent > 80 ? 'bg-rose-500' : 'bg-emerald-500'
               }`}
             />
           </div>
@@ -178,9 +174,7 @@ export const SloHealthMatrix: React.FC<SloHealthMatrixProps> = ({ deployment }) 
           <div className="flex items-baseline justify-between mt-1">
             <span
               className={`text-lg font-bold font-mono ${
-                evalData.zScore > slo.maxAllowedZScore
-                  ? 'text-rose-400'
-                  : 'text-purple-300'
+                evalData.zScore > slo.maxAllowedZScore ? 'text-rose-400' : 'text-purple-300'
               }`}
             >
               z = {evalData.zScore}
@@ -193,9 +187,7 @@ export const SloHealthMatrix: React.FC<SloHealthMatrixProps> = ({ deployment }) 
                 width: `${Math.min(100, Math.max(10, ((evalData.zScore + 1) / 3.5) * 100))}%`,
               }}
               className={`h-full ${
-                evalData.zScore > slo.maxAllowedZScore
-                  ? 'bg-rose-500'
-                  : 'bg-purple-500'
+                evalData.zScore > slo.maxAllowedZScore ? 'bg-rose-500' : 'bg-purple-500'
               }`}
             />
           </div>

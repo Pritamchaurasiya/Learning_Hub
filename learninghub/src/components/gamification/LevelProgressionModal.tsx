@@ -176,8 +176,13 @@ export function LevelProgressionModal({ isOpen, onClose, currentXp, streak = 0 }
                     </div>
 
                     <div className="flex justify-between text-[11px] text-gray-400 dark:text-gray-500">
-                      <span>Base Lv.{progressDetails.level} ({progressDetails.currentLevelBaseXp} XP)</span>
-                      <span>Next Lv.{progressDetails.level + 1} ({progressDetails.nextLevelThresholdXp} XP)</span>
+                      <span>
+                        Base Lv.{progressDetails.level} ({progressDetails.currentLevelBaseXp} XP)
+                      </span>
+                      <span>
+                        Next Lv.{progressDetails.level + 1} ({progressDetails.nextLevelThresholdXp}{' '}
+                        XP)
+                      </span>
                     </div>
                   </div>
                 </div>

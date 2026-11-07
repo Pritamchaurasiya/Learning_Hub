@@ -149,7 +149,8 @@ const safeStringify = (obj: unknown): string => {
 // request contexts and error metadata cannot leak credentials into log files.
 // NOTE: logger library stays winston (docs mention of pino is a contradiction we
 // do not act on); PII safety is provided by this redaction layer instead.
-const SENSITIVE_KEY_PATTERN = /passw|passwd|pwd|secret|token|api[_-]?key|auth|cookie|session|otp|mfa|card|cvv|ssn/i
+const SENSITIVE_KEY_PATTERN =
+  /passw|passwd|pwd|secret|token|api[_-]?key|auth|cookie|session|otp|mfa|card|cvv|ssn/i
 const EMAIL_PATTERN = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/
 const BEARER_PATTERN = /Bearer\s+[A-Za-z0-9\-._~+/=]+/g
 

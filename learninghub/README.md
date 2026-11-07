@@ -20,6 +20,12 @@ A full-stack learning management platform with AI-powered tutoring, interactive 
 
 > **Note:** The platform is in active migration from Node/Express/Prisma to Django REST Framework. Both backends currently run in parallel and conform to canonical API contracts. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) §9 for migration plan.
 
+## Subpackages & EGM Component Contracts
+
+- [`src/`](src/README.md): React 18 SPA frontend architecture, router, and Zustand stores.
+  - [`src/components/test/`](src/components/test/README.md): Assessment suite, question palette, CBT exam station, and PYQ discovery hub.
+- [`backend/`](backend/): Express 4 Node.js API runtime serving port 5000.
+
 ## Project Structure
 
 ```

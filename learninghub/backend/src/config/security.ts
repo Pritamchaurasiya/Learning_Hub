@@ -105,8 +105,12 @@ const parseOrigins = (envValue: string | undefined) => {
         return callback(null, true)
       }
     }
-    const defaultOrigins = 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173'
-    const list = (envValue ?? defaultOrigins).split(',').map(o => o.trim()).filter(Boolean)
+    const defaultOrigins =
+      'http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173'
+    const list = (envValue ?? defaultOrigins)
+      .split(',')
+      .map(o => o.trim())
+      .filter(Boolean)
     if (list.includes(origin) || list.includes('*')) {
       return callback(null, true)
     }

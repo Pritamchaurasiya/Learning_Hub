@@ -1,12 +1,6 @@
 import React from 'react'
 import { SelfHealingPatch } from '../../types/selfHealing'
-import {
-  ShieldCheck,
-  Zap,
-  CheckCircle2,
-  Gauge,
-  Sparkles,
-} from 'lucide-react'
+import { ShieldCheck, Zap, CheckCircle2, Gauge, Sparkles } from 'lucide-react'
 
 interface PatchImpactScorecardProps {
   patch: SelfHealingPatch
@@ -31,7 +25,9 @@ export const PatchImpactScorecard: React.FC<PatchImpactScorecardProps> = ({
             <h4 className="text-sm sm:text-base font-bold text-white tracking-tight">
               Remediation Impact & Safety Audit
             </h4>
-            <p className="text-xs text-slate-400">Pre-flight regression analysis and quality delta.</p>
+            <p className="text-xs text-slate-400">
+              Pre-flight regression analysis and quality delta.
+            </p>
           </div>
         </div>
 
@@ -49,13 +45,18 @@ export const PatchImpactScorecard: React.FC<PatchImpactScorecardProps> = ({
             <span className="text-rose-400 font-bold">{scoreBefore}%</span>
             <span className="text-slate-500">→</span>
             <span className="text-emerald-400 font-bold text-sm">{scoreAfter}%</span>
-            <span className="text-[10px] text-emerald-400 font-normal">(+{scoreAfter - scoreBefore}%)</span>
+            <span className="text-[10px] text-emerald-400 font-normal">
+              (+{scoreAfter - scoreBefore}%)
+            </span>
           </div>
         </div>
 
         <div className="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden flex">
           <div className="bg-rose-500 h-full" style={{ width: `${scoreBefore}%` }} />
-          <div className="bg-emerald-500 h-full" style={{ width: `${scoreAfter - scoreBefore}%` }} />
+          <div
+            className="bg-emerald-500 h-full"
+            style={{ width: `${scoreAfter - scoreBefore}%` }}
+          />
         </div>
       </div>
 

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Sparkles,
   BookOpen,
@@ -11,62 +11,62 @@ import {
   ExternalLink,
   Loader2,
   Video,
-} from 'lucide-react';
-import type { UpdateCrossLink, StudentUpdate } from '../../types/updates';
-import { updatesService } from '../../services/updatesService';
-import { downloadICSFile, generateGoogleCalendarUrl } from '../../utils/calendarExport';
+} from 'lucide-react'
+import type { UpdateCrossLink, StudentUpdate } from '../../types/updates'
+import { updatesService } from '../../services/updatesService'
+import { downloadICSFile, generateGoogleCalendarUrl } from '../../utils/calendarExport'
 
 export interface UpdateCrossFeaturesWidgetProps {
-  crossLinks?: UpdateCrossLink[];
-  update?: StudentUpdate;
+  crossLinks?: UpdateCrossLink[]
+  update?: StudentUpdate
 }
 
 export const UpdateCrossFeaturesWidget: React.FC<UpdateCrossFeaturesWidgetProps> = ({
   crossLinks,
   update,
 }) => {
-  const [plannerLoading, setPlannerLoading] = useState(false);
-  const [plannerSynced, setPlannerSynced] = useState(false);
+  const [plannerLoading, setPlannerLoading] = useState(false)
+  const [plannerSynced, setPlannerSynced] = useState(false)
 
   // If crossLinks not explicitly provided, dynamically synthesize links from update
   const rawLinks =
     crossLinks && crossLinks.length > 0
       ? crossLinks
       : update && typeof updatesService?.generateSynergyCrossLinks === 'function'
-      ? updatesService.generateSynergyCrossLinks(update)
-      : [];
-  const resolvedLinks: UpdateCrossLink[] = Array.isArray(rawLinks) ? rawLinks : [];
+        ? updatesService.generateSynergyCrossLinks(update)
+        : []
+  const resolvedLinks: UpdateCrossLink[] = Array.isArray(rawLinks) ? rawLinks : []
 
-  if (resolvedLinks.length === 0 && !update?.deadline) return null;
+  if (resolvedLinks.length === 0 && !update?.deadline) return null
 
   const getIcon = (type: string) => {
     switch (type) {
       case 'TEST':
-        return <CheckSquare className="w-4 h-4 text-purple-500" />;
+        return <CheckSquare className="w-4 h-4 text-purple-500" />
       case 'EBOOK':
-        return <BookOpen className="w-4 h-4 text-emerald-500" />;
+        return <BookOpen className="w-4 h-4 text-emerald-500" />
       case 'COURSE':
-        return <Video className="w-4 h-4 text-blue-500" />;
+        return <Video className="w-4 h-4 text-blue-500" />
       case 'STUDY_PLAN':
-        return <Calendar className="w-4 h-4 text-amber-500" />;
+        return <Calendar className="w-4 h-4 text-amber-500" />
       default:
-        return <Sparkles className="w-4 h-4 text-primary" />;
+        return <Sparkles className="w-4 h-4 text-primary" />
     }
-  };
+  }
 
   const handleSyncPlanner = async () => {
-    if (!update || plannerLoading || plannerSynced) return;
+    if (!update || plannerLoading || plannerSynced) return
     try {
-      setPlannerLoading(true);
-      await updatesService.syncToStudyPlanner(update);
-      setPlannerSynced(true);
+      setPlannerLoading(true)
+      await updatesService.syncToStudyPlanner(update)
+      setPlannerSynced(true)
     } finally {
-      setPlannerLoading(false);
+      setPlannerLoading(false)
     }
-  };
+  }
 
   const handleDownloadICS = () => {
-    if (!update || !update.deadline) return;
+    if (!update || !update.deadline) return
     downloadICSFile(
       `${(update.course || update.institution || 'notice').toLowerCase().replace(/\s+/g, '-')}-deadline.ics`,
       {
@@ -76,8 +76,8 @@ export const UpdateCrossFeaturesWidget: React.FC<UpdateCrossFeaturesWidgetProps>
         url: update.source_url,
         location: update.institution,
       }
-    );
-  };
+    )
+  }
 
   const googleCalUrl = update?.deadline
     ? generateGoogleCalendarUrl({
@@ -87,7 +87,7 @@ export const UpdateCrossFeaturesWidget: React.FC<UpdateCrossFeaturesWidgetProps>
         url: update.source_url,
         location: update.institution,
       })
-    : '';
+    : ''
 
   return (
     <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5 space-y-4">
@@ -106,14 +106,15 @@ export const UpdateCrossFeaturesWidget: React.FC<UpdateCrossFeaturesWidgetProps>
       </div>
 
       <p className="text-xs text-muted-foreground leading-relaxed">
-        Jump directly from tracking deadlines into active exam preparation. Practice verified MCQs, review high-yield flashcards, or sync key dates into your study schedule.
+        Jump directly from tracking deadlines into active exam preparation. Practice verified MCQs,
+        review high-yield flashcards, or sync key dates into your study schedule.
       </p>
 
       {/* Cross-Link Cards */}
       {resolvedLinks.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
           {resolvedLinks.map(link => {
-            const isInternal = link.action_url.startsWith('/');
+            const isInternal = link.action_url.startsWith('/')
             const content = (
               <>
                 <div className="flex items-center gap-2.5 min-w-0 pr-2">
@@ -134,7 +135,7 @@ export const UpdateCrossFeaturesWidget: React.FC<UpdateCrossFeaturesWidgetProps>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </div>
               </>
-            );
+            )
 
             return isInternal ? (
               <Link
@@ -154,7 +155,7 @@ export const UpdateCrossFeaturesWidget: React.FC<UpdateCrossFeaturesWidgetProps>
               >
                 {content}
               </a>
-            );
+            )
           })}
         </div>
       )}
@@ -165,7 +166,14 @@ export const UpdateCrossFeaturesWidget: React.FC<UpdateCrossFeaturesWidgetProps>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Calendar className="w-4 h-4 text-amber-500 shrink-0" />
             <span>
-              Deadline Date: <strong className="text-foreground">{new Date(update.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</strong>
+              Deadline Date:{' '}
+              <strong className="text-foreground">
+                {new Date(update.deadline).toLocaleDateString('en-IN', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </strong>
             </span>
           </div>
 
@@ -216,5 +224,5 @@ export const UpdateCrossFeaturesWidget: React.FC<UpdateCrossFeaturesWidgetProps>
         </div>
       )}
     </div>
-  );
-};
+  )
+}

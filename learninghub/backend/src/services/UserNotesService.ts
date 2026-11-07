@@ -89,10 +89,7 @@ export class UserNotesService {
     return this.notes.find(n => n.id === id) || null
   }
 
-  async createNote(
-    data: Omit<UserNote, 'id' | 'updatedAt'>,
-    userId?: string
-  ): Promise<UserNote> {
+  async createNote(data: Omit<UserNote, 'id' | 'updatedAt'>, userId?: string): Promise<UserNote> {
     const newNote: UserNote = {
       ...data,
       id: `n-${crypto.randomUUID().slice(0, 8)}`,

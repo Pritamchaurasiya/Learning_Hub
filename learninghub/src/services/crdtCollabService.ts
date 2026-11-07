@@ -122,9 +122,7 @@ class CrdtCollabService {
   /**
    * Relays a WebRTC signaling message (SDP or ICE candidate)
    */
-  async sendSignal(
-    signal: Omit<WebRtcSignalingMessage, 'id' | 'timestamp'>
-  ): Promise<boolean> {
+  async sendSignal(signal: Omit<WebRtcSignalingMessage, 'id' | 'timestamp'>): Promise<boolean> {
     try {
       const res = await api.post<any>('/api/v1/collab/signal', signal)
       return res?.data?.success || res?.status === 200 || true
@@ -173,10 +171,7 @@ class CrdtCollabService {
   /**
    * Saves a deterministic multihash IPFS snapshot of the state
    */
-  async saveSnapshot(
-    roomId: string,
-    state: CollabRoomState
-  ): Promise<{ snapshotCid: string }> {
+  async saveSnapshot(roomId: string, state: CollabRoomState): Promise<{ snapshotCid: string }> {
     const serializedState = JSON.stringify(state)
     try {
       const res = await api.post<any>(`/api/v1/collab/rooms/${roomId}/snapshot`, {
@@ -205,7 +200,7 @@ class CrdtCollabService {
    * Uses Lamport timestamp and peerId tie-breaking (LWW - Last-Write-Wins element set).
    */
   mergeStrokes(existing: CrdtStroke[], incoming: CrdtStroke): CrdtStroke[] {
-    const idx = existing.findIndex((s) => s.id === incoming.id)
+    const idx = existing.findIndex(s => s.id === incoming.id)
     if (idx === -1) {
       return [...existing, incoming]
     }
@@ -227,11 +222,8 @@ class CrdtCollabService {
   /**
    * Merges code snippets with CRDT LWW register semantics
    */
-  mergeCodeSnippets(
-    existing: CrdtCodeSnippet[],
-    incoming: CrdtCodeSnippet
-  ): CrdtCodeSnippet[] {
-    const idx = existing.findIndex((c) => c.id === incoming.id)
+  mergeCodeSnippets(existing: CrdtCodeSnippet[], incoming: CrdtCodeSnippet): CrdtCodeSnippet[] {
+    const idx = existing.findIndex(c => c.id === incoming.id)
     if (idx === -1) {
       return [...existing, incoming]
     }
@@ -287,8 +279,8 @@ class CrdtCollabService {
     const svgHeader = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">\n  <rect width="100%" height="100%" fill="#0F172A"/>\n`
     const svgFooter = `</svg>`
 
-    const activeStrokes = strokes.filter((s) => !s.isDeleted)
-    const strokeElements = activeStrokes.map((s) => {
+    const activeStrokes = strokes.filter(s => !s.isDeleted)
+    const strokeElements = activeStrokes.map(s => {
       if (s.tool === 'shape') {
         const p1 = s.points[0] || { x: 0, y: 0 }
         const p2 = s.points[s.points.length - 1] || p1

@@ -25,7 +25,8 @@ const CANONICAL_PATHS: LearningPath[] = [
   {
     id: 'path-fullstack-ts',
     title: 'Full-Stack TypeScript & Cloud Architect Mastery',
-    description: 'End-to-end fullstack engineering with React 18, Node.js, PostgreSQL, Docker, and AWS Microservices.',
+    description:
+      'End-to-end fullstack engineering with React 18, Node.js, PostgreSQL, Docker, and AWS Microservices.',
     level: 'Intermediate',
     duration: '14 Weeks',
     courses: 6,
@@ -40,7 +41,8 @@ const CANONICAL_PATHS: LearningPath[] = [
   {
     id: 'path-dsa-faang',
     title: 'Data Structures, Algorithms & Competitive Programming',
-    description: 'Master dynamic programming, graph invariants, segment trees, and asymptotic optimizations.',
+    description:
+      'Master dynamic programming, graph invariants, segment trees, and asymptotic optimizations.',
     level: 'Advanced',
     duration: '16 Weeks',
     courses: 8,
@@ -48,14 +50,21 @@ const CANONICAL_PATHS: LearningPath[] = [
     progress: 0,
     completed_courses: 0,
     image: '/images/paths/dsa.png',
-    skills: ['Data Structures', 'Algorithms', 'Dynamic Programming', 'Graph Theory', 'C++ / Java / Python'],
+    skills: [
+      'Data Structures',
+      'Algorithms',
+      'Dynamic Programming',
+      'Graph Theory',
+      'C++ / Java / Python',
+    ],
     created_at: new Date('2026-01-01').toISOString(),
     updated_at: new Date().toISOString(),
   },
   {
     id: 'path-ai-ml-systems',
     title: 'Applied Machine Learning & AI Systems Engineering',
-    description: 'Deep dive into PyTorch, transformers, LLM prompt engineering, vector embeddings, and RAG pipelines.',
+    description:
+      'Deep dive into PyTorch, transformers, LLM prompt engineering, vector embeddings, and RAG pipelines.',
     level: 'Advanced',
     duration: '12 Weeks',
     courses: 5,
@@ -70,7 +79,8 @@ const CANONICAL_PATHS: LearningPath[] = [
   {
     id: 'path-gate-cs-prep',
     title: 'GATE Computer Science Comprehensive Sprint',
-    description: 'Complete syllabus coverage for GATE CS: Theory of Computation, OS, DBMS, Networks, and Math.',
+    description:
+      'Complete syllabus coverage for GATE CS: Theory of Computation, OS, DBMS, Networks, and Math.',
     level: 'Intermediate',
     duration: '24 Weeks',
     courses: 10,

@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { FrameTelemetryPayload, ProctoringSession, ProctorIncident } from '../../types/proctoring'
 import { proctoringService } from '../../services/proctoringService'
-import {
-  ShieldCheck,
-  Eye,
-  Mic,
-  AlertTriangle,
-  Camera,
-  FileCheck,
-} from 'lucide-react'
+import { ShieldCheck, Eye, Mic, AlertTriangle, Camera, FileCheck } from 'lucide-react'
 
 interface AIProctoringHUDProps {
   session: ProctoringSession
@@ -89,7 +82,9 @@ export const AIProctoringHUD: React.FC<AIProctoringHUDProps> = ({
           <h3 className="font-bold text-sm text-white">AI Vision & Audio Proctor HUD</h3>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-bold border ${getScoreColor()}`}>
+          <span
+            className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-bold border ${getScoreColor()}`}
+          >
             Integrity: {currentScore}%
           </span>
           {onOpenReportModal && (
@@ -159,8 +154,8 @@ export const AIProctoringHUD: React.FC<AIProctoringHUDProps> = ({
                   inc.severity === 'CRITICAL'
                     ? 'bg-rose-500/10 border-rose-500/20 text-rose-300'
                     : inc.severity === 'HIGH'
-                    ? 'bg-amber-500/10 border-amber-500/20 text-amber-300'
-                    : 'bg-slate-800/80 border-slate-700 text-slate-300'
+                      ? 'bg-amber-500/10 border-amber-500/20 text-amber-300'
+                      : 'bg-slate-800/80 border-slate-700 text-slate-300'
                 }`}
               >
                 <div className="flex items-center gap-1.5 truncate">

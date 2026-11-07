@@ -1,13 +1,5 @@
 import { useState } from 'react'
-import {
-  Users,
-  Sparkles,
-  X,
-  Send,
-  Loader2,
-  CheckCircle2,
-  ArrowRight,
-} from 'lucide-react'
+import { Users, Sparkles, X, Send, Loader2, CheckCircle2, ArrowRight } from 'lucide-react'
 import {
   aiCouncilService,
   type CouncilConsultationResult,
@@ -35,7 +27,9 @@ export function AICouncilModal({
   problemDescription = '',
 }: AICouncilModalProps) {
   const [query, setQuery] = useState(initialQuery)
-  const [studentLevel, setStudentLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('intermediate')
+  const [studentLevel, setStudentLevel] = useState<'beginner' | 'intermediate' | 'advanced'>(
+    'intermediate'
+  )
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<CouncilConsultationResult | null>(null)
   const [activeTab, setActiveTab] = useState<'all' | AgentRole>('all')
@@ -64,7 +58,9 @@ export function AICouncilModal({
   }
 
   const renderAgentCard = (agent: AgentPerspective, borderTheme: string, bgTheme: string) => (
-    <div className={`p-4 rounded-xl border ${borderTheme} ${bgTheme} space-y-3 transition-all shadow-sm`}>
+    <div
+      className={`p-4 rounded-xl border ${borderTheme} ${bgTheme} space-y-3 transition-all shadow-sm`}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <span className="text-2xl">{agent.avatar}</span>
@@ -82,7 +78,9 @@ export function AICouncilModal({
 
       {agent.keyObservations && agent.keyObservations.length > 0 && (
         <div className="space-y-1.5 pt-1 border-t border-gray-800/60">
-          <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Key Observations</span>
+          <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">
+            Key Observations
+          </span>
           <ul className="text-xs text-gray-400 space-y-1 pl-4 list-disc">
             {agent.keyObservations.map((obs, idx) => (
               <li key={idx}>{obs}</li>
@@ -113,7 +111,9 @@ export function AICouncilModal({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm sm:text-base font-bold text-gray-100">Multi-Agent Collaborative Tutor</h3>
+                <h3 className="text-sm sm:text-base font-bold text-gray-100">
+                  Multi-Agent Collaborative Tutor
+                </h3>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
                   Council Mode (3 Agents)
                 </span>
@@ -204,13 +204,15 @@ export function AICouncilModal({
                     </h4>
                   </div>
                   {result.sentimentDetected && (
-                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
-                      result.sentimentDetected === 'frustrated'
-                        ? 'bg-rose-500/10 text-rose-300 border-rose-500/30'
-                        : result.sentimentDetected === 'fatigued'
-                          ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                          : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                    }`}>
+                    <span
+                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                        result.sentimentDetected === 'frustrated'
+                          ? 'bg-rose-500/10 text-rose-300 border-rose-500/30'
+                          : result.sentimentDetected === 'fatigued'
+                            ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                            : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                      }`}
+                    >
                       Sentiment: {result.sentimentDetected.toUpperCase()}
                     </span>
                   )}
@@ -295,7 +297,10 @@ export function AICouncilModal({
                   </h4>
                   <div className="space-y-1.5">
                     {result.actionPlan.map((step, idx) => (
-                      <div key={idx} className="flex items-start gap-2.5 text-xs text-gray-300 font-sans">
+                      <div
+                        key={idx}
+                        className="flex items-start gap-2.5 text-xs text-gray-300 font-sans"
+                      >
                         <span className="w-4 h-4 rounded-full bg-gray-800 text-[10px] font-bold flex items-center justify-center text-primary-400 mt-0.5 shrink-0">
                           {idx + 1}
                         </span>

@@ -52,9 +52,7 @@ export const verifiableCredentialService = {
   /**
    * Fetch single W3C JSON-LD credential by UUID
    */
-  async getCredentialById(
-    id: string
-  ): Promise<{ status: string; data: W3CVerifiableCredential }> {
+  async getCredentialById(id: string): Promise<{ status: string; data: W3CVerifiableCredential }> {
     const res = await fetchApi(`/credentials/${encodeURIComponent(id)}`)
     return res
   },
@@ -86,9 +84,9 @@ export const verifiableCredentialService = {
       month: 'long',
       day: 'numeric',
     })
-    const root = vc.proof.merkleRoot.slice(0, 18) + '...'
-    const cid = vc.proof.ipfsCid.slice(0, 20) + '...'
-    const did = vc.credentialSubject.id.slice(0, 24) + '...'
+    const root = `${vc.proof.merkleRoot.slice(0, 18)}...`
+    const cid = `${vc.proof.ipfsCid.slice(0, 20)}...`
+    const did = `${vc.credentialSubject.id.slice(0, 24)}...`
 
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" width="100%" height="100%">
   <defs>
@@ -146,8 +144,7 @@ export const verifiableCredentialService = {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download =
-      filename || `learninghub-certificate-${vc.id.replace(/[^a-zA-Z0-9-]/g, '_')}.svg`
+    a.download = filename || `learninghub-certificate-${vc.id.replace(/[^a-zA-Z0-9-]/g, '_')}.svg`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)

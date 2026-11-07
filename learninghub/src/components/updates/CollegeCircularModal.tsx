@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { X, Building2, ShieldCheck, Send, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { updatesService } from '../../services/updatesService';
-import type { CollegeCircularPayload, StudentUpdate } from '../../types/updates';
+import React, { useState } from 'react'
+import { X, Building2, ShieldCheck, Send, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { updatesService } from '../../services/updatesService'
+import type { CollegeCircularPayload, StudentUpdate } from '../../types/updates'
 
 export interface CollegeCircularModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onCircularPublished?: (circular: StudentUpdate) => void;
+  isOpen: boolean
+  onClose: () => void
+  onCircularPublished?: (circular: StudentUpdate) => void
 }
 
 export const CollegeCircularModal: React.FC<CollegeCircularModalProps> = ({
@@ -29,55 +29,57 @@ export const CollegeCircularModal: React.FC<CollegeCircularModalProps> = ({
     semester: '',
     deadline: '',
     source_url: '',
-  });
+  })
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!formData.title.trim() || !formData.summary.trim()) {
-      setErrorMessage('Notice title and summary are mandatory.');
-      return;
+      setErrorMessage('Notice title and summary are mandatory.')
+      return
     }
     if (!formData.institution.trim() || !formData.department.trim()) {
-      setErrorMessage('Institution and department must be specified.');
-      return;
+      setErrorMessage('Institution and department must be specified.')
+      return
     }
     if (!formData.issuer_name.trim()) {
-      setErrorMessage('Official authority name is required for verification audit.');
-      return;
+      setErrorMessage('Official authority name is required for verification audit.')
+      return
     }
 
-    setIsSubmitting(true);
-    setErrorMessage(null);
+    setIsSubmitting(true)
+    setErrorMessage(null)
 
     try {
-      const res = await updatesService.publishCollegeCircular(formData);
+      const res = await updatesService.publishCollegeCircular(formData)
       if (res) {
-        setSuccessMessage('Authenticated departmental circular published successfully!');
+        setSuccessMessage('Authenticated departmental circular published successfully!')
         setTimeout(() => {
-          setSuccessMessage(null);
-          onCircularPublished?.(res);
-          onClose();
-        }, 1200);
+          setSuccessMessage(null)
+          onCircularPublished?.(res)
+          onClose()
+        }, 1200)
       } else {
-        setErrorMessage('Failed to publish circular. Please try again.');
+        setErrorMessage('Failed to publish circular. Please try again.')
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Error occurred during publishing.');
+      setErrorMessage(err.message || 'Error occurred during publishing.')
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
@@ -319,5 +321,5 @@ export const CollegeCircularModal: React.FC<CollegeCircularModalProps> = ({
         </form>
       </div>
     </div>
-  );
-};
+  )
+}

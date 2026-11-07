@@ -29,7 +29,8 @@ export const HISTORICAL_BENCHMARKS: Record<string, HistoricalShiftBenchmark> = {
     totalMarks: 300,
     durationMinutes: 180,
     difficultyRating: 'MODERATE',
-    shiftDifficultySummary: 'High scoring shift with high math speed requirement and straightforward chemistry.',
+    shiftDifficultySummary:
+      'High scoring shift with high math speed requirement and straightforward chemistry.',
     anchors: [
       { rawMarks: 275, percentile: 99.92, estimatedAir: 1100 },
       { rawMarks: 240, percentile: 99.15, estimatedAir: 12000 },
@@ -56,7 +57,8 @@ export const HISTORICAL_BENCHMARKS: Record<string, HistoricalShiftBenchmark> = {
     totalMarks: 720,
     durationMinutes: 200,
     difficultyRating: 'MODERATE',
-    shiftDifficultySummary: 'Standard NCERT-aligned biology, balanced organic chemistry, and concept-heavy physics.',
+    shiftDifficultySummary:
+      'Standard NCERT-aligned biology, balanced organic chemistry, and concept-heavy physics.',
     anchors: [
       { rawMarks: 715, percentile: 99.99, estimatedAir: 25 },
       { rawMarks: 675, percentile: 99.85, estimatedAir: 2800 },
@@ -109,7 +111,8 @@ export const HISTORICAL_BENCHMARKS: Record<string, HistoricalShiftBenchmark> = {
     totalMarks: 300,
     durationMinutes: 180,
     difficultyRating: 'TOUGH',
-    shiftDifficultySummary: 'Calculus-heavy math, tricky physical chemistry calculations, and conceptual electromagnetism.',
+    shiftDifficultySummary:
+      'Calculus-heavy math, tricky physical chemistry calculations, and conceptual electromagnetism.',
     anchors: [
       { rawMarks: 255, percentile: 99.91, estimatedAir: 1200 },
       { rawMarks: 218, percentile: 99.12, estimatedAir: 12500 },
@@ -136,7 +139,8 @@ export const HISTORICAL_BENCHMARKS: Record<string, HistoricalShiftBenchmark> = {
     totalMarks: 200,
     durationMinutes: 120,
     difficultyRating: 'BRUTAL',
-    shiftDifficultySummary: 'Historic difficulty shift with new elimination-proof options (Only one pair / Only two pairs) pattern.',
+    shiftDifficultySummary:
+      'Historic difficulty shift with new elimination-proof options (Only one pair / Only two pairs) pattern.',
     anchors: [
       { rawMarks: 125, percentile: 99.98, estimatedAir: 50 },
       { rawMarks: 105, percentile: 99.5, estimatedAir: 1200 },
@@ -162,7 +166,8 @@ export const HISTORICAL_BENCHMARKS: Record<string, HistoricalShiftBenchmark> = {
     totalMarks: 200,
     durationMinutes: 60,
     difficultyRating: 'MODERATE',
-    shiftDifficultySummary: 'Speed-based exam with 100 questions in 60 mins. High arithmetic and reasoning weightage.',
+    shiftDifficultySummary:
+      'Speed-based exam with 100 questions in 60 mins. High arithmetic and reasoning weightage.',
     anchors: [
       { rawMarks: 178, percentile: 99.95, estimatedAir: 250 },
       { rawMarks: 162, percentile: 99.1, estimatedAir: 4500 },
@@ -236,7 +241,9 @@ export class PyqPaperService {
         if (rawMarks >= lower.rawMarks && rawMarks <= upper.rawMarks) {
           const ratio = (rawMarks - lower.rawMarks) / (upper.rawMarks - lower.rawMarks)
           estimatedPct = lower.percentile + ratio * (upper.percentile - lower.percentile)
-          estimatedAir = Math.round(lower.estimatedAir - ratio * (lower.estimatedAir - upper.estimatedAir))
+          estimatedAir = Math.round(
+            lower.estimatedAir - ratio * (lower.estimatedAir - upper.estimatedAir)
+          )
           break
         }
       }
@@ -354,7 +361,8 @@ export class PyqPaperService {
       data: {
         examId,
         title: 'JEE Main 2024 (27 Jan Shift 1) Official Paper',
-        description: 'Authentic NTA Computer Based Test with exact Section A (20 MCQs) & Section B (10 Numericals, attempt any 5) pattern.',
+        description:
+          'Authentic NTA Computer Based Test with exact Section A (20 MCQs) & Section B (10 Numericals, attempt any 5) pattern.',
         timeLimit: 180,
         passingScore: 40,
         mode: TestMode.PYQ,
@@ -442,7 +450,8 @@ export class PyqPaperService {
         difficulty: 0.4,
         points: 4,
         order: 1,
-        explanation: 'At equilibrium, $dU/dx = 0 \\implies 4x - 8 = 0 \\implies x = 2\\text{ m}$. Since $d^2U/dx^2 = 4 > 0$, the equilibrium is stable.',
+        explanation:
+          'At equilibrium, $dU/dx = 0 \\implies 4x - 8 = 0 \\implies x = 2\\text{ m}$. Since $d^2U/dx^2 = 4 > 0$, the equilibrium is stable.',
         tags: ['Work, Power & Energy', 'Stable Equilibrium', 'JEE Main 2024'],
         options: {
           create: [
@@ -464,12 +473,11 @@ export class PyqPaperService {
         difficulty: 0.5,
         points: 4,
         order: 2,
-        explanation: 'Magnetic field at center $B = \\frac{\\mu_0 N I}{2 R} = \\frac{(4\\pi \\times 10^{-7})(100)(2)}{2 \\times 0.1} = 4\\pi \\times 10^{-4}\\text{ T}$. Hence $x = 4$.',
+        explanation:
+          'Magnetic field at center $B = \\frac{\\mu_0 N I}{2 R} = \\frac{(4\\pi \\times 10^{-7})(100)(2)}{2 \\times 0.1} = 4\\pi \\times 10^{-4}\\text{ T}$. Hence $x = 4$.',
         tags: ['Magnetic Effects of Current', 'Numerical Section B', 'JEE Main 2024'],
         options: {
-          create: [
-            { text: '4', isCorrect: true, order: 1 },
-          ],
+          create: [{ text: '4', isCorrect: true, order: 1 }],
         },
       },
     })
@@ -483,7 +491,8 @@ export class PyqPaperService {
         difficulty: 0.6,
         points: 4,
         order: 3,
-        explanation: '$[Co(NH_3)_6]^{3+}$ has $Co^{3+} (d^6)$. $NH_3$ acts as a strong field ligand causing complete pairing ($t_{2g}^6 e_g^0$), making it diamagnetic.',
+        explanation:
+          '$[Co(NH_3)_6]^{3+}$ has $Co^{3+} (d^6)$. $NH_3$ acts as a strong field ligand causing complete pairing ($t_{2g}^6 e_g^0$), making it diamagnetic.',
         tags: ['Coordination Compounds', 'Magnetic Character', 'JEE Main 2024'],
         options: {
           create: [
@@ -505,7 +514,8 @@ export class PyqPaperService {
         difficulty: 0.45,
         points: 4,
         order: 4,
-        explanation: 'Using property $\\int_a^b f(x)dx = \\int_a^b f(a+b-x)dx$, $I = \\int_0^{\\pi/2} \\frac{\\cos^3 x}{\\cos^3 x + \\sin^3 x} dx$. Adding both gives $2I = \\int_0^{\\pi/2} 1 dx = \\frac{\\pi}{2} \\implies I = \\frac{\\pi}{4}$.',
+        explanation:
+          'Using property $\\int_a^b f(x)dx = \\int_a^b f(a+b-x)dx$, $I = \\int_0^{\\pi/2} \\frac{\\cos^3 x}{\\cos^3 x + \\sin^3 x} dx$. Adding both gives $2I = \\int_0^{\\pi/2} 1 dx = \\frac{\\pi}{2} \\implies I = \\frac{\\pi}{4}$.',
         tags: ['Definite Integration', 'Properties of Integrals', 'JEE Main 2024'],
         options: {
           create: [
@@ -524,7 +534,8 @@ export class PyqPaperService {
       data: {
         examId,
         title: 'NEET UG 2023 Official Question Paper',
-        description: 'Complete 200-question NTA medical entrance paper with Section A (35 mandatory) and Section B (10 of 15 allowed) for Physics, Chemistry, Botany, and Zoology.',
+        description:
+          'Complete 200-question NTA medical entrance paper with Section A (35 mandatory) and Section B (10 of 15 allowed) for Physics, Chemistry, Botany, and Zoology.',
         timeLimit: 200,
         passingScore: 50,
         mode: TestMode.PYQ,
@@ -600,7 +611,8 @@ export class PyqPaperService {
         difficulty: 0.35,
         points: 4,
         order: 1,
-        explanation: 'Pheophytin is the primary electron acceptor that accepts electrons from excited P680 reaction center in Photosystem II.',
+        explanation:
+          'Pheophytin is the primary electron acceptor that accepts electrons from excited P680 reaction center in Photosystem II.',
         tags: ['Photosynthesis in Higher Plants', 'Light Reaction', 'NEET 2023'],
         options: {
           create: [
@@ -622,7 +634,8 @@ export class PyqPaperService {
         difficulty: 0.3,
         points: 4,
         order: 2,
-        explanation: 'Oxytocin is synthesized by the hypothalamus and stored/released by the posterior pituitary (neurohypophysis), not anterior pituitary.',
+        explanation:
+          'Oxytocin is synthesized by the hypothalamus and stored/released by the posterior pituitary (neurohypophysis), not anterior pituitary.',
         tags: ['Chemical Coordination & Integration', 'Endocrine Glands', 'NEET 2023'],
         options: {
           create: [
@@ -641,7 +654,8 @@ export class PyqPaperService {
       data: {
         examId,
         title: 'GATE CS 2024 Official Paper',
-        description: 'Official Graduate Aptitude Test in Engineering for Computer Science with General Aptitude, CS Core, MSQ zero-negative questions, and NAT numeric ranges.',
+        description:
+          'Official Graduate Aptitude Test in Engineering for Computer Science with General Aptitude, CS Core, MSQ zero-negative questions, and NAT numeric ranges.',
         timeLimit: 180,
         passingScore: 28,
         mode: TestMode.PYQ,
@@ -700,14 +714,27 @@ export class PyqPaperService {
         difficulty: 0.75,
         points: 2,
         order: 1,
-        explanation: 'Regular languages are closed under intersection and complementation. Context-free languages are NOT closed under intersection or complementation.',
+        explanation:
+          'Regular languages are closed under intersection and complementation. Context-free languages are NOT closed under intersection or complementation.',
         tags: ['Theory of Computation', 'Closure Properties', 'GATE CS 2024 MSQ'],
         options: {
           create: [
             { text: 'Every regular language is context-free', isCorrect: true, order: 1 },
-            { text: 'The intersection of two context-free languages is always context-free', isCorrect: false, order: 2 },
-            { text: 'Regular languages are closed under complementation', isCorrect: true, order: 3 },
-            { text: 'Context-free languages are closed under complementation', isCorrect: false, order: 4 },
+            {
+              text: 'The intersection of two context-free languages is always context-free',
+              isCorrect: false,
+              order: 2,
+            },
+            {
+              text: 'Regular languages are closed under complementation',
+              isCorrect: true,
+              order: 3,
+            },
+            {
+              text: 'Context-free languages are closed under complementation',
+              isCorrect: false,
+              order: 4,
+            },
           ],
         },
       },
@@ -723,12 +750,11 @@ export class PyqPaperService {
         difficulty: 0.65,
         points: 2,
         order: 2,
-        explanation: 'Total Cache Size = 64 KB = $64 \\times 1024 = 65,536$ bytes. Line size = 64 bytes. Number of lines = $65536 / 64 = 1024$ lines. Since it is 4-way set associative, Number of Sets = $1024 / 4 = 256$.',
+        explanation:
+          'Total Cache Size = 64 KB = $64 \\times 1024 = 65,536$ bytes. Line size = 64 bytes. Number of lines = $65536 / 64 = 1024$ lines. Since it is 4-way set associative, Number of Sets = $1024 / 4 = 256$.',
         tags: ['Computer Organization', 'Cache Memory', 'GATE CS 2024 NAT'],
         options: {
-          create: [
-            { text: '256', isCorrect: true, order: 1 },
-          ],
+          create: [{ text: '256', isCorrect: true, order: 1 }],
         },
       },
     })

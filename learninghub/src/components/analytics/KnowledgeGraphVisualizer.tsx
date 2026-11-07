@@ -90,7 +90,8 @@ export const KnowledgeGraphVisualizer: React.FC<KnowledgeGraphVisualizerProps> =
         return {
           icon: Lock,
           text: 'Locked',
-          bgColor: 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700',
+          bgColor:
+            'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700',
           dotColor: 'bg-gray-400',
         }
     }
@@ -168,7 +169,15 @@ export const KnowledgeGraphVisualizer: React.FC<KnowledgeGraphVisualizerProps> =
           >
             <div className="flex items-center justify-between text-xs font-black uppercase tracking-wider text-gray-400 pb-1 border-b border-gray-200 dark:border-gray-800">
               <span>Tier {level + 1}</span>
-              <span>{level === 0 ? 'Foundations' : level === 1 ? 'Core' : level === 2 ? 'Intermediate' : 'Advanced'}</span>
+              <span>
+                {level === 0
+                  ? 'Foundations'
+                  : level === 1
+                    ? 'Core'
+                    : level === 2
+                      ? 'Intermediate'
+                      : 'Advanced'}
+              </span>
             </div>
 
             <div className="space-y-3">
@@ -191,8 +200,8 @@ export const KnowledgeGraphVisualizer: React.FC<KnowledgeGraphVisualizerProps> =
                       isSelected
                         ? 'ring-2 ring-indigo-500 shadow-lg bg-indigo-50/20 dark:bg-indigo-950/30 border-indigo-300 dark:border-indigo-700'
                         : isRecommended
-                        ? 'border-indigo-500/60 shadow-md bg-white dark:bg-gray-900'
-                        : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 shadow-sm'
+                          ? 'border-indigo-500/60 shadow-md bg-white dark:bg-gray-900'
+                          : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 shadow-sm'
                     }`}
                   >
                     {isRecommended && (

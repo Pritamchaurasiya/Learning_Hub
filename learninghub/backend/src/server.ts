@@ -226,13 +226,18 @@ async function warmup(): Promise<void> {
 let dbKeepAliveInterval: NodeJS.Timeout | null = null
 const startDbKeepAlive = () => {
   if (dbKeepAliveInterval) clearInterval(dbKeepAliveInterval)
-  dbKeepAliveInterval = setInterval(async () => {
-    try {
-      await prisma.$queryRaw`SELECT 1`
-    } catch (err) {
-      logger.warn(`[Neon KeepAlive] Ping non-fatal: ${err instanceof Error ? err.message : String(err)}`)
-    }
-  }, 3 * 60 * 1000)
+  dbKeepAliveInterval = setInterval(
+    async () => {
+      try {
+        await prisma.$queryRaw`SELECT 1`
+      } catch (err) {
+        logger.warn(
+          `[Neon KeepAlive] Ping non-fatal: ${err instanceof Error ? err.message : String(err)}`
+        )
+      }
+    },
+    3 * 60 * 1000
+  )
   dbKeepAliveInterval.unref()
 }
 
@@ -253,7 +258,9 @@ const connectWithRetry = async (retries = 5, delayMs = 2000): Promise<void> => {
       }
     }
   }
-  logger.error('[Database] Failed to connect to database after all retries; running in resilient fallback mode.')
+  logger.error(
+    '[Database] Failed to connect to database after all retries; running in resilient fallback mode.'
+  )
 }
 
 const startServer = async (): Promise<void> => {

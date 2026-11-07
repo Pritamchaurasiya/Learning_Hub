@@ -6,14 +6,7 @@ import {
   CompensationPackage,
   SimulatedJobListing,
 } from '../../types/career'
-import {
-  Send,
-  Sparkles,
-  TrendingUp,
-  Bot,
-  User,
-  Sliders,
-} from 'lucide-react'
+import { Send, Sparkles, TrendingUp, Bot, User, Sliders } from 'lucide-react'
 
 interface RecruiterSimulationPanelProps {
   job: SimulatedJobListing
@@ -62,9 +55,7 @@ export const RecruiterSimulationPanel: React.FC<RecruiterSimulationPanelProps> =
             </span>
             <span className="text-xs text-slate-400 font-mono">{job.company}</span>
           </div>
-          <h2 className="text-lg sm:text-xl font-bold text-white mt-1">
-            {job.title}
-          </h2>
+          <h2 className="text-lg sm:text-xl font-bold text-white mt-1">{job.title}</h2>
         </div>
 
         {/* Leverage & Current Offer Chip */}
@@ -103,7 +94,9 @@ export const RecruiterSimulationPanel: React.FC<RecruiterSimulationPanelProps> =
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <div className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${persona.avatarColor} flex items-center justify-center text-white font-bold text-xs shadow-sm`}>
+                <div
+                  className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${persona.avatarColor} flex items-center justify-center text-white font-bold text-xs shadow-sm`}
+                >
                   {persona.name.charAt(0)}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -182,26 +175,27 @@ export const RecruiterSimulationPanel: React.FC<RecruiterSimulationPanelProps> =
       </div>
 
       {/* Suggested Response Chips */}
-      {latestRecruiterTurn?.suggestedResponses && latestRecruiterTurn.suggestedResponses.length > 0 && (
-        <div className="space-y-1.5">
-          <div className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-cyan-400" />
-            <span>Recommended Strategic Replies:</span>
+      {latestRecruiterTurn?.suggestedResponses &&
+        latestRecruiterTurn.suggestedResponses.length > 0 && (
+          <div className="space-y-1.5">
+            <div className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-cyan-400" />
+              <span>Recommended Strategic Replies:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {latestRecruiterTurn.suggestedResponses.map((suggestion, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => onSendMessage(suggestion)}
+                  className="text-left text-xs px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-500/40 text-slate-300 hover:text-white transition-colors"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {latestRecruiterTurn.suggestedResponses.map((suggestion, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => onSendMessage(suggestion)}
-                className="text-left text-xs px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-500/40 text-slate-300 hover:text-white transition-colors"
-              >
-                {suggestion}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+        )}
 
       {/* Input Field & Send Action */}
       <form onSubmit={handleSend} className="flex items-center gap-2 pt-2">

@@ -31,7 +31,8 @@ export const ExamQuestionPaperModal = memo(function ExamQuestionPaperModal({
   if (!isOpen) return null
 
   // Group questions by section
-  const sectionsList = sections.length > 0 ? sections : [{ id: 'all', title: 'Complete Examination', order: 1 }]
+  const sectionsList =
+    sections.length > 0 ? sections : [{ id: 'all', title: 'Complete Examination', order: 1 }]
 
   return (
     <AnimatePresence>
@@ -52,11 +53,15 @@ export const ExamQuestionPaperModal = memo(function ExamQuestionPaperModal({
                 <FileText className="w-5 h-5" />
               </div>
               <div>
-                <h3 id="qp-modal-title" className="text-sm font-bold uppercase tracking-wider text-gray-900 dark:text-white">
+                <h3
+                  id="qp-modal-title"
+                  className="text-sm font-bold uppercase tracking-wider text-gray-900 dark:text-white"
+                >
                   Official Question Paper View
                 </h3>
                 <span className="text-xs text-gray-500 dark:text-slate-400 block">
-                  Complete view of all {questions.length} questions. Click any question card to jump to it.
+                  Complete view of all {questions.length} questions. Click any question card to jump
+                  to it.
                 </span>
               </div>
             </div>
@@ -75,10 +80,7 @@ export const ExamQuestionPaperModal = memo(function ExamQuestionPaperModal({
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-8 divide-y divide-gray-100 dark:divide-slate-800/80">
             {sectionsList.map(sec => {
               const secQuestions = questions.filter(
-                q =>
-                  sec.id === 'all' ||
-                  q.section_id === sec.id ||
-                  q.sectionId === sec.id
+                q => sec.id === 'all' || q.section_id === sec.id || q.sectionId === sec.id
               )
 
               if (secQuestions.length === 0 && sectionsList.length > 1) return null
@@ -110,9 +112,10 @@ export const ExamQuestionPaperModal = memo(function ExamQuestionPaperModal({
                         rawAns !== '' &&
                         (!Array.isArray(rawAns) || rawAns.length > 0)
                       const isFlagged = flaggedQuestions.includes(q.id)
-                      const qText = examLanguage === 'hi' && (q.text_hi || q.hindi_text)
-                        ? q.text_hi || q.hindi_text || q.text
-                        : q.text
+                      const qText =
+                        examLanguage === 'hi' && (q.text_hi || q.hindi_text)
+                          ? q.text_hi || q.hindi_text || q.text
+                          : q.text
 
                       return (
                         <div
@@ -167,7 +170,8 @@ export const ExamQuestionPaperModal = memo(function ExamQuestionPaperModal({
                           {q.options && q.options.length > 0 && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                               {q.options.map((opt, optIdx) => {
-                                const optText = examLanguage === 'hi' && opt.text_hi ? opt.text_hi : opt.text
+                                const optText =
+                                  examLanguage === 'hi' && opt.text_hi ? opt.text_hi : opt.text
                                 const isSelected = Array.isArray(rawAns)
                                   ? rawAns.includes(opt.id)
                                   : rawAns === opt.id

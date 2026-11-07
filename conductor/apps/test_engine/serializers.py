@@ -1,6 +1,6 @@
 """Serializers for test engine API."""
 from rest_framework import serializers
-from .models import Question, Option, Test, TestQuestion, TestAttempt, AttemptAnswer
+from .models import Question, Option, Test, TestQuestion, TestSection, TestAttempt, AttemptAnswer, QuestionBookmark
 
 
 class OptionSerializer(serializers.ModelSerializer):
@@ -22,6 +22,25 @@ class QuestionSerializer(serializers.ModelSerializer):
     options = OptionSerializer(many=True, read_only=True)
     topic_name = serializers.CharField(source='topic.name', read_only=True)
     subject_name = serializers.CharField(source='topic.subject.name', read_only=True)
+    test_cases = serializers.SerializerMethodField()
+
+    def get_test_cases(self, obj):
+        raw = getattr(obj, 'test_cases', []) or []
+        if not isinstance(raw, list):
+            return []
+        sanitized = []
+        for tc in raw:
+            if not isinstance(tc, dict):
+                continue
+            if tc.get('is_hidden') or tc.get('hidden'):
+                sanitized.append({
+                    'input': tc.get('input', ''),
+                    'is_hidden': True,
+                    'explanation': 'Hidden test case for automated grading'
+                })
+            else:
+                sanitized.append(tc)
+        return sanitized
 
     class Meta:
         model = Question
@@ -88,12 +107,41 @@ class TestListSerializer(serializers.ModelSerializer):
         ]
 
 
+class TestSectionSerializer(serializers.ModelSerializer):
+    """Test section with navigation and cutoff metadata."""
+    class Meta:
+        model = TestSection
+        fields = [
+            'id', 'name', 'description', 'order', 'duration_minutes',
+            'cutoff_score', 'is_timed', 'allow_backward_navigation',
+            'is_locked', 'max_questions_to_attempt', 'section_type',
+        ]
+
+
+class QuestionBookmarkSerializer(serializers.ModelSerializer):
+    """Bookmarked question detail."""
+    question_text = serializers.CharField(source='question.text', read_only=True)
+    question_type = serializers.CharField(source='question.question_type', read_only=True)
+    topic_name = serializers.CharField(source='question.topic.name', read_only=True)
+    subject_name = serializers.CharField(source='question.topic.subject.name', read_only=True)
+    difficulty = serializers.FloatField(source='question.difficulty', read_only=True)
+
+    class Meta:
+        model = QuestionBookmark
+        fields = [
+            'id', 'question', 'question_text', 'question_type',
+            'topic_name', 'subject_name', 'difficulty', 'test',
+            'notes', 'created_at',
+        ]
+
+
 class TestDetailSerializer(serializers.ModelSerializer):
-    """Test detail with questions."""
+    """Test detail with questions and sections."""
     exam_name = serializers.CharField(source='exam.name', read_only=True)
     exam_code = serializers.CharField(source='exam.code', read_only=True)
     country_name = serializers.CharField(source='exam.country.name', read_only=True)
     question_count = serializers.ReadOnlyField()
+    sections = TestSectionSerializer(many=True, read_only=True)
     questions = serializers.SerializerMethodField()
 
     class Meta:
@@ -103,30 +151,46 @@ class TestDetailSerializer(serializers.ModelSerializer):
             'time_limit_minutes', 'passing_score', 'total_marks',
             'negative_marks_per_question', 'marks_per_correct',
             'exam_name', 'exam_code', 'country_name',
-            'question_count', 'questions',
+            'question_count', 'sections', 'questions',
             'is_ai_generated', 'is_featured',
             'created_at',
         ]
 
     def get_questions(self, obj):
-        tq_list = obj.test_questions.select_related('question').prefetch_related(
+        tq_list = obj.test_questions.select_related('question', 'section').prefetch_related(
             'question__options'
         ).order_by('order')
 
         questions = []
         for tq in tq_list:
             q = tq.question
+            raw_cases = getattr(q, 'test_cases', []) or []
+            sanitized_cases = []
+            if isinstance(raw_cases, list):
+                for tc in raw_cases:
+                    if isinstance(tc, dict):
+                        if tc.get('is_hidden') or tc.get('hidden'):
+                            sanitized_cases.append({
+                                'input': tc.get('input', ''),
+                                'is_hidden': True,
+                                'explanation': 'Hidden test case for automated grading'
+                            })
+                        else:
+                            sanitized_cases.append(tc)
+
             questions.append({
                 'id': str(q.id),
                 'order': tq.order,
                 'marks': tq.marks,
+                'section_id': str(tq.section_id) if tq.section_id else None,
+                'section_name': tq.section.name if tq.section else None,
                 'text': q.text,
                 'question_type': q.question_type,
                 'difficulty': q.difficulty,
                 'bloom_level': q.bloom_level,
                 'code_template': getattr(q, 'code_template', '') or '',
                 'language': getattr(q, 'language', 'python') or 'python',
-                'test_cases': getattr(q, 'test_cases', []) or [],
+                'test_cases': sanitized_cases,
                 'options': [
                     {'id': str(o.id), 'text': o.text, 'order': o.order}
                     for o in q.options.all()

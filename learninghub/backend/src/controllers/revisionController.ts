@@ -58,11 +58,12 @@ export const createCustomCard = asyncHandler(async (req: Request, res: Response)
 
 export const generateCards = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.userId || 'guest-user'
-  const { source, count } = req.body
+  const { source, count, attempt_id } = req.body
 
   const result = await revisionService.generateCards(userId, {
     source: source === 'bookmarks' ? 'bookmarks' : 'mistakes',
     count: count ? Number(count) : 3,
+    attempt_id: attempt_id ? String(attempt_id) : undefined,
   })
 
   sendSuccess(res, result, 'Cards successfully generated', 201)

@@ -59,17 +59,18 @@ export const CountryConsentModal: React.FC = () => {
 
           {/* Description */}
           <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-            LearningHub shows competitive and university entrance exams tailored to your region (e.g.,{' '}
-            <strong className="text-slate-900 dark:text-white">JEE, NEET, & UPSC</strong> in India,{' '}
-            <strong className="text-slate-900 dark:text-white">SAT & ACT</strong> in the US, or{' '}
-            <strong className="text-slate-900 dark:text-white">A-Levels</strong> in the UK).
+            LearningHub shows competitive and university entrance exams tailored to your region
+            (e.g., <strong className="text-slate-900 dark:text-white">JEE, NEET, & UPSC</strong> in
+            India, <strong className="text-slate-900 dark:text-white">SAT & ACT</strong> in the US,
+            or <strong className="text-slate-900 dark:text-white">A-Levels</strong> in the UK).
           </p>
 
           {/* Privacy badge */}
           <div className="flex items-start gap-2.5 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 mb-6">
             <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
             <div className="text-xs text-emerald-800 dark:text-emerald-200 leading-relaxed">
-              <strong>Privacy Guaranteed:</strong> We only detect your country code. We never track, log, or store your exact GPS coordinates.
+              <strong>Privacy Guaranteed:</strong> We only detect your country code. We never track,
+              log, or store your exact GPS coordinates.
             </div>
           </div>
 

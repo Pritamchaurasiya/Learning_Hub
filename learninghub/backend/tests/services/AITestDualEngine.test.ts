@@ -1,34 +1,23 @@
 import { aiTestService } from '../../src/services/AITestService'
 import { testScoringService } from '../../src/services/TestScoringService'
-import { prisma } from '../../src/prismaClient'
+import { prisma } from '@/prismaClient'
 
-// Mock prisma
-jest.mock('../../src/prismaClient', () => ({
-  prisma: {
-    question: {
-      findMany: jest.fn(),
-    },
-    test: {
-      create: jest.fn(),
-      findUnique: jest.fn(),
-    },
-    testResult: {
-      create: jest.fn(),
-      findUnique: jest.fn(),
-      findFirst: jest.fn(),
-      update: jest.fn(),
-      count: jest.fn().mockResolvedValue(1),
-    },
-    testAttemptAnswer: {
-      createMany: jest.fn(),
-      findMany: jest.fn(),
-      upsert: jest.fn(),
-    },
-    topicPerformance: {
-      upsert: jest.fn(),
-    },
-    $transaction: jest.fn((cb: any) => cb(prisma)),
+// Mock prisma client with testAttemptAnswer.deleteMany
+const mockPrisma = {
+  test: { findUnique: jest.fn() },
+  testResult: {
+    findFirst: jest.fn(),
+    findUnique: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    count: jest.fn(),
   },
+  testAttemptAnswer: { upsert: jest.fn(), deleteMany: jest.fn() },
+  $transaction: jest.fn((cb: any) => cb(mockPrisma)),
+}
+
+jest.mock('@/prismaClient', () => ({
+  prisma: mockPrisma,
 }))
 
 // Mock CacheService

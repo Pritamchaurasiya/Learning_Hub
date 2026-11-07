@@ -35,8 +35,12 @@ export interface CertificateData {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const CERT_SECRET = process.env.CERTIFICATE_HMAC_SECRET || process.env.JWT_SECRET || 'learninghub-cert-secret-change-in-production'
-const CERT_BASE_URL = process.env.CERTIFICATE_VERIFY_URL || 'https://certificates.learninghub.app/verify'
+const CERT_SECRET =
+  process.env.CERTIFICATE_HMAC_SECRET ||
+  process.env.JWT_SECRET ||
+  'learninghub-cert-secret-change-in-production'
+const CERT_BASE_URL =
+  process.env.CERTIFICATE_VERIFY_URL || 'https://certificates.learninghub.app/verify'
 
 // ─── Service ─────────────────────────────────────────────────────────────────
 
@@ -104,7 +108,9 @@ export class CertificateService {
     }
 
     if (!completedResult && (!enrollment || !enrollment.completedAt)) {
-      throw new Error('You must complete and pass the course/test before a certificate can be issued')
+      throw new Error(
+        'You must complete and pass the course/test before a certificate can be issued'
+      )
     }
 
     // Determine title
@@ -225,8 +231,7 @@ export class CertificateService {
     const certSigBuf = Buffer.from(certificate.signature || '')
     const expSigBuf = Buffer.from(expectedSignature)
     const signatureValid =
-      certSigBuf.length === expSigBuf.length &&
-      crypto.timingSafeEqual(certSigBuf, expSigBuf)
+      certSigBuf.length === expSigBuf.length && crypto.timingSafeEqual(certSigBuf, expSigBuf)
 
     if (!signatureValid) {
       logger.warn(`[CertificateService] Signature mismatch for certificate ${code}`)

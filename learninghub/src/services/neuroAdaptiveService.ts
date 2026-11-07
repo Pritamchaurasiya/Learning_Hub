@@ -1,8 +1,5 @@
 import { api } from '../utils/api'
-import {
-  CognitiveTelemetryPayload,
-  CognitiveStateEvaluation,
-} from '../types/neuroAdaptive'
+import { CognitiveTelemetryPayload, CognitiveStateEvaluation } from '../types/neuroAdaptive'
 
 export class NeuroAdaptiveService {
   /**

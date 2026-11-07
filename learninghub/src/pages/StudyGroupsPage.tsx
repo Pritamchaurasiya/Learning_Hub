@@ -1,13 +1,5 @@
 import { useState, useEffect } from 'react'
-import {
-  Users,
-  Search,
-  Plus,
-  Radio,
-  Filter,
-  Globe,
-  X,
-} from 'lucide-react'
+import { Users, Search, Plus, Radio, Filter, Globe, X } from 'lucide-react'
 import { studyGroupService, StudyGroup } from '../services/studyGroupService'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -93,7 +85,10 @@ export default function StudyGroupsPage() {
         maxMembers: 150,
         isPrivate: false,
         createdBy: 'You',
-        topics: newTopics.split(',').map(t => t.trim()).filter(Boolean),
+        topics: newTopics
+          .split(',')
+          .map(t => t.trim())
+          .filter(Boolean),
       })
       setGroups(prev => [created, ...prev])
       addToast({ message: `Study Group "${created.name}" created successfully!`, type: 'success' })
@@ -197,9 +192,7 @@ export default function StudyGroupsPage() {
       ) : displayedGroups.length === 0 ? (
         <div className="py-16 text-center rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-3">
           <Users className="w-12 h-12 text-gray-400 mx-auto" />
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-            No Study Groups Found
-          </h3>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">No Study Groups Found</h3>
           <p className="text-sm text-gray-500 max-w-md mx-auto">
             {activeTab === 'my'
               ? 'You haven’t joined any study groups yet. Switch to "Discover Groups" to explore collaborative rooms.'
@@ -234,9 +227,7 @@ export default function StudyGroupsPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                    {group.name}
-                  </h3>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">{group.name}</h3>
                   {group.examTarget && (
                     <span className="text-[11px] text-blue-500 font-semibold block mt-0.5">
                       Target: {group.examTarget}

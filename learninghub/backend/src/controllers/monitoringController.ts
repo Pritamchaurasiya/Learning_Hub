@@ -205,8 +205,9 @@ export const getProcesses = asyncHandler(async (req: Request, res: Response): Pr
   })
 })
 
-export const getPrometheusMetrics = asyncHandler(async (_req: Request, res: Response): Promise<void> => {
-  res.setHeader('Content-Type', register.contentType)
-  res.send(await register.metrics())
-})
-
+export const getPrometheusMetrics = asyncHandler(
+  async (_req: Request, res: Response): Promise<void> => {
+    res.setHeader('Content-Type', register.contentType)
+    res.send(await register.metrics())
+  }
+)

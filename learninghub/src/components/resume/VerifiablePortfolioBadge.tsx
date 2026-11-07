@@ -69,9 +69,7 @@ export const VerifiablePortfolioBadge: React.FC<VerifiablePortfolioBadgeProps> =
                 W3C DID Anchored
               </span>
             </div>
-            <p className="text-xs text-slate-300 font-mono mt-0.5 truncate max-w-md">
-              {didAnchor}
-            </p>
+            <p className="text-xs text-slate-300 font-mono mt-0.5 truncate max-w-md">{didAnchor}</p>
           </div>
         </div>
 
@@ -133,14 +131,18 @@ export const VerifiablePortfolioBadge: React.FC<VerifiablePortfolioBadgeProps> =
 
             <div className="mt-4 space-y-4 text-xs font-mono">
               <div>
-                <span className="text-slate-400 block mb-1">W3C Decentralized Identifier (DID):</span>
+                <span className="text-slate-400 block mb-1">
+                  W3C Decentralized Identifier (DID):
+                </span>
                 <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 break-all select-all">
                   {didAnchor}
                 </div>
               </div>
 
               <div>
-                <span className="text-slate-400 block mb-1">RFC 8785 Canonical SHA-256 Digest:</span>
+                <span className="text-slate-400 block mb-1">
+                  RFC 8785 Canonical SHA-256 Digest:
+                </span>
                 <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-emerald-400 break-all select-all">
                   {canonicalDigest}
                 </div>
@@ -175,7 +177,11 @@ export const VerifiablePortfolioBadge: React.FC<VerifiablePortfolioBadgeProps> =
                 onClick={handleCopyProof}
                 className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center gap-2 border border-slate-700 transition-colors"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? (
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" />
+                )}
                 {copied ? 'Proof Copied!' : 'Copy JSON Proof'}
               </button>
               <button

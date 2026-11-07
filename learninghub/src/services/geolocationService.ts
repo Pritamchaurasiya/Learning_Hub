@@ -15,13 +15,7 @@
 import { fetchApi } from '../utils/api'
 import type { ActiveCountryInfo } from '../types/learningContext'
 
-export type DetectionMethod =
-  | 'profile'
-  | 'geolocation'
-  | 'ip'
-  | 'locale'
-  | 'manual'
-  | 'fallback'
+export type DetectionMethod = 'profile' | 'geolocation' | 'ip' | 'locale' | 'manual' | 'fallback'
 
 export interface GeoDetectionResult {
   countryCode: string | null
@@ -341,8 +335,7 @@ export async function detectCountryPipeline(
   if (savedCountryIdOrCode) {
     const match = availableCountries?.find(
       c =>
-        c.id === savedCountryIdOrCode ||
-        c.code.toUpperCase() === savedCountryIdOrCode.toUpperCase()
+        c.id === savedCountryIdOrCode || c.code.toUpperCase() === savedCountryIdOrCode.toUpperCase()
     )
     if (match) {
       return {
@@ -397,9 +390,7 @@ export async function detectCountryPipeline(
 
   // Signal 5: Explicit Fallback (Default to India or first available country)
   const defaultCountry =
-    availableCountries?.find(c => c.code === 'IN') ||
-    availableCountries?.[0] ||
-    null
+    availableCountries?.find(c => c.code === 'IN') || availableCountries?.[0] || null
 
   return {
     countryCode: defaultCountry?.code ?? 'IN',

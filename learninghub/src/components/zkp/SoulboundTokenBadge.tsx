@@ -1,11 +1,5 @@
 import React from 'react'
-import {
-  Lock,
-  ExternalLink,
-  Sparkles,
-  Award,
-  CheckCircle2,
-} from 'lucide-react'
+import { Lock, ExternalLink, Sparkles, Award, CheckCircle2 } from 'lucide-react'
 import { SoulboundTokenMetadata } from '../../types/zkp'
 
 interface SoulboundTokenBadgeProps {
@@ -58,7 +52,9 @@ export const SoulboundTokenBadge: React.FC<SoulboundTokenBadgeProps> = ({ sbt })
         </div>
         <div>
           <span className="text-[10px] text-slate-500 block uppercase">Chain ID & Network</span>
-          <span className="text-slate-200 block">{sbt.chainId} ({sbt.networkName})</span>
+          <span className="text-slate-200 block">
+            {sbt.chainId} ({sbt.networkName})
+          </span>
         </div>
         <div className="sm:col-span-2 overflow-hidden">
           <span className="text-[10px] text-slate-500 block uppercase">Smart Contract Address</span>

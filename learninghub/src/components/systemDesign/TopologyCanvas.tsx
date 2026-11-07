@@ -1,9 +1,5 @@
 import React from 'react'
-import {
-  ArchitectureTopology,
-  ArchitectureNode,
-  SystemNodeType,
-} from '../../types/systemDesign'
+import { ArchitectureTopology, ArchitectureNode, SystemNodeType } from '../../types/systemDesign'
 import {
   Server,
   Database,
@@ -134,7 +130,9 @@ export const TopologyCanvas: React.FC<TopologyCanvasProps> = ({
 
                 <div>
                   <h4 className="text-sm font-semibold text-white tracking-tight">{node.name}</h4>
-                  <span className="text-[11px] text-slate-400 font-mono uppercase">{node.type}</span>
+                  <span className="text-[11px] text-slate-400 font-mono uppercase">
+                    {node.type}
+                  </span>
                 </div>
               </div>
 
@@ -142,7 +140,9 @@ export const TopologyCanvas: React.FC<TopologyCanvasProps> = ({
               <div className="space-y-1.5 text-xs text-slate-300 font-mono bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Capacity:</span>
-                  <span className="text-slate-200 font-semibold">{node.capacityQps.toLocaleString()} QPS</span>
+                  <span className="text-slate-200 font-semibold">
+                    {node.capacityQps.toLocaleString()} QPS
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Base Latency:</span>
@@ -199,7 +199,9 @@ export const TopologyCanvas: React.FC<TopologyCanvasProps> = ({
               <span className="text-slate-400">{edge.sourceNodeId}</span>
               <span className="text-indigo-400 font-bold">→</span>
               <span className="text-slate-400">{edge.targetNodeId}</span>
-              <span className="text-slate-500">({edge.protocol}, {edge.latencyMs}ms)</span>
+              <span className="text-slate-500">
+                ({edge.protocol}, {edge.latencyMs}ms)
+              </span>
             </div>
           ))}
         </div>

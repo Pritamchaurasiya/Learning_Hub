@@ -1,79 +1,79 @@
-import { WebSocket } from 'ws';
-import { WebSocketService } from './WebSocketService';
-import { prisma } from '../prismaClient';
+import { WebSocket } from 'ws'
+import { WebSocketService } from './WebSocketService'
+import { prisma } from '../prismaClient'
 
 interface AnalyticsChannel {
-  name: string;
-  clients: Set<string>;
+  name: string
+  clients: Set<string>
 }
 
 interface DashboardMetrics {
-  timestamp: number;
-  dau: number;
-  activeTests: number;
-  activeUsers: number;
-  revenue: number;
-  testCompletions: number;
-  avgScore: number;
-  aiCost: number;
-  errors: number;
+  timestamp: number
+  dau: number
+  activeTests: number
+  activeUsers: number
+  revenue: number
+  testCompletions: number
+  avgScore: number
+  aiCost: number
+  errors: number
 }
 
 export class RealtimeAnalyticsService {
-  private wsService: WebSocketService;
-  private channels: Map<string, AnalyticsChannel> = new Map();
-  private metricsCache: DashboardMetrics | null = null;
-  private broadcastInterval: NodeJS.Timeout | null = null;
-  private readonly BROADCAST_INTERVAL = 5000; // 5 seconds
+  private wsService: WebSocketService
+  private channels: Map<string, AnalyticsChannel> = new Map()
+  private metricsCache: DashboardMetrics | null = null
+  private broadcastInterval: NodeJS.Timeout | null = null
+  private readonly BROADCAST_INTERVAL = 5000 // 5 seconds
 
   constructor(wsService: WebSocketService) {
-    this.wsService = wsService;
-    this.initializeChannels();
+    this.wsService = wsService
+    this.initializeChannels()
   }
 
   private initializeChannels(): void {
-    this.channels.set('dashboard:global', { name: 'dashboard:global', clients: new Set() });
-    this.channels.set('admin:platform', { name: 'admin:platform', clients: new Set() });
+    this.channels.set('dashboard:global', { name: 'dashboard:global', clients: new Set() })
+    this.channels.set('admin:platform', { name: 'admin:platform', clients: new Set() })
   }
 
   start(): void {
-    if (this.broadcastInterval) return;
-    
+    if (this.broadcastInterval) return
+
     this.broadcastInterval = setInterval(async () => {
-      await this.broadcastMetrics();
-    }, this.BROADCAST_INTERVAL);
+      await this.broadcastMetrics()
+    }, this.BROADCAST_INTERVAL)
   }
 
   stop(): void {
     if (this.broadcastInterval) {
-      clearInterval(this.broadcastInterval);
-      this.broadcastInterval = null;
+      clearInterval(this.broadcastInterval)
+      this.broadcastInterval = null
     }
   }
 
   async broadcastMetrics(): Promise<void> {
-    const metrics = await this.computeMetrics();
-    this.metricsCache = metrics;
+    const metrics = await this.computeMetrics()
+    this.metricsCache = metrics
 
     // Broadcast to global dashboard channel
     this.broadcast('dashboard:global', {
       type: 'METRICS_UPDATE',
       payload: metrics,
-      timestamp: Date.now()
-    });
+      timestamp: Date.now(),
+    })
 
     // Broadcast to admin channel with additional data
     this.broadcast('admin:platform', {
       type: 'METRICS_UPDATE',
       payload: { ...metrics, adminOnly: true },
-      timestamp: Date.now()
-    });
+      timestamp: Date.now(),
+    })
   }
 
   private async computeMetrics(): Promise<DashboardMetrics> {
-    const now = Date.now();
-    const oneHourAgo = new Date(now - 60 * 60 * 1000);
-    const oneDayAgo = new Date(now - 24 * 60 * 60 * 1000);
+    const now = Date.now()
+    const oneHourAgo = new Date(now - 60 * 60 * 1000)
+    const oneDayAgo = new Date(now - 24 * 60 * 60 * 1000)
 
     try {
       // Parallel queries for efficiency
@@ -85,65 +85,69 @@ export class RealtimeAnalyticsService {
         completionsResult,
         avgScoreResult,
         aiCostResult,
-        errorsResult
+        errorsResult,
       ] = await Promise.all([
         // DAU: unique users with activity in last 24h
-        prisma.activityLog.groupBy({
-          by: ['userId'],
-          where: {
-            createdAt: { gte: oneDayAgo },
-          }
-        }).then((r: Array<{ userId: string }>) => r.length),
+        prisma.activityLog
+          .groupBy({
+            by: ['userId'],
+            where: {
+              createdAt: { gte: oneDayAgo },
+            },
+          })
+          .then((r: Array<{ userId: string }>) => r.length),
         // Active tests currently in progress
         prisma.testResult.count({
           where: {
             status: 'IN_PROGRESS',
-            updatedAt: { gte: oneHourAgo }
-          }
+            updatedAt: { gte: oneHourAgo },
+          },
         }),
         // Active users in last hour
-        prisma.activityLog.groupBy({
-          by: ['userId'],
-          where: {
-            createdAt: { gte: oneHourAgo },
-          }
-        }).then((r: Array<{ userId: string }>) => r.length),
+        prisma.activityLog
+          .groupBy({
+            by: ['userId'],
+            where: {
+              createdAt: { gte: oneHourAgo },
+            },
+          })
+          .then((r: Array<{ userId: string }>) => r.length),
         // Revenue (paid orders)
         prisma.order.aggregate({
           where: {
             status: 'PAID',
-            createdAt: { gte: oneDayAgo }
+            createdAt: { gte: oneDayAgo },
           },
-          _sum: { totalAmount: true }
+          _sum: { totalAmount: true },
         }),
         // Test completions in last hour
         prisma.testResult.count({
           where: {
             status: 'COMPLETED',
-            completedAt: { gte: oneHourAgo }
-          }
+            completedAt: { gte: oneHourAgo },
+          },
         }),
         // Average score (completed tests last hour)
         prisma.testResult.aggregate({
           where: {
             status: 'COMPLETED',
-            completedAt: { gte: oneHourAgo }
+            completedAt: { gte: oneHourAgo },
           },
-          _avg: { percentage: true }
+          _avg: { percentage: true },
         }),
         // AI cost in last hour
         prisma.aICostLog.aggregate({
           where: { createdAt: { gte: oneHourAgo } },
-          _sum: { cost: true }
+          _sum: { cost: true },
         }),
         // Error count (5xx) in last hour
         prisma.auditLog.count({
           where: {
             createdAt: { gte: oneHourAgo },
-            severity: 'ERROR'
-          }
-        })
-      ]);
+            severity: 'ERROR',
+          },
+        }),
+      ])
 
       return {
         timestamp: now,
@@ -154,11 +158,11 @@ export class RealtimeAnalyticsService {
         testCompletions: completionsResult,
         avgScore: Number(avgScoreResult._avg?.percentage || 0),
         aiCost: Number(aiCostResult._sum?.cost || 0),
-        errors: errorsResult
-      };
+        errors: errorsResult,
+      }
     } catch (error) {
-      console.error('[RealtimeAnalytics] Error computing metrics:', error);
-      return this.getDefaultMetrics();
+      console.error('[RealtimeAnalytics] Error computing metrics:', error)
+      return this.getDefaultMetrics()
     }
   }
 
@@ -172,45 +176,45 @@ export class RealtimeAnalyticsService {
       testCompletions: 0,
       avgScore: 0,
       aiCost: 0,
-      errors: 0
-    };
+      errors: 0,
+    }
   }
 
   private broadcast(channelName: string, message: any): void {
-    const channel = this.channels.get(channelName);
-    if (!channel) return;
+    const channel = this.channels.get(channelName)
+    if (!channel) return
 
-    const messageStr = JSON.stringify(message);
+    const messageStr = JSON.stringify(message)
     for (const clientId of channel.clients) {
-      this.wsService.notifyUser(clientId, 'analytics:update', message);
+      this.wsService.notifyUser(clientId, 'analytics:update', message)
     }
   }
 
   subscribe(channelName: string, clientId: string): void {
-    let channel = this.channels.get(channelName);
+    let channel = this.channels.get(channelName)
     if (!channel) {
-      channel = { name: channelName, clients: new Set() };
-      this.channels.set(channelName, channel);
+      channel = { name: channelName, clients: new Set() }
+      this.channels.set(channelName, channel)
     }
-    channel.clients.add(clientId);
+    channel.clients.add(clientId)
   }
 
   unsubscribe(channelName: string, clientId: string): void {
-    const channel = this.channels.get(channelName);
+    const channel = this.channels.get(channelName)
     if (channel) {
-      channel.clients.delete(clientId);
+      channel.clients.delete(clientId)
     }
   }
 
   getCachedMetrics(): DashboardMetrics | null {
-    return this.metricsCache;
+    return this.metricsCache
   }
 
   // Track specific events
   async trackEvent(event: {
-    type: string;
-    userId?: string;
-    metadata?: Record<string, any>;
+    type: string
+    userId?: string
+    metadata?: Record<string, any>
   }): Promise<void> {
     try {
       if (event.userId) {
@@ -220,31 +224,33 @@ export class RealtimeAnalyticsService {
             activityType: (event.type as any) || 'SETTINGS_UPDATE',
             metadata: event.metadata || {},
             ipAddress: '',
-            userAgent: ''
-          }
-        });
+            userAgent: '',
+          },
+        })
       }
     } catch (error) {
-      console.error('[RealtimeAnalytics] Error tracking event:', error);
+      console.error('[RealtimeAnalytics] Error tracking event:', error)
     }
   }
 }
 
 // Singleton instance
-let realtimeAnalyticsInstance: RealtimeAnalyticsService | null = null;
+let realtimeAnalyticsInstance: RealtimeAnalyticsService | null = null
 
-export function getRealtimeAnalyticsService(wsService?: WebSocketService): RealtimeAnalyticsService {
+export function getRealtimeAnalyticsService(
+  wsService?: WebSocketService
+): RealtimeAnalyticsService {
   if (!realtimeAnalyticsInstance && wsService) {
-    realtimeAnalyticsInstance = new RealtimeAnalyticsService(wsService);
+    realtimeAnalyticsInstance = new RealtimeAnalyticsService(wsService)
   }
   if (!realtimeAnalyticsInstance) {
-    throw new Error('RealtimeAnalyticsService not initialized. Call with WebSocketService first.');
+    throw new Error('RealtimeAnalyticsService not initialized. Call with WebSocketService first.')
   }
-  return realtimeAnalyticsInstance;
+  return realtimeAnalyticsInstance
 }
 
 export function initializeRealtimeAnalytics(wsService: WebSocketService): RealtimeAnalyticsService {
-  realtimeAnalyticsInstance = new RealtimeAnalyticsService(wsService);
-  realtimeAnalyticsInstance.start();
-  return realtimeAnalyticsInstance;
+  realtimeAnalyticsInstance = new RealtimeAnalyticsService(wsService)
+  realtimeAnalyticsInstance.start()
+  return realtimeAnalyticsInstance
 }

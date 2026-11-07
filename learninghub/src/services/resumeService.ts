@@ -20,9 +20,7 @@ class ResumeService {
     try {
       const response = await api.get<any>(`/api/v1/resume/generate?targetRole=${role}`)
       const resumePayload =
-        response?.data?.resume ||
-        response?.data?.data?.resume ||
-        response?.resume
+        response?.data?.resume || response?.data?.data?.resume || response?.resume
       if (resumePayload) {
         return resumePayload
       }
@@ -30,13 +28,20 @@ class ResumeService {
       // Fallback to client-side deterministic synthesis for offline / air-gapped demo mode
     }
 
-    return this.synthesizeClientSideResume(role, params?.candidateProfile, params?.telemetryOverride)
+    return this.synthesizeClientSideResume(
+      role,
+      params?.candidateProfile,
+      params?.telemetryOverride
+    )
   }
 
   /**
    * Verifies the cryptographic digest of a resume.
    */
-  async verifyResumeProof(digest: string, signature: string): Promise<{
+  async verifyResumeProof(
+    digest: string,
+    signature: string
+  ): Promise<{
     isValid: boolean
     verifiedAt: string
     statusMessage: string
@@ -65,8 +70,10 @@ class ResumeService {
    * Downloads resume as an ATS-optimized plain text file.
    */
   downloadATSPlainText(resume: VerifiableResumePayload): void {
-    const divider = '================================================================================'
-    const subDivider = '--------------------------------------------------------------------------------'
+    const divider =
+      '================================================================================'
+    const subDivider =
+      '--------------------------------------------------------------------------------'
 
     let text = `${resume.profile.fullName.toUpperCase()}\n`
     text += `${resume.roleTitle.toUpperCase()}\n`
@@ -124,7 +131,11 @@ class ResumeService {
     text += `\nDigest SHA-256: ${resume.cryptographicProof.canonicalDigestSha256}\n`
     text += `HMAC Signature: ${resume.cryptographicProof.signatureHmac}\n`
 
-    this.triggerBrowserDownload(text, `resume_${resume.targetRole.toLowerCase()}_ats.txt`, 'text/plain')
+    this.triggerBrowserDownload(
+      text,
+      `resume_${resume.targetRole.toLowerCase()}_ats.txt`,
+      'text/plain'
+    )
   }
 
   /**
@@ -192,7 +203,11 @@ class ResumeService {
     }
 
     const jsonString = JSON.stringify(jsonResume, null, 2)
-    this.triggerBrowserDownload(jsonString, `resume_${resume.targetRole.toLowerCase()}_schema.json`, 'application/json')
+    this.triggerBrowserDownload(
+      jsonString,
+      `resume_${resume.targetRole.toLowerCase()}_schema.json`,
+      'application/json'
+    )
   }
 
   /**
@@ -200,7 +215,11 @@ class ResumeService {
    */
   downloadLatexResume(resume: VerifiableResumePayload): void {
     const latexString = this.getLatexContent(resume)
-    this.triggerBrowserDownload(latexString, `resume_${resume.targetRole.toLowerCase()}.tex`, 'text/x-tex')
+    this.triggerBrowserDownload(
+      latexString,
+      `resume_${resume.targetRole.toLowerCase()}.tex`,
+      'text/x-tex'
+    )
   }
 
   /**
@@ -296,7 +315,15 @@ class ResumeService {
     if (payload.rawText) {
       const email = payload.rawText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0]
       if (email) profile.email = email
-      const keywords = ['TypeScript', 'React', 'Node.js', 'Python', 'PostgreSQL', 'Docker', 'Kubernetes']
+      const keywords = [
+        'TypeScript',
+        'React',
+        'Node.js',
+        'Python',
+        'PostgreSQL',
+        'Docker',
+        'Kubernetes',
+      ]
       for (const kw of keywords) {
         if (payload.rawText.toLowerCase().includes(kw.toLowerCase())) importedSkills.push(kw)
       }
@@ -319,7 +346,9 @@ class ResumeService {
     explorerUrl: string
   }> {
     try {
-      const response = await api.post<any>('/api/v1/resume/anchor-ipfs', { targetRole: resume.targetRole })
+      const response = await api.post<any>('/api/v1/resume/anchor-ipfs', {
+        targetRole: resume.targetRole,
+      })
       const data = response?.data?.data || response?.data || response
       if (data && data.ipfsCid) return data
     } catch {
@@ -335,7 +364,6 @@ class ResumeService {
       explorerUrl: `https://polygonscan.com/tx/0x${digest}`,
     }
   }
-
 
   /**
    * Helper to trigger a browser file download.
@@ -390,20 +418,39 @@ class ResumeService {
       generatedAt: new Date().toISOString(),
       profile: {
         fullName: candidateProfile?.fullName || 'Alex Morgan',
-        headline: candidateProfile?.headline || `${roleTitles[role]} | Distributed Systems & High-Throughput Engines`,
+        headline:
+          candidateProfile?.headline ||
+          `${roleTitles[role]} | Distributed Systems & High-Throughput Engines`,
         email: candidateProfile?.email || 'alex.morgan.dev@learninghub.io',
         phone: candidateProfile?.phone || '+1 (555) 019-2834',
         location: candidateProfile?.location || 'San Francisco, CA (Open to Remote)',
         githubUrl: candidateProfile?.githubUrl || 'https://github.com/alexmorgan-dev',
         linkedinUrl: candidateProfile?.linkedinUrl || 'https://linkedin.com/in/alexmorgan-dev',
-        portfolioUrl: candidateProfile?.portfolioUrl || 'https://learninghub.io/portfolio/alex-morgan',
-        didIdentifier: candidateProfile?.didIdentifier || 'did:polygon:0x71C665C1e78451bEE7065CA80f5338749b75F9B7',
+        portfolioUrl:
+          candidateProfile?.portfolioUrl || 'https://learninghub.io/portfolio/alex-morgan',
+        didIdentifier:
+          candidateProfile?.didIdentifier ||
+          'did:polygon:0x71C665C1e78451bEE7065CA80f5338749b75F9B7',
       },
       summary: summaries[role],
       skillsMatrix: {
         languages: ['TypeScript', 'JavaScript (ES2024)', 'Python 3.12', 'SQL', 'Go', 'C++'],
-        frameworks: ['React 18 / Vite', 'Node.js / Express', 'Django / REST Framework', 'Tailwind CSS', 'Redux', 'Prisma ORM'],
-        systemsAndCloud: ['PostgreSQL (Neon / pgvector)', 'Redis / BullMQ', 'Docker / Kubernetes', 'WebSockets (Socket.io)', 'AWS / S3', 'Nginx'],
+        frameworks: [
+          'React 18 / Vite',
+          'Node.js / Express',
+          'Django / REST Framework',
+          'Tailwind CSS',
+          'Redux',
+          'Prisma ORM',
+        ],
+        systemsAndCloud: [
+          'PostgreSQL (Neon / pgvector)',
+          'Redis / BullMQ',
+          'Docker / Kubernetes',
+          'WebSockets (Socket.io)',
+          'AWS / S3',
+          'Nginx',
+        ],
         algorithmicCompetencies: [
           'Bayesian Knowledge Tracing (BKT)',
           'Dynamic Programming & Bitmasking',
@@ -537,7 +584,15 @@ class ResumeService {
           'Exceptional ATS optimization: All primary industry keywords and metrics are verified.',
           'Quantified impact bullets exceed standard recruitment thresholds (>= 90% metrics presence).',
         ],
-        detectedKeywords: ['distributed systems', 'microservices', 'redis', 'latency', 'typescript', 'react', 'node.js'],
+        detectedKeywords: [
+          'distributed systems',
+          'microservices',
+          'redis',
+          'latency',
+          'typescript',
+          'react',
+          'node.js',
+        ],
         missingKeywords: [],
       },
       cryptographicProof: {

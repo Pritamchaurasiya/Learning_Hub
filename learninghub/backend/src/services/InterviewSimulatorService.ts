@@ -29,7 +29,8 @@ export interface InterviewMessage {
   text: string
   timestamp: string
   codeSnippet?: string
-  suggestedAction?: 'ask_clarification' | 'sketch_approach' | 'write_code' | 'test_edge_cases' | 'submit_solution'
+  suggestedAction?:
+    'ask_clarification' | 'sketch_approach' | 'write_code' | 'test_edge_cases' | 'submit_solution'
 }
 
 export interface ProgressiveHint {
@@ -41,7 +42,12 @@ export interface ProgressiveHint {
 
 export interface RubricFactorScore {
   name: string
-  factor: 'PROBLEM_SOLVING' | 'ALGORITHMIC_EFFICIENCY' | 'TECHNICAL_COMMUNICATION' | 'CODE_QUALITY' | 'SYSTEM_SCALABILITY'
+  factor:
+    | 'PROBLEM_SOLVING'
+    | 'ALGORITHMIC_EFFICIENCY'
+    | 'TECHNICAL_COMMUNICATION'
+    | 'CODE_QUALITY'
+    | 'SYSTEM_SCALABILITY'
   score: number // 0 - 100
   weight: number
   feedback: string
@@ -177,13 +183,24 @@ export class LRUCacheWithTTL<T> {
 }`,
     },
     clarificationAnswers: {
-      'capacity limits': 'Capacity is fixed at initialization, e.g., 1000 items. Memory footprint is strictly bounded.',
-      'duplicate keys': 'Putting an existing key updates its value, resets its TTL, and moves it to most recently used.',
-      'negative ttl': 'Keys with negative or zero TTL expire immediately and should not be returned by get.',
+      'capacity limits':
+        'Capacity is fixed at initialization, e.g., 1000 items. Memory footprint is strictly bounded.',
+      'duplicate keys':
+        'Putting an existing key updates its value, resets its TTL, and moves it to most recently used.',
+      'negative ttl':
+        'Keys with negative or zero TTL expire immediately and should not be returned by get.',
     },
     testCases: [
-      { input: 'put("a", 1, 10000); get("a")', expected: '1', explanation: 'Direct retrieval before expiry' },
-      { input: 'put("a", 1); put("b", 2); put("c", 3); get("a")', expected: '-1', explanation: 'Key a evicted when capacity is 2' },
+      {
+        input: 'put("a", 1, 10000); get("a")',
+        expected: '1',
+        explanation: 'Direct retrieval before expiry',
+      },
+      {
+        input: 'put("a", 1); put("b", 2); put("c", 3); get("a")',
+        expected: '-1',
+        explanation: 'Key a evicted when capacity is 2',
+      },
     ],
     hints: [
       {
@@ -263,12 +280,19 @@ export class FeedDistributionBroker {
 }`,
     },
     clarificationAnswers: {
-      celebrity: 'Celebrity accounts (>500k followers) must use fan-out on read (pull) to prevent write amplification. Regular accounts use fan-out on write (push).',
-      consistency: 'Eventual consistency within 1 second is acceptable; feed ordering must respect Lamport logical timestamps.',
-      storage: 'Hot feed (last 30 days) stored in Redis Sorted Sets; cold feed archived in ScyllaDB/Cassandra.',
+      celebrity:
+        'Celebrity accounts (>500k followers) must use fan-out on read (pull) to prevent write amplification. Regular accounts use fan-out on write (push).',
+      consistency:
+        'Eventual consistency within 1 second is acceptable; feed ordering must respect Lamport logical timestamps.',
+      storage:
+        'Hot feed (last 30 days) stored in Redis Sorted Sets; cold feed archived in ScyllaDB/Cassandra.',
     },
     testCases: [
-      { input: 'publishActivity({actorId: "u1", verb: "LIKE", targetId: "post_9"})', expected: 'Delivered', explanation: 'Atomic event broadcast' },
+      {
+        input: 'publishActivity({actorId: "u1", verb: "LIKE", targetId: "post_9"})',
+        expected: 'Delivered',
+        explanation: 'Atomic event broadcast',
+      },
     ],
     hints: [
       {
@@ -348,10 +372,15 @@ export class OrderBook {
     },
     clarificationAnswers: {
       ties: 'When prices are identical, the earliest timestamp has priority (Price-Time FIFO).',
-      cancellation: 'Order cancellation by ID must unlink from doubly-linked list bucket without scanning entire book.',
+      cancellation:
+        'Order cancellation by ID must unlink from doubly-linked list bucket without scanning entire book.',
     },
     testCases: [
-      { input: 'placeOrder(BUY, 100, 10); placeOrder(SELL, 99, 5)', expected: 'Matched 5 at 100', explanation: 'Aggressive crossing order execution' },
+      {
+        input: 'placeOrder(BUY, 100, 10); placeOrder(SELL, 99, 5)',
+        expected: 'Matched 5 at 100',
+        explanation: 'Aggressive crossing order execution',
+      },
     ],
     hints: [
       {
@@ -409,7 +438,7 @@ export class InterviewSimulatorService {
       difficulty: q.difficulty,
       targetRole: q.targetRole,
       companyStyle: q.companyStyle,
-      description: q.problemStatement.slice(0, 180) + '...',
+      description: `${q.problemStatement.slice(0, 180)}...`,
     }))
   }
 
@@ -468,7 +497,9 @@ export class InterviewSimulatorService {
     }
 
     this.sessions.set(sessionId, session)
-    logger.info(`[InterviewSimulatorService] Session ${sessionId} started for user ${params.userId}.`)
+    logger.info(
+      `[InterviewSimulatorService] Session ${sessionId} started for user ${params.userId}.`
+    )
     return session
   }
 
@@ -476,6 +507,40 @@ export class InterviewSimulatorService {
    * Fetches an existing interview session
    */
   public getSession(sessionId: string): InterviewSession | null {
+    if (
+      !this.sessions.has(sessionId) &&
+      (sessionId === 'mock-int-demo-default' || sessionId.startsWith('mock-int-demo-'))
+    ) {
+      const q = INTERVIEW_BLUEPRINTS[0]
+      const demoSession: InterviewSession = {
+        id: sessionId,
+        userId: 'demo-candidate',
+        track: 'ALGORITHM_CODING',
+        difficulty: 'SENIOR',
+        persona: 'SOPHIA_ALGO_SPECIALIST',
+        question: q,
+        currentStage: 'CLARIFICATION',
+        transcript: [
+          {
+            id: 'msg-demo-1',
+            sender: 'interviewer',
+            persona: 'SOPHIA_ALGO_SPECIALIST',
+            text: "Hi there! I'm Sophia, Algorithm & Core Systems Specialist. Today we'll explore the Distributed LRU Cache with TTL Eviction. I value clean invariants, optimal asymptotic time/space bounds, and clear communication. Take a moment to read through the requirements and ask any scoping questions before writing code!",
+            timestamp: new Date().toISOString(),
+            suggestedAction: 'ask_clarification',
+          },
+        ],
+        candidateCode: q.starterCode.javascript,
+        whiteboardNotes:
+          '# Architecture Scratchpad\n- Target: O(1) get & put\n- Sharding key space to minimize lock contention\n- Handling TTL expiration gracefully',
+        activeLanguage: 'javascript',
+        hintsRequested: 0,
+        unlockedHints: [],
+        startedAt: new Date().toISOString(),
+      }
+      this.sessions.set(sessionId, demoSession)
+      return demoSession
+    }
     return this.sessions.get(sessionId) || null
   }
 
@@ -493,7 +558,10 @@ export class InterviewSimulatorService {
     interviewerResponse: InterviewMessage
     stageTransitioned: boolean
   } {
-    const session = this.sessions.get(params.sessionId)
+    let session = this.sessions.get(params.sessionId)
+    if (!session && (params.sessionId === 'mock-int-demo-default' || params.sessionId.startsWith('mock-int-demo-'))) {
+      session = this.getSession(params.sessionId) || undefined
+    }
     if (!session) {
       throw new Error(`Interview session ${params.sessionId} not found.`)
     }
@@ -549,7 +617,10 @@ export class InterviewSimulatorService {
     hint: ProgressiveHint
     totalHintsUnlocked: number
   } {
-    const session = this.sessions.get(sessionId)
+    let session = this.sessions.get(sessionId)
+    if (!session && (sessionId === 'mock-int-demo-default' || sessionId.startsWith('mock-int-demo-'))) {
+      session = this.getSession(sessionId) || undefined
+    }
     if (!session) {
       throw new Error(`Interview session ${sessionId} not found.`)
     }
@@ -593,7 +664,10 @@ export class InterviewSimulatorService {
    * Evaluates the candidate's full interview performance across the 5-factor rubric
    */
   public evaluateSession(sessionId: string): InterviewEvaluationReport {
-    const session = this.sessions.get(sessionId)
+    let session = this.sessions.get(sessionId)
+    if (!session && (sessionId === 'mock-int-demo-default' || sessionId.startsWith('mock-int-demo-'))) {
+      session = this.getSession(sessionId) || undefined
+    }
     if (!session) {
       throw new Error(`Interview session ${sessionId} not found.`)
     }
@@ -618,7 +692,10 @@ export class InterviewSimulatorService {
     const hasLinkedOrRecency = /next|prev|delete|expiresAt|order/i.test(session.candidateCode)
     const algoScore = Math.max(
       40,
-      Math.min(98, 70 + (hasHashOrMap ? 15 : 0) + (hasLinkedOrRecency ? 12 : 0) - hintsPenalty * 0.5)
+      Math.min(
+        98,
+        70 + (hasHashOrMap ? 15 : 0) + (hasLinkedOrRecency ? 12 : 0) - hintsPenalty * 0.5
+      )
     )
 
     // 3. Technical Communication (0-100)
@@ -636,7 +713,9 @@ export class InterviewSimulatorService {
     )
 
     // 5. System Scalability & Edge Handling (0-100)
-    const mentionsEdgeCases = /capacity|null|undefined|expire|-1|bound|error|limit/i.test(session.candidateCode)
+    const mentionsEdgeCases = /capacity|null|undefined|expire|-1|bound|error|limit/i.test(
+      session.candidateCode
+    )
     const scaleScore = Math.max(
       40,
       Math.min(92, 60 + (mentionsEdgeCases ? 22 : 5) - (session.hintsRequested > 2 ? 10 : 0))
@@ -652,7 +731,10 @@ export class InterviewSimulatorService {
           problemSolvingScore >= 80
             ? 'Strong structured breakdown from conceptual requirements down to concrete data structures.'
             : 'Good initial understanding; would benefit from validating edge case boundaries before implementing core loops.',
-        positiveSignals: ['Asked clarifying scope questions', 'Identified primary trade-offs early'],
+        positiveSignals: [
+          'Asked clarifying scope questions',
+          'Identified primary trade-offs early',
+        ],
         growthAreas: ['Proactively verify input constraints with sample dry-runs'],
       },
       {
@@ -664,7 +746,10 @@ export class InterviewSimulatorService {
           algoScore >= 80
             ? 'Demonstrated strong asymptotic discipline, achieving optimal time bounds without extraneous allocations.'
             : 'Asymptotics are viable, but intermediate collections could be streamlined to preserve O(1) amortized bounds.',
-        positiveSignals: ['Leveraged appropriate indexing structure', 'Avoided O(N) linear scans on hot paths'],
+        positiveSignals: [
+          'Leveraged appropriate indexing structure',
+          'Avoided O(N) linear scans on hot paths',
+        ],
         growthAreas: ['Formalize mathematical invariants before committing to state mutations'],
       },
       {
@@ -676,7 +761,10 @@ export class InterviewSimulatorService {
           commScore >= 80
             ? 'Articulate reasoning. Kept the interviewer actively engaged throughout the thought process.'
             : 'Communicated key insights, but speaking out loud while writing loops will elevate collaborative signaling.',
-        positiveSignals: ['Maintained active conversational dialogue', 'Clearly explained rationale for data structures'],
+        positiveSignals: [
+          'Maintained active conversational dialogue',
+          'Clearly explained rationale for data structures',
+        ],
         growthAreas: ['Summarize architectural decisions before writing large blocks of syntax'],
       },
       {
@@ -688,7 +776,10 @@ export class InterviewSimulatorService {
           codeScore >= 80
             ? 'Clean, idiomatic structure with meaningful naming and modular decomposition.'
             : 'Readable implementation. Adding explicit error bounds and helper extractions will improve modularity.',
-        positiveSignals: ['Idiomatic language conventions used', 'Self-documenting method signatures'],
+        positiveSignals: [
+          'Idiomatic language conventions used',
+          'Self-documenting method signatures',
+        ],
         growthAreas: ['Extract complex conditionals into semantic helper predicates'],
       },
       {
@@ -701,13 +792,13 @@ export class InterviewSimulatorService {
             ? 'Addressed concurrency, capacity overflow, and expiration boundaries thoroughly.'
             : 'Handled fundamental paths; ensure boundary checks (e.g. capacity = 0, TTL expiration races) are prioritized.',
         positiveSignals: ['Accounted for memory bounding and eviction triggers'],
-        growthAreas: ['Consider thread-safe locking granularity or read-write locks for high concurrency'],
+        growthAreas: [
+          'Consider thread-safe locking granularity or read-write locks for high concurrency',
+        ],
       },
     ]
 
-    const overallScore = Math.round(
-      factorScores.reduce((acc, f) => acc + f.score * f.weight, 0)
-    )
+    const overallScore = Math.round(factorScores.reduce((acc, f) => acc + f.score * f.weight, 0))
 
     let hiringRecommendation: InterviewEvaluationReport['hiringRecommendation'] = 'LEANING_HIRE'
     if (overallScore >= 88) hiringRecommendation = 'STRONG_HIRE'
@@ -737,7 +828,9 @@ export class InterviewSimulatorService {
         'Receptive to interviewer feedback during collaborative turns',
       ],
       weaknesses: [
-        session.hintsRequested > 1 ? `Relied on ${session.hintsRequested} hints during implementation phase` : 'Could verify boundary test cases with formal assertions earlier',
+        session.hintsRequested > 1
+          ? `Relied on ${session.hintsRequested} hints during implementation phase`
+          : 'Could verify boundary test cases with formal assertions earlier',
         'Consider elaborating on distributed failover scenarios in production',
       ],
       recommendedRevisionTopics: [
@@ -750,7 +843,9 @@ export class InterviewSimulatorService {
     }
 
     session.evaluation = report
-    logger.info(`[InterviewSimulatorService] Session ${sessionId} evaluated. Overall score: ${overallScore}. Recommendation: ${hiringRecommendation}`)
+    logger.info(
+      `[InterviewSimulatorService] Session ${sessionId} evaluated. Overall score: ${overallScore}. Recommendation: ${hiringRecommendation}`
+    )
     return report
   }
 
@@ -810,7 +905,12 @@ export class InterviewSimulatorService {
 
     // Check for explicit clarification questions
     for (const [key, answer] of Object.entries(session.question.clarificationAnswers)) {
-      if (textLower.includes(key.toLowerCase()) || textLower.includes('how many') || textLower.includes('capacity') || textLower.includes('bound')) {
+      if (
+        textLower.includes(key.toLowerCase()) ||
+        textLower.includes('how many') ||
+        textLower.includes('capacity') ||
+        textLower.includes('bound')
+      ) {
         return {
           responseText: `Great question regarding ${key}. ${answer}. How does that constraint influence your choice of data structure?`,
           nextStage: 'HIGH_LEVEL_DESIGN',
@@ -821,7 +921,13 @@ export class InterviewSimulatorService {
 
     // Stage progression logic
     if (stage === 'CLARIFICATION' || stage === 'GREETING') {
-      if (textLower.includes('approach') || textLower.includes('map') || textLower.includes('hash') || textLower.includes('tree') || textLower.includes('list')) {
+      if (
+        textLower.includes('approach') ||
+        textLower.includes('map') ||
+        textLower.includes('hash') ||
+        textLower.includes('tree') ||
+        textLower.includes('list')
+      ) {
         return {
           responseText:
             persona === 'ALEX_STAFF_ARCHITECT'
@@ -840,7 +946,12 @@ export class InterviewSimulatorService {
     }
 
     if (stage === 'HIGH_LEVEL_DESIGN' || stage === 'IMPLEMENTATION') {
-      if (code.includes('class') || code.includes('def') || code.includes('function') || code.length > 120) {
+      if (
+        code.includes('class') ||
+        code.includes('def') ||
+        code.includes('function') ||
+        code.length > 120
+      ) {
         return {
           responseText:
             persona === 'ALEX_STAFF_ARCHITECT'

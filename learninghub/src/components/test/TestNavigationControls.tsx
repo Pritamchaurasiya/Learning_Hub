@@ -43,7 +43,7 @@ export const TestNavigationControls: FC<TestNavigationControlsProps> = ({
   onMarkForReviewAndNext,
   onClearResponse,
   isCurrentAnswered = false,
-  }) => {
+}) => {
   if (assessmentMode === 'adaptive') {
     return (
       <div

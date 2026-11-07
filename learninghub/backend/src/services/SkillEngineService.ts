@@ -54,14 +54,17 @@ const DEFAULT_BKT: BKTParameters = {
 const MASTERY_THRESHOLD = 0.85
 
 // Canonical Concept Skills Repository
-const INITIAL_SKILLS: Array<Omit<ConceptSkillNode, 'masteryProbability' | 'status' | 'practiceCount'>> = [
+const INITIAL_SKILLS: Array<
+  Omit<ConceptSkillNode, 'masteryProbability' | 'status' | 'practiceCount'>
+> = [
   {
     id: 'skill-asymptotic',
     name: 'Asymptotic Analysis & Invariants',
     code: 'CS-ALG-101',
     category: 'Algorithms',
     tier: 'FOUNDATIONS',
-    description: 'Big-O, Omega, Theta notation, recurrence relations, and algorithmic upper/lower bounds.',
+    description:
+      'Big-O, Omega, Theta notation, recurrence relations, and algorithmic upper/lower bounds.',
     prerequisites: [],
     practiceWorkspaceUrl: '/problems/complexity-analysis',
     ebookChapterUrl: '/ebooks/algorithms/chapter-1',
@@ -72,7 +75,8 @@ const INITIAL_SKILLS: Array<Omit<ConceptSkillNode, 'masteryProbability' | 'statu
     code: 'CS-DS-102',
     category: 'Data Structures',
     tier: 'FOUNDATIONS',
-    description: 'Contiguous memory layout, sliding windows, prefix sums, and two-pointer traversal.',
+    description:
+      'Contiguous memory layout, sliding windows, prefix sums, and two-pointer traversal.',
     prerequisites: ['skill-asymptotic'],
     practiceWorkspaceUrl: '/problems/two-sum-ii',
     ebookChapterUrl: '/ebooks/algorithms/chapter-2',
@@ -83,7 +87,8 @@ const INITIAL_SKILLS: Array<Omit<ConceptSkillNode, 'masteryProbability' | 'statu
     code: 'CS-ALG-201',
     category: 'Algorithms',
     tier: 'CORE',
-    description: 'Monotonic predicate search, discrete search spaces, boundary handling, and float search.',
+    description:
+      'Monotonic predicate search, discrete search spaces, boundary handling, and float search.',
     prerequisites: ['skill-arrays-pointers'],
     practiceWorkspaceUrl: '/problems/koko-eating-bananas',
     ebookChapterUrl: '/ebooks/algorithms/chapter-3',
@@ -94,7 +99,8 @@ const INITIAL_SKILLS: Array<Omit<ConceptSkillNode, 'masteryProbability' | 'statu
     code: 'CS-ALG-202',
     category: 'Algorithms',
     tier: 'CORE',
-    description: 'Call stack dynamics, decision tree branching, state pruning, and combinatorial generation.',
+    description:
+      'Call stack dynamics, decision tree branching, state pruning, and combinatorial generation.',
     prerequisites: ['skill-arrays-pointers'],
     practiceWorkspaceUrl: '/problems/subsets-ii',
     ebookChapterUrl: '/ebooks/algorithms/chapter-4',
@@ -105,7 +111,8 @@ const INITIAL_SKILLS: Array<Omit<ConceptSkillNode, 'masteryProbability' | 'statu
     code: 'CS-DS-301',
     category: 'Data Structures',
     tier: 'INTERMEDIATE',
-    description: 'BFS, DFS, Kahn topological sort, cycle detection, and strongly connected components.',
+    description:
+      'BFS, DFS, Kahn topological sort, cycle detection, and strongly connected components.',
     prerequisites: ['skill-recursion-backtracking'],
     practiceWorkspaceUrl: '/problems/course-schedule',
     ebookChapterUrl: '/ebooks/algorithms/chapter-5',
@@ -116,7 +123,8 @@ const INITIAL_SKILLS: Array<Omit<ConceptSkillNode, 'masteryProbability' | 'statu
     code: 'CS-ALG-401',
     category: 'Algorithms',
     tier: 'ADVANCED',
-    description: 'Optimal substructure, overlapping subproblems, state compression, and DAG DP transitions.',
+    description:
+      'Optimal substructure, overlapping subproblems, state compression, and DAG DP transitions.',
     prerequisites: ['skill-recursion-backtracking', 'skill-binary-search'],
     practiceWorkspaceUrl: '/problems/coin-change-ii',
     ebookChapterUrl: '/ebooks/algorithms/chapter-6',
@@ -127,7 +135,8 @@ const INITIAL_SKILLS: Array<Omit<ConceptSkillNode, 'masteryProbability' | 'statu
     code: 'CS-SYS-402',
     category: 'Systems',
     tier: 'ADVANCED',
-    description: 'Mutexes, semaphores, lock-free queues, race condition mitigation, and memory barriers.',
+    description:
+      'Mutexes, semaphores, lock-free queues, race condition mitigation, and memory barriers.',
     prerequisites: ['skill-trees-graphs'],
     practiceWorkspaceUrl: '/problems/dining-philosophers',
     ebookChapterUrl: '/ebooks/systems/chapter-1',
@@ -135,19 +144,32 @@ const INITIAL_SKILLS: Array<Omit<ConceptSkillNode, 'masteryProbability' | 'statu
 ]
 
 // In-memory store for student skill mastery beliefs
-const USER_SKILL_MASTERY_STORE = new Map<string, Map<string, { p: number; count: number; lastDate: string }>>()
+const USER_SKILL_MASTERY_STORE = new Map<
+  string,
+  Map<string, { p: number; count: number; lastDate: string }>
+>()
 
 export class SkillEngineService {
-  private getUserMasteries(userId: string): Map<string, { p: number; count: number; lastDate: string }> {
+  private getUserMasteries(
+    userId: string
+  ): Map<string, { p: number; count: number; lastDate: string }> {
     if (!USER_SKILL_MASTERY_STORE.has(userId)) {
       const map = new Map<string, { p: number; count: number; lastDate: string }>()
       // Seed with initial baseline mastery
       map.set('skill-asymptotic', { p: 0.9, count: 5, lastDate: new Date().toISOString() })
       map.set('skill-arrays-pointers', { p: 0.86, count: 4, lastDate: new Date().toISOString() })
       map.set('skill-binary-search', { p: 0.65, count: 3, lastDate: new Date().toISOString() })
-      map.set('skill-recursion-backtracking', { p: 0.52, count: 2, lastDate: new Date().toISOString() })
+      map.set('skill-recursion-backtracking', {
+        p: 0.52,
+        count: 2,
+        lastDate: new Date().toISOString(),
+      })
       map.set('skill-trees-graphs', { p: 0.35, count: 1, lastDate: new Date().toISOString() })
-      map.set('skill-dynamic-programming', { p: 0.15, count: 0, lastDate: new Date().toISOString() })
+      map.set('skill-dynamic-programming', {
+        p: 0.15,
+        count: 0,
+        lastDate: new Date().toISOString(),
+      })
       map.set('skill-system-concurrency', { p: 0.15, count: 0, lastDate: new Date().toISOString() })
       USER_SKILL_MASTERY_STORE.set(userId, map)
     }
@@ -303,7 +325,9 @@ export class SkillEngineService {
       }
     }
 
-    logger.info(`[SkillEngineService] BKT interaction user=${userId}, skill=${skillId}, correct=${isCorrect}: ${prevP} -> ${clampedNext}`)
+    logger.info(
+      `[SkillEngineService] BKT interaction user=${userId}, skill=${skillId}, correct=${isCorrect}: ${prevP} -> ${clampedNext}`
+    )
 
     return {
       skillId,
@@ -322,10 +346,15 @@ export class SkillEngineService {
 
     // Filter skills in ZPD (unlocked or in_progress, with mastery between 0.20 and 0.85)
     const zpdSkills = graph.skills
-      .filter(s => (s.status === 'UNLOCKED' || s.status === 'IN_PROGRESS') && s.masteryProbability < MASTERY_THRESHOLD)
+      .filter(
+        s =>
+          (s.status === 'UNLOCKED' || s.status === 'IN_PROGRESS') &&
+          s.masteryProbability < MASTERY_THRESHOLD
+      )
       .sort((a, b) => b.masteryProbability - a.masteryProbability) // closest to mastery first
 
-    const targetSkill = zpdSkills[0] || graph.skills.find(s => s.status !== 'MASTERED') || graph.skills[0]
+    const targetSkill =
+      zpdSkills[0] || graph.skills.find(s => s.status !== 'MASTERED') || graph.skills[0]
 
     return {
       recommendation: {

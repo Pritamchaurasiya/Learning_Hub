@@ -18,10 +18,7 @@ export const UpdateReminderModal: React.FC<UpdateReminderModalProps> = ({
   onReminderScheduled,
   onConfirm,
 }) => {
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([
-    '3_DAYS_BEFORE',
-    '1_DAY_BEFORE',
-  ])
+  const [selectedTypes, setSelectedTypes] = useState<string[]>(['3_DAYS_BEFORE', '1_DAY_BEFORE'])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -29,9 +26,7 @@ export const UpdateReminderModal: React.FC<UpdateReminderModalProps> = ({
   if (!isOpen || !update) return null
 
   const handleToggle = (type: string) => {
-    setSelectedTypes(prev =>
-      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
-    )
+    setSelectedTypes(prev => (prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

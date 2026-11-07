@@ -111,4 +111,3 @@ router.post(
 router.get('/models', getAvailableAIModels)
 
 export default router
-

@@ -15,12 +15,17 @@ export const submitCatAnswer = asyncHandler(async (req: Request, res: Response):
   const { sessionId, itemId, selectedOptionId, confidence, timeSpentSeconds } = req.body
 
   if (!sessionId || !itemId || !selectedOptionId) {
-    sendValidationError(res, 'Parameters "sessionId", "itemId", and "selectedOptionId" are required')
+    sendValidationError(
+      res,
+      'Parameters "sessionId", "itemId", and "selectedOptionId" are required'
+    )
     return
   }
 
   const validConfidences: ConfidenceLevel[] = ['LOW', 'MEDIUM', 'HIGH']
-  const parsedConfidence: ConfidenceLevel = validConfidences.includes(confidence) ? confidence : 'MEDIUM'
+  const parsedConfidence: ConfidenceLevel = validConfidences.includes(confidence)
+    ? confidence
+    : 'MEDIUM'
 
   try {
     const result = catAdaptiveService.submitAnswer({
@@ -37,35 +42,43 @@ export const submitCatAnswer = asyncHandler(async (req: Request, res: Response):
   }
 })
 
-export const getCatSessionState = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const sessionId = String(req.params.sessionId)
-  const session = catAdaptiveService.getSession(sessionId)
+export const getCatSessionState = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const sessionId = String(req.params.sessionId)
+    const session = catAdaptiveService.getSession(sessionId)
 
-  if (!session) {
-    sendNotFound(res, `CAT session with ID "${sessionId}" not found`)
-    return
+    if (!session) {
+      sendNotFound(res, `CAT session with ID "${sessionId}" not found`)
+      return
+    }
+
+    sendSuccess(res, { session }, 'CAT session state retrieved')
   }
+)
 
-  sendSuccess(res, { session }, 'CAT session state retrieved')
-})
+export const getCatDiagnosticScorecard = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const sessionId = String(req.params.sessionId)
 
-export const getCatDiagnosticScorecard = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const sessionId = String(req.params.sessionId)
-
-  try {
-    const scorecard = catAdaptiveService.generateScorecard(sessionId)
-    sendSuccess(res, { scorecard }, 'Psychometric ability diagnostic scorecard generated')
-  } catch (error: any) {
-    sendNotFound(res, error.message)
+    try {
+      const scorecard = catAdaptiveService.generateScorecard(sessionId)
+      sendSuccess(res, { scorecard }, 'Psychometric ability diagnostic scorecard generated')
+    } catch (error: any) {
+      sendNotFound(res, error.message)
+    }
   }
-})
+)
 
-export const getCatItemBankStats = asyncHandler(async (_req: Request, res: Response): Promise<void> => {
-  const stats = catAdaptiveService.getItemBankStats()
-  sendSuccess(res, stats, 'Psychometric item bank calibration stats retrieved')
-})
+export const getCatItemBankStats = asyncHandler(
+  async (_req: Request, res: Response): Promise<void> => {
+    const stats = catAdaptiveService.getItemBankStats()
+    sendSuccess(res, stats, 'Psychometric item bank calibration stats retrieved')
+  }
+)
 
-export const getCatItemBankItems = asyncHandler(async (_req: Request, res: Response): Promise<void> => {
-  const items = catAdaptiveService.getItemBankSummary()
-  sendSuccess(res, items, 'Psychometric item bank items retrieved')
-})
+export const getCatItemBankItems = asyncHandler(
+  async (_req: Request, res: Response): Promise<void> => {
+    const items = catAdaptiveService.getItemBankSummary()
+    sendSuccess(res, items, 'Psychometric item bank items retrieved')
+  }
+)

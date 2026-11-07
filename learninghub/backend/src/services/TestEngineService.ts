@@ -295,7 +295,9 @@ export class TestEngineService {
           .replace(/answer is.*$/i, '')
           .trim()
         const sentences = sanitized.split(/[.!?]\s+/)
-        hint = sentences[0] || `Set up the fundamental equation relating the initial parameters in ${topicName}.`
+        hint =
+          sentences[0] ||
+          `Set up the fundamental equation relating the initial parameters in ${topicName}.`
       } else {
         hint = `Express the relation mathematically before plugging in the given numerical values.`
       }

@@ -28,7 +28,6 @@ import {
   Calendar,
   Download,
   CreditCard,
-
   BellRing,
   FileText,
   Briefcase,
@@ -240,8 +239,12 @@ export default function Sidebar() {
                 <Flame className="w-5 h-5" />
               </motion.div>
               <div className="flex flex-col">
-                <span className="font-extrabold text-sm leading-tight tracking-tight">{streak} Day Streak!</span>
-                <span className="text-[10px] text-white/80 font-medium">You&apos;re on fire — keep going!</span>
+                <span className="font-extrabold text-sm leading-tight tracking-tight">
+                  {streak} Day Streak!
+                </span>
+                <span className="text-[10px] text-white/80 font-medium">
+                  You&apos;re on fire — keep going!
+                </span>
               </div>
             </div>
           </motion.div>

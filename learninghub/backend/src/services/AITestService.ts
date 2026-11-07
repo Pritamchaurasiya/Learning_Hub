@@ -908,8 +908,12 @@ export class AITestService {
             feedback: validated.feedback,
             rubricBreakdown: breakdown,
             rubric: breakdown,
-            strengths: validated.strengths || ['Demonstrates understanding of core question principles.'],
-            improvements: validated.improvements || ['Incorporate more domain-specific technical terminology.'],
+            strengths: validated.strengths || [
+              'Demonstrates understanding of core question principles.',
+            ],
+            improvements: validated.improvements || [
+              'Incorporate more domain-specific technical terminology.',
+            ],
           }
           success = true
         } catch (err) {

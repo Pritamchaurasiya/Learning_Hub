@@ -48,7 +48,11 @@ export const anomalyDetection = async (
   // In development, avoid blocking local loopback or mobile LAN test IPs
   if (
     process.env.NODE_ENV !== 'production' &&
-    (ip === '::1' || ip === '127.0.0.1' || ip === '::ffff:127.0.0.1' || ip.startsWith('10.') || ip.startsWith('192.168.'))
+    (ip === '::1' ||
+      ip === '127.0.0.1' ||
+      ip === '::ffff:127.0.0.1' ||
+      ip.startsWith('10.') ||
+      ip.startsWith('192.168.'))
   ) {
     next()
     return

@@ -1,14 +1,6 @@
 import React, { useState } from 'react'
 import { VoiceTurnResponse } from '../../types/multimodal'
-import {
-  Mic,
-  MicOff,
-  Zap,
-  Volume2,
-  Sparkles,
-  HelpCircle,
-  TrendingUp,
-} from 'lucide-react'
+import { Mic, MicOff, Zap, Volume2, Sparkles, HelpCircle, TrendingUp } from 'lucide-react'
 
 interface VoiceConversationBarProps {
   lastVoiceTurn: VoiceTurnResponse | null
@@ -63,7 +55,9 @@ export const VoiceConversationBar: React.FC<VoiceConversationBarProps> = ({
               </span>
             </div>
             <p className="text-[11px] text-slate-400">
-              {isListening ? 'Streaming spoken audio... Speak clearly into microphone' : 'Push-to-Talk ready (<300ms round-trip)'}
+              {isListening
+                ? 'Streaming spoken audio... Speak clearly into microphone'
+                : 'Push-to-Talk ready (<300ms round-trip)'}
             </p>
           </div>
         </div>
@@ -77,8 +71,8 @@ export const VoiceConversationBar: React.FC<VoiceConversationBarProps> = ({
                 isListening
                   ? 'bg-cyan-400 animate-pulse'
                   : isProcessing
-                  ? 'bg-indigo-400 animate-bounce'
-                  : 'bg-slate-700'
+                    ? 'bg-indigo-400 animate-bounce'
+                    : 'bg-slate-700'
               }`}
               style={{
                 height: isListening ? `${h}px` : isProcessing ? `${(i % 3) * 8 + 8}px` : '4px',
@@ -132,9 +126,7 @@ export const VoiceConversationBar: React.FC<VoiceConversationBarProps> = ({
             </div>
           </div>
 
-          <p className="text-xs text-slate-300 italic">
-            "{lastVoiceTurn.synthesizedResponseText}"
-          </p>
+          <p className="text-xs text-slate-300 italic">"{lastVoiceTurn.synthesizedResponseText}"</p>
 
           {lastVoiceTurn.followUpQuestions.length > 0 && (
             <div className="text-[11px] text-cyan-400/90 font-medium">

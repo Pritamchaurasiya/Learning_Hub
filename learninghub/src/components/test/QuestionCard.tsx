@@ -21,6 +21,7 @@ import { wasmSandboxService } from '../../services/wasm/WasmSandboxService'
 import { WasmTestResultsView } from '../WasmTestResultsView'
 import type { WasmExecutionResult } from '../../services/wasm/types'
 import { testsAService, type TestQuestion } from '../../services/testsAService'
+import { QuestionPaceRadar } from './QuestionPaceRadar'
 
 const DEFAULT_CODING_TEMPLATES: Record<string, string> = {
   python: `# Complete your solution below
@@ -509,6 +510,7 @@ export interface QuestionCardProps {
   examLanguage?: 'en' | 'hi'
   onClearAnswer?: () => void
   quotaInfo?: { maxAllowed?: number; currentAttempted?: number }
+  onFlagAndAdvance?: () => void
 }
 
 export const QuestionCard = memo(
@@ -533,6 +535,7 @@ export const QuestionCard = memo(
     examLanguage = 'en',
     onClearAnswer,
     quotaInfo,
+    onFlagAndAdvance,
   }: QuestionCardProps) => {
     const isCodingQuestion =
       question.question_type === 'coding' ||
@@ -597,8 +600,18 @@ export const QuestionCard = memo(
               {isFlagged ? 'Flagged' : 'Flag'}
             </button>
           </div>
-          <div className="text-xs sm:text-sm text-gray-500">
-            {Math.round(((currentIndex + 1) / totalQuestions) * 100)}% Complete
+          <div className="flex items-center gap-3">
+            <QuestionPaceRadar
+              questionId={question.id}
+              difficulty={question.difficulty}
+              questionType={question.question_type || question.type}
+              marks={question.marks}
+              isLocked={isSectionLocked}
+              onFlagAndAdvance={onFlagAndAdvance}
+            />
+            <div className="text-xs sm:text-sm text-gray-500 hidden md:block">
+              {Math.round(((currentIndex + 1) / totalQuestions) * 100)}% Complete
+            </div>
           </div>
         </div>
 

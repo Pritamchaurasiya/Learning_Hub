@@ -384,6 +384,17 @@ ${tc.input}
     return declarations.join('\n')
   }
 
+  private extractFunctionName(code: string): string | null {
+    if (!code) return null
+    const fnMatch = code.match(/function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/)
+    if (fnMatch && fnMatch[1]) return fnMatch[1]
+    const arrowMatch = code.match(
+      /(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:function|\([^)]*\)\s*=>|\w+\s*=>)/
+    )
+    if (arrowMatch && arrowMatch[1]) return arrowMatch[1]
+    return null
+  }
+
   private parseInputToInvocation(fnName: string, input: string): string {
     if (!input || !input.trim()) return `__result__ = ${fnName}();`
     // Extract variable names from input like "nums = [2,7], target = 9"
@@ -531,6 +542,7 @@ ${tc.input}
       }
 
       const inputDeclarations = this.parseInputToDeclarations(tcInput)
+      const declaredFn = this.extractFunctionName(code)
       const solutionSnippet = `
         if (typeof Solution !== 'undefined') {
           try {
@@ -547,6 +559,15 @@ ${tc.input}
       const invocationSnippet = `
         if (__result__ === undefined && typeof solve === 'function') {
           ${this.parseInputToInvocation('solve', tcInput)}
+        }
+        ${
+          declaredFn && declaredFn !== 'solve'
+            ? `
+        if (__result__ === undefined && typeof ${declaredFn} === 'function') {
+          ${this.parseInputToInvocation(declaredFn, tcInput)}
+        }
+        `
+            : ''
         }
       `
 
@@ -573,6 +594,8 @@ ${tc.input}
         tcLogs.push(`[ERROR] ${args.map(a => this.formatArg(a)).join(' ')}`),
     }
 
+    const declaredFn = this.extractFunctionName(code)
+
     const wrappedCode = `
       return (function(console, window, document, fetch, XMLHttpRequest, WebSocket, localStorage, sessionStorage, indexedDB, navigator, location) {
         'use strict';
@@ -595,6 +618,15 @@ ${tc.input}
 
         if (__result__ === undefined && typeof solve === 'function') {
           ${this.parseInputToInvocation('solve', tcInput)}
+        }
+        ${
+          declaredFn && declaredFn !== 'solve'
+            ? `
+        if (__result__ === undefined && typeof ${declaredFn} === 'function') {
+          ${this.parseInputToInvocation(declaredFn, tcInput)}
+        }
+        `
+            : ''
         }
 
         return __result__;

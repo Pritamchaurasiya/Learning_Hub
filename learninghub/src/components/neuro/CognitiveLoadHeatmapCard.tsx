@@ -24,9 +24,7 @@ export const CognitiveLoadHeatmapCard = memo(function CognitiveLoadHeatmapCard({
           <Activity className="w-4 h-4 text-indigo-500" />
           Biometric & Keystroke Telemetry
         </h3>
-        <span className="text-xs text-gray-500 dark:text-gray-400">
-          Real-time Ingestion
-        </span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">Real-time Ingestion</span>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

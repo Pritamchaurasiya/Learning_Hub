@@ -31,8 +31,10 @@ export interface ParsedMathEquation {
   socraticSuggestions: string[]
 }
 
-export type GazeDirection = 'FOCUSED_CENTER' | 'LOOKING_LEFT' | 'LOOKING_RIGHT' | 'LOOKING_DOWN' | 'LOOKING_AWAY'
-export type FacePresenceState = 'SINGLE_FACE_FOCUSED' | 'MULTIPLE_FACES_FLAGGED' | 'NO_FACE_DETECTED' | 'PARTIALLY_OCCLUDED'
+export type GazeDirection =
+  'FOCUSED_CENTER' | 'LOOKING_LEFT' | 'LOOKING_RIGHT' | 'LOOKING_DOWN' | 'LOOKING_AWAY'
+export type FacePresenceState =
+  'SINGLE_FACE_FOCUSED' | 'MULTIPLE_FACES_FLAGGED' | 'NO_FACE_DETECTED' | 'PARTIALLY_OCCLUDED'
 
 export interface VisionTelemetryFrame {
   sessionId: string

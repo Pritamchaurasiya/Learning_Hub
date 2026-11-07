@@ -134,17 +134,29 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
 
   // SECURITY: Never trust client-supplied amounts.
   if (typeof req.body.amount === 'number') {
-    logger.warn('[cartController] Client attempted to supply custom amount — ignoring for security', {
-      userId,
-      clientAmount: req.body.amount,
-    })
+    logger.warn(
+      '[cartController] Client attempted to supply custom amount — ignoring for security',
+      {
+        userId,
+        clientAmount: req.body.amount,
+      }
+    )
   }
 
   // Get the cart with server-computed totals
   let cart = await cartService.getCart(userId)
   if ((!cart || !cart.items || cart.items.length === 0) && course_id) {
     try {
-      await cartService.addToCart(userId, course_id, undefined, undefined, undefined, undefined, undefined, 1)
+      await cartService.addToCart(
+        userId,
+        course_id,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        1
+      )
       cart = await cartService.getCart(userId)
     } catch {
       // If course is already in cart or add fails, proceed with existing cart
@@ -211,7 +223,7 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
         discountAmount: cart.discount,
         expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 min expiry
         items: {
-          create: cart.items.map((item) => ({
+          create: cart.items.map(item => ({
             courseId: item.course.id,
             courseTitle: item.course.title,
             price: item.course.price,

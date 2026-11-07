@@ -147,9 +147,7 @@ export const ExamReadinessGauge: React.FC<ExamReadinessGaugeProps> = ({
                   <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
                   Syllabus Knowledge (35%)
                 </span>
-                <span className="font-black text-gray-900 dark:text-white">
-                  {syllabusMastery}%
-                </span>
+                <span className="font-black text-gray-900 dark:text-white">{syllabusMastery}%</span>
               </div>
               <div className="w-full h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
                 <motion.div
@@ -187,9 +185,7 @@ export const ExamReadinessGauge: React.FC<ExamReadinessGaugeProps> = ({
                   <Clock className="w-3.5 h-3.5 text-teal-500" />
                   Pacing & Speed (20%)
                 </span>
-                <span className="font-black text-gray-900 dark:text-white">
-                  {speedAccuracy}%
-                </span>
+                <span className="font-black text-gray-900 dark:text-white">{speedAccuracy}%</span>
               </div>
               <div className="w-full h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
                 <motion.div
@@ -208,9 +204,7 @@ export const ExamReadinessGauge: React.FC<ExamReadinessGaugeProps> = ({
                   <Zap className="w-3.5 h-3.5 text-amber-500" />
                   Forgetting Curve Resistance (15%)
                 </span>
-                <span className="font-black text-gray-900 dark:text-white">
-                  {retentionRate}%
-                </span>
+                <span className="font-black text-gray-900 dark:text-white">{retentionRate}%</span>
               </div>
               <div className="w-full h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
                 <motion.div

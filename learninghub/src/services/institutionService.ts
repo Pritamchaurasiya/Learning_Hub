@@ -1,4 +1,9 @@
-import { Institution, InstitutionAnalytics, LtiLaunchSession, GradePassbackResult } from '../types/institution'
+import {
+  Institution,
+  InstitutionAnalytics,
+  LtiLaunchSession,
+  GradePassbackResult,
+} from '../types/institution'
 
 const API_BASE = '/api/v1/lti'
 
@@ -22,7 +27,9 @@ export class InstitutionService {
   /**
    * Fetch analytics for a specific institution
    */
-  public static async getInstitutionAnalytics(institutionId: string): Promise<InstitutionAnalytics> {
+  public static async getInstitutionAnalytics(
+    institutionId: string
+  ): Promise<InstitutionAnalytics> {
     try {
       const res = await fetch(`${API_BASE}/institutions/${institutionId}/analytics`)
       const json = await res.json()
@@ -61,11 +68,18 @@ export class InstitutionService {
         session: {
           sessionId: `lti_sess_mock_${Date.now()}`,
           institutionId: params.institutionId,
-          institutionName: params.institutionId.includes('stanford') ? 'Stanford School of Engineering' : 'MIT EECS',
+          institutionName: params.institutionId.includes('stanford')
+            ? 'Stanford School of Engineering'
+            : 'MIT EECS',
           userId: `usr_lti_${Date.now()}`,
-          email: params.userEmail || `${params.userName.toLowerCase().replace(/\s+/g, '.')}@edu.portal`,
+          email:
+            params.userEmail || `${params.userName.toLowerCase().replace(/\s+/g, '.')}@edu.portal`,
           name: params.userName,
-          roles: [params.role === 'Instructor' ? 'http://purl.imsglobal.org/vocab/lis/v2/membership#Instructor' : 'http://purl.imsglobal.org/vocab/lis/v2/membership#Learner'],
+          roles: [
+            params.role === 'Instructor'
+              ? 'http://purl.imsglobal.org/vocab/lis/v2/membership#Instructor'
+              : 'http://purl.imsglobal.org/vocab/lis/v2/membership#Learner',
+          ],
           isInstructor: params.role === 'Instructor',
           contextId: 'course_cs106b',
           contextTitle: 'Advanced Distributed Systems & Algorithmics',
@@ -139,7 +153,8 @@ export class InstitutionService {
         status: 'ACTIVE',
         branding: {
           primaryColor: '#8C1515',
-          logoUrl: 'https://identity.stanford.edu/wp-content/uploads/sites/3/2020/06/block-s-right.png',
+          logoUrl:
+            'https://identity.stanford.edu/wp-content/uploads/sites/3/2020/06/block-s-right.png',
           portalTitle: 'Stanford Engineering LearningHub Portal',
         },
         createdAt: '2026-01-15T08:00:00Z',
@@ -194,9 +209,13 @@ export class InstitutionService {
       institutionName: instId.includes('stanford')
         ? 'Stanford School of Engineering'
         : instId.includes('mit')
-        ? 'MIT EECS'
-        : 'IIT Delhi',
-      domain: instId.includes('stanford') ? 'stanford.edu' : instId.includes('mit') ? 'mit.edu' : 'iitd.ac.in',
+          ? 'MIT EECS'
+          : 'IIT Delhi',
+      domain: instId.includes('stanford')
+        ? 'stanford.edu'
+        : instId.includes('mit')
+          ? 'mit.edu'
+          : 'iitd.ac.in',
       totalLearners: 1420,
       totalInstructors: 48,
       totalLaunches: 8420,
@@ -205,9 +224,24 @@ export class InstitutionService {
       passRatePercent: 94.6,
       activeCohortsCount: 14,
       topExams: [
-        { examId: 'gate_cs_mock_01', examTitle: 'Advanced Data Structures & Graph Theory', attempts: 680, avgScore: 89.2 },
-        { examId: 'sys_arch_staff_04', examTitle: 'Distributed Systems & Raft Consensus', attempts: 540, avgScore: 92.1 },
-        { examId: 'bkt_psychometrics_02', examTitle: 'Bayesian Knowledge Tracing & Psychometrics', attempts: 430, avgScore: 86.4 },
+        {
+          examId: 'gate_cs_mock_01',
+          examTitle: 'Advanced Data Structures & Graph Theory',
+          attempts: 680,
+          avgScore: 89.2,
+        },
+        {
+          examId: 'sys_arch_staff_04',
+          examTitle: 'Distributed Systems & Raft Consensus',
+          attempts: 540,
+          avgScore: 92.1,
+        },
+        {
+          examId: 'bkt_psychometrics_02',
+          examTitle: 'Bayesian Knowledge Tracing & Psychometrics',
+          attempts: 430,
+          avgScore: 86.4,
+        },
       ],
       recentPassbacks: [
         {

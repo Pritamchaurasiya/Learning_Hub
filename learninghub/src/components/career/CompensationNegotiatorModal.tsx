@@ -1,17 +1,8 @@
 import React, { useState } from 'react'
-import {
-  CompensationPackage,
-  SimulatedJobListing,
-} from '../../types/career'
+import { CompensationPackage, SimulatedJobListing } from '../../types/career'
 import { careerService } from '../../services/careerService'
 import { playRewardChime } from '../../utils/soundEffects'
-import {
-  X,
-  CheckCircle,
-  AlertTriangle,
-  ArrowRight,
-  Sliders,
-} from 'lucide-react'
+import { X, CheckCircle, AlertTriangle, ArrowRight, Sliders } from 'lucide-react'
 
 interface CompensationNegotiatorModalProps {
   isOpen: boolean
@@ -31,8 +22,12 @@ export const CompensationNegotiatorModal: React.FC<CompensationNegotiatorModalPr
   onOfferUpdated,
 }) => {
   const [baseSalary, setBaseSalary] = useState<number>(currentOffer.baseSalary || job.baseSalaryMin)
-  const [equityValueUsd, setEquityValueUsd] = useState<number>(currentOffer.equityValueUsd || job.equityAnnualUsd)
-  const [signingBonus, setSigningBonus] = useState<number>(currentOffer.signingBonus || job.signingBonusUsd)
+  const [equityValueUsd, setEquityValueUsd] = useState<number>(
+    currentOffer.equityValueUsd || job.equityAnnualUsd
+  )
+  const [signingBonus, setSigningBonus] = useState<number>(
+    currentOffer.signingBonus || job.signingBonusUsd
+  )
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [evaluationResult, setEvaluationResult] = useState<{
     verdict: 'ACCEPTED' | 'PARTIALLY_ACCEPTED' | 'REJECTED'
@@ -87,7 +82,8 @@ export const CompensationNegotiatorModal: React.FC<CompensationNegotiatorModalPr
               Compensation & Equity Negotiator
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Calibrate compensation levers supported by your verifiable platform leverage score ({leverageScore}/100).
+              Calibrate compensation levers supported by your verifiable platform leverage score (
+              {leverageScore}/100).
             </p>
           </div>
 
@@ -103,9 +99,12 @@ export const CompensationNegotiatorModal: React.FC<CompensationNegotiatorModalPr
         {/* Total Compensation Overview Bar */}
         <div className="p-4 sm:p-5 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="text-[11px] font-mono uppercase text-slate-400">Total Target Annual Package</div>
+            <div className="text-[11px] font-mono uppercase text-slate-400">
+              Total Target Annual Package
+            </div>
             <div className="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono mt-0.5">
-              ${(totalCompensation / 1000).toFixed(0)}k <span className="text-xs text-slate-400 font-sans font-normal">/ year</span>
+              ${(totalCompensation / 1000).toFixed(0)}k{' '}
+              <span className="text-xs text-slate-400 font-sans font-normal">/ year</span>
             </div>
           </div>
 
@@ -128,7 +127,9 @@ export const CompensationNegotiatorModal: React.FC<CompensationNegotiatorModalPr
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="font-semibold text-slate-300">Base Salary (USD / Year)</span>
-              <span className="font-mono text-emerald-400 font-bold">${baseSalary.toLocaleString()}</span>
+              <span className="font-mono text-emerald-400 font-bold">
+                ${baseSalary.toLocaleString()}
+              </span>
             </div>
             <input
               type="range"
@@ -148,8 +149,12 @@ export const CompensationNegotiatorModal: React.FC<CompensationNegotiatorModalPr
           {/* Annual Equity Slider */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-300">Annual Equity RSU Value (USD / Year)</span>
-              <span className="font-mono text-purple-400 font-bold">${equityValueUsd.toLocaleString()}</span>
+              <span className="font-semibold text-slate-300">
+                Annual Equity RSU Value (USD / Year)
+              </span>
+              <span className="font-mono text-purple-400 font-bold">
+                ${equityValueUsd.toLocaleString()}
+              </span>
             </div>
             <input
               type="range"
@@ -162,7 +167,7 @@ export const CompensationNegotiatorModal: React.FC<CompensationNegotiatorModalPr
             />
             <div className="flex justify-between text-[10px] text-slate-500 font-mono">
               <span>Standard Grant: ${(job.equityAnnualUsd / 1000).toFixed(0)}k</span>
-              <span>Ceiling: ${(job.equityAnnualUsd * 1.4 / 1000).toFixed(0)}k</span>
+              <span>Ceiling: ${((job.equityAnnualUsd * 1.4) / 1000).toFixed(0)}k</span>
             </div>
           </div>
 
@@ -170,7 +175,9 @@ export const CompensationNegotiatorModal: React.FC<CompensationNegotiatorModalPr
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="font-semibold text-slate-300">Upfront Signing Incentive (USD)</span>
-              <span className="font-mono text-cyan-400 font-bold">${signingBonus.toLocaleString()}</span>
+              <span className="font-mono text-cyan-400 font-bold">
+                ${signingBonus.toLocaleString()}
+              </span>
             </div>
             <input
               type="range"
@@ -183,7 +190,7 @@ export const CompensationNegotiatorModal: React.FC<CompensationNegotiatorModalPr
             />
             <div className="flex justify-between text-[10px] text-slate-500 font-mono">
               <span>Standard: ${(job.signingBonusUsd / 1000).toFixed(0)}k</span>
-              <span>Outlier Max: ${(job.signingBonusUsd * 1.6 / 1000).toFixed(0)}k</span>
+              <span>Outlier Max: ${((job.signingBonusUsd * 1.6) / 1000).toFixed(0)}k</span>
             </div>
           </div>
         </div>

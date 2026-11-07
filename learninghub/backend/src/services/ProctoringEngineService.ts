@@ -28,9 +28,9 @@ export interface FrameTelemetryPayload {
   facesDetectedCount: number
   primaryFaceConfidence: number
   headPose: {
-    yaw: number   // horizontal turn (-90 to +90)
+    yaw: number // horizontal turn (-90 to +90)
     pitch: number // vertical tilt (-90 to +90)
-    roll: number  // tilt (-90 to +90)
+    roll: number // tilt (-90 to +90)
   }
   gazeDeviationScore: number // 0 (direct on screen) to 1 (looking completely away)
   audioNoiseDecibels: number // ambient volume level (dB)
@@ -76,7 +76,8 @@ export interface ProctoringSummaryReport {
 
 export class ProctoringEngineService {
   private sessions: Map<string, ProctoringSession> = new Map()
-  private readonly HMAC_SECRET = process.env.PROCTORING_SECRET || 'anti-gravity-proctor-secret-key-prod-2028'
+  private readonly HMAC_SECRET =
+    process.env.PROCTORING_SECRET || 'anti-gravity-proctor-secret-key-prod-2028'
 
   /**
    * Initializes a new proctored exam session
@@ -102,7 +103,9 @@ export class ProctoringEngineService {
     }
 
     this.sessions.set(sessionId, session)
-    logger.info(`[ProctoringEngine] Started session ${sessionId} for user ${params.userId} on test ${params.testAttemptId}`)
+    logger.info(
+      `[ProctoringEngine] Started session ${sessionId} for user ${params.userId} on test ${params.testAttemptId}`
+    )
     return session
   }
 
@@ -164,7 +167,8 @@ export class ProctoringEngineService {
     }
 
     // 2. Head pose & Gaze deviation analysis with temporal debouncing (at most once every 3s)
-    const headTurnedSignificantly = Math.abs(telemetry.headPose.yaw) > 35 || Math.abs(telemetry.headPose.pitch) > 25
+    const headTurnedSignificantly =
+      Math.abs(telemetry.headPose.yaw) > 35 || Math.abs(telemetry.headPose.pitch) > 25
     if (telemetry.gazeDeviationScore > 0.65 || headTurnedSignificantly) {
       if (!session.lastGazeAvertedAt || now - session.lastGazeAvertedAt >= 3000) {
         session.lastGazeAvertedAt = now
@@ -213,10 +217,12 @@ export class ProctoringEngineService {
 
     // Update running averages
     session.averageGazeDeviation =
-      (session.averageGazeDeviation * (session.totalFramesAnalyzed - 1) + telemetry.gazeDeviationScore) /
+      (session.averageGazeDeviation * (session.totalFramesAnalyzed - 1) +
+        telemetry.gazeDeviationScore) /
       session.totalFramesAnalyzed
     session.averageNoiseDecibels =
-      (session.averageNoiseDecibels * (session.totalFramesAnalyzed - 1) + telemetry.audioNoiseDecibels) /
+      (session.averageNoiseDecibels * (session.totalFramesAnalyzed - 1) +
+        telemetry.audioNoiseDecibels) /
       session.totalFramesAnalyzed
 
     // Update status based on score threshold
@@ -328,8 +334,19 @@ export class ProctoringEngineService {
 
     session.sessionSignature = cryptographicAuditHash
 
-    const gazeCompliance = Math.max(0, Math.min(100, Math.round((1 - session.averageGazeDeviation) * 100)))
-    const acousticCompliance = Math.max(0, Math.min(100, Math.round(100 - (session.averageNoiseDecibels > 40 ? (session.averageNoiseDecibels - 40) * 2 : 0))))
+    const gazeCompliance = Math.max(
+      0,
+      Math.min(100, Math.round((1 - session.averageGazeDeviation) * 100))
+    )
+    const acousticCompliance = Math.max(
+      0,
+      Math.min(
+        100,
+        Math.round(
+          100 - (session.averageNoiseDecibels > 40 ? (session.averageNoiseDecibels - 40) * 2 : 0)
+        )
+      )
+    )
 
     return {
       sessionId: session.sessionId,

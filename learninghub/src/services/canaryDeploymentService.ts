@@ -1,8 +1,5 @@
 import { api } from '../utils/api'
-import {
-  CanaryRelease,
-  TargetRegion,
-} from '../types/canary'
+import { CanaryRelease, TargetRegion } from '../types/canary'
 
 export const FALLBACK_CANARY_DEPLOYMENTS: CanaryRelease[] = [
   {
@@ -61,13 +58,15 @@ export const FALLBACK_CANARY_DEPLOYMENTS: CanaryRelease[] = [
       {
         timestamp: '2026-10-12T11:45:00.000Z',
         stage: 'PREFLIGHT_HEALTH',
-        message: 'Container health probes verified 200 OK. Secret mounts & DB connection pool warm.',
+        message:
+          'Container health probes verified 200 OK. Secret mounts & DB connection pool warm.',
         level: 'INFO',
       },
       {
         timestamp: '2026-10-12T11:50:00.000Z',
         stage: 'CANARY_10_PERCENT',
-        message: 'Traffic routed: 90% Baseline / 10% Canary. Automated statistical SLI monitor initialized.',
+        message:
+          'Traffic routed: 90% Baseline / 10% Canary. Automated statistical SLI monitor initialized.',
         level: 'SUCCESS',
       },
     ],
@@ -82,7 +81,8 @@ export const FALLBACK_CANARY_DEPLOYMENTS: CanaryRelease[] = [
     version: 'v3.2.0',
     previousVersion: 'v3.1.8',
     gitCommitHash: '8f2a1b94e',
-    gitCommitMessage: 'sec(auth): enforce RFC 9068 encrypted JWT claims and quantum-resistant key rotation',
+    gitCommitMessage:
+      'sec(auth): enforce RFC 9068 encrypted JWT claims and quantum-resistant key rotation',
     dockerDigest: 'sha256:4a92c810df661bc9',
     author: 'SecOps Lead <security@learninghub.io>',
     region: 'eu-central-1',
@@ -290,7 +290,10 @@ export class CanaryDeploymentService {
    */
   public static async advanceStage(id: string): Promise<CanaryRelease> {
     try {
-      const response = await api.post<{ deployment: CanaryRelease }>(`/deployments/canary/${id}/advance`, {})
+      const response = await api.post<{ deployment: CanaryRelease }>(
+        `/deployments/canary/${id}/advance`,
+        {}
+      )
       if (response && response.deployment) {
         this.localDeployments.set(id, response.deployment)
         return response.deployment
@@ -340,7 +343,10 @@ export class CanaryDeploymentService {
    */
   public static async triggerRollback(id: string, reason?: string): Promise<CanaryRelease> {
     try {
-      const response = await api.post<{ deployment: CanaryRelease }>(`/deployments/canary/${id}/rollback`, { reason })
+      const response = await api.post<{ deployment: CanaryRelease }>(
+        `/deployments/canary/${id}/rollback`,
+        { reason }
+      )
       if (response && response.deployment) {
         this.localDeployments.set(id, response.deployment)
         return response.deployment
@@ -383,7 +389,10 @@ export class CanaryDeploymentService {
     }
   ): Promise<CanaryRelease> {
     try {
-      const response = await api.post<{ deployment: CanaryRelease }>(`/deployments/canary/${id}/simulate-load`, params)
+      const response = await api.post<{ deployment: CanaryRelease }>(
+        `/deployments/canary/${id}/simulate-load`,
+        params
+      )
       if (response && response.deployment) {
         this.localDeployments.set(id, response.deployment)
         return response.deployment
@@ -394,7 +403,9 @@ export class CanaryDeploymentService {
 
     const current = this.localDeployments.get(id) || FALLBACK_CANARY_DEPLOYMENTS[0]
     const rps = (params.rpsIncrease || 0) + current.canaryMetrics.requestsPerSecond
-    const err = Number(((params.injectErrorRatePercent || 0) + current.canaryMetrics.errorRatePercent).toFixed(3))
+    const err = Number(
+      ((params.injectErrorRatePercent || 0) + current.canaryMetrics.errorRatePercent).toFixed(3)
+    )
     const lat = (params.injectLatencySpikeMs || 0) + current.canaryMetrics.p99LatencyMs
 
     const isSpike = err > current.sloInvariants.maxErrorRatePercent * 1.5

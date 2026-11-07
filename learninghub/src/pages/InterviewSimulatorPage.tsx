@@ -43,7 +43,9 @@ export default function InterviewSimulatorPage() {
   const [activeRightTab, setActiveRightTab] = useState<'code' | 'whiteboard' | 'hints'>('code')
   const [candidateInput, setCandidateInput] = useState('')
   const [isListening, setIsListening] = useState(false)
-  const [interviewerStatus, setInterviewerStatus] = useState<'listening' | 'speaking' | 'thinking' | 'idle'>('idle')
+  const [interviewerStatus, setInterviewerStatus] = useState<
+    'listening' | 'speaking' | 'thinking' | 'idle'
+  >('idle')
   const [lastInterviewerText, setLastInterviewerText] = useState('')
   const [isEvaluating, setIsEvaluating] = useState(false)
   const [isScorecardOpen, setIsScorecardOpen] = useState(false)
@@ -182,20 +184,24 @@ export default function InterviewSimulatorPage() {
     if (!session) return
     try {
       const res = await interviewService.requestHint(session.id)
-      setSession(prev => (prev ? {
-        ...prev,
-        hintsRequested: prev.hintsRequested + 1,
-        unlockedHints: [...prev.unlockedHints, res.hint],
-        transcript: [
-          ...prev.transcript,
-          {
-            id: `hint-${Date.now()}`,
-            sender: 'system',
-            text: `[HINT LEVEL ${res.hint.level}]: ${res.hint.text}`,
-            timestamp: new Date().toISOString(),
-          },
-        ],
-      } : null))
+      setSession(prev =>
+        prev
+          ? {
+              ...prev,
+              hintsRequested: prev.hintsRequested + 1,
+              unlockedHints: [...prev.unlockedHints, res.hint],
+              transcript: [
+                ...prev.transcript,
+                {
+                  id: `hint-${Date.now()}`,
+                  sender: 'system',
+                  text: `[HINT LEVEL ${res.hint.level}]: ${res.hint.text}`,
+                  timestamp: new Date().toISOString(),
+                },
+              ],
+            }
+          : null
+      )
       setActiveRightTab('hints')
       addToast({ message: `Level ${res.hint.level} hint unlocked!`, type: 'info' })
     } catch {
@@ -230,8 +236,14 @@ export default function InterviewSimulatorPage() {
     CLARIFICATION: { label: 'Scoping & Clarifications', color: 'bg-cyan-500/20 text-cyan-400' },
     HIGH_LEVEL_DESIGN: { label: 'Architectural Sketch', color: 'bg-blue-500/20 text-blue-400' },
     IMPLEMENTATION: { label: 'Live Implementation', color: 'bg-amber-500/20 text-amber-400' },
-    OPTIMIZATION_EDGE_CASES: { label: 'Edge Cases & Bounds', color: 'bg-purple-500/20 text-purple-400' },
-    BEHAVIORAL_FOLLOWUP: { label: 'Behavioral Follow-up', color: 'bg-emerald-500/20 text-emerald-400' },
+    OPTIMIZATION_EDGE_CASES: {
+      label: 'Edge Cases & Bounds',
+      color: 'bg-purple-500/20 text-purple-400',
+    },
+    BEHAVIORAL_FOLLOWUP: {
+      label: 'Behavioral Follow-up',
+      color: 'bg-emerald-500/20 text-emerald-400',
+    },
     WRAPUP: { label: 'Wrap-up', color: 'bg-slate-500/20 text-slate-400' },
     COMPLETED: { label: 'Completed', color: 'bg-emerald-500 text-white' },
   }
@@ -333,8 +345,8 @@ export default function InterviewSimulatorPage() {
                       msg.sender === 'candidate'
                         ? 'items-end'
                         : msg.sender === 'system'
-                        ? 'items-center'
-                        : 'items-start'
+                          ? 'items-center'
+                          : 'items-start'
                     }`}
                   >
                     {msg.sender === 'system' ? (
@@ -354,8 +366,8 @@ export default function InterviewSimulatorPage() {
                             {msg.sender === 'candidate'
                               ? 'You (Candidate)'
                               : session.persona === 'ALEX_STAFF_ARCHITECT'
-                              ? 'Alex (Staff Architect)'
-                              : 'Sophia (Algo Specialist)'}
+                                ? 'Alex (Staff Architect)'
+                                : 'Sophia (Algo Specialist)'}
                           </span>
                         </div>
                         <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
@@ -472,10 +484,14 @@ export default function InterviewSimulatorPage() {
                       type="button"
                       onClick={() => {
                         if (session?.question?.starterCode) {
-                          setSession(prev => (prev ? {
-                            ...prev,
-                            candidateCode: prev.question.starterCode[prev.activeLanguage],
-                          } : null))
+                          setSession(prev =>
+                            prev
+                              ? {
+                                  ...prev,
+                                  candidateCode: prev.question.starterCode[prev.activeLanguage],
+                                }
+                              : null
+                          )
                         }
                       }}
                       className="hover:text-slate-200 text-[11px] text-slate-500"
@@ -516,12 +532,14 @@ export default function InterviewSimulatorPage() {
               {activeRightTab === 'hints' && (
                 <div className="flex-1 overflow-y-auto space-y-3">
                   <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-xs text-slate-400">
-                    Progressive hints unlock targeted scaffolding without revealing full solutions immediately.
+                    Progressive hints unlock targeted scaffolding without revealing full solutions
+                    immediately.
                   </div>
 
                   {session?.unlockedHints.length === 0 ? (
                     <div className="text-center py-12 text-slate-500 text-xs">
-                      No hints requested yet. Click &quot;Get Hint&quot; if you need a conceptual nudge.
+                      No hints requested yet. Click &quot;Get Hint&quot; if you need a conceptual
+                      nudge.
                     </div>
                   ) : (
                     session?.unlockedHints.map((hint, idx) => (
@@ -577,7 +595,9 @@ export default function InterviewSimulatorPage() {
           </div>
 
           <div>
-            <label className="font-semibold text-slate-300 block mb-2">Seniority / Difficulty</label>
+            <label className="font-semibold text-slate-300 block mb-2">
+              Seniority / Difficulty
+            </label>
             <div className="grid grid-cols-3 gap-2">
               {(['MID', 'SENIOR', 'STAFF'] as InterviewDifficulty[]).map(diff => (
                 <button
@@ -597,7 +617,9 @@ export default function InterviewSimulatorPage() {
           </div>
 
           <div>
-            <label className="font-semibold text-slate-300 block mb-2">AI Interviewer Persona</label>
+            <label className="font-semibold text-slate-300 block mb-2">
+              AI Interviewer Persona
+            </label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
@@ -628,10 +650,17 @@ export default function InterviewSimulatorPage() {
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => setIsSetupOpen(false)} className="border-slate-700">
+            <Button
+              variant="outline"
+              onClick={() => setIsSetupOpen(false)}
+              className="border-slate-700"
+            >
               Cancel
             </Button>
-            <Button onClick={handleStartSession} className="bg-indigo-600 hover:bg-indigo-500 text-white">
+            <Button
+              onClick={handleStartSession}
+              className="bg-indigo-600 hover:bg-indigo-500 text-white"
+            >
               Launch Interview Session
             </Button>
           </div>

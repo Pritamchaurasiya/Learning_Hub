@@ -109,7 +109,8 @@ export class UserAnalyticsService {
             longestStreak: 0,
           }
 
-    const accuracyTrend = accuracyTrendResult.status === 'fulfilled' ? accuracyTrendResult.value : []
+    const accuracyTrend =
+      accuracyTrendResult.status === 'fulfilled' ? accuracyTrendResult.value : []
     const speedTrend = speedTrendResult.status === 'fulfilled' ? speedTrendResult.value : []
     const topicMastery =
       topicMasteryResult.status === 'fulfilled'

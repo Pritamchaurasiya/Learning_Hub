@@ -125,7 +125,7 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
       ) {
         return
       }
-      if (e.key === '?') {
+      if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
         e.preventDefault()
         setIsShortcutsOpen(prev => !prev)
       }
@@ -133,6 +133,7 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
+
   const [fontSize, setFontSize] = useState<'sm' | 'md' | 'lg'>('md')
 
   // Fallback to store actions if not passed directly in props
@@ -569,6 +570,7 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
                     onConfidenceChange={level => onConfidenceChange(currentQuestion.id, level)}
                     onFlag={() => onFlagQuestion(currentQuestion.id)}
                     onUnflag={() => onUnflagQuestion(currentQuestion.id)}
+                    onFlagAndAdvance={handleMarkForReviewAndNext}
                     onClearAnswer={() => handleClearAnswer(currentQuestion.id)}
                     quotaInfo={quotaInfo}
                     assessmentMode={test.assessmentMode}
@@ -660,6 +662,7 @@ export const TestActiveExamStation = memo(function TestActiveExamStation({
         onClose={() => setIsSubmitModalOpen(false)}
         onSubmit={onSubmit}
         isSubmitting={isSubmitting}
+        isOnline={isOnline}
         attemptedCount={Object.values(test.answers).filter(v => v !== undefined && v !== '').length}
         unansweredCount={Math.max(
           0,

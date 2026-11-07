@@ -112,7 +112,13 @@ const DEFAULT_CACHE: CacheStatus = {
 const DEFAULT_PROCESSES: { processes: ProcessInfo[] } = {
   processes: [
     { pid: 101, name: 'learninghub-api', cpu_percent: 0.4, memory_percent: 2.1, status: 'running' },
-    { pid: 102, name: 'conductor-engine', cpu_percent: 1.1, memory_percent: 3.2, status: 'running' },
+    {
+      pid: 102,
+      name: 'conductor-engine',
+      cpu_percent: 1.1,
+      memory_percent: 3.2,
+      status: 'running',
+    },
     { pid: 103, name: 'background-worker', cpu_percent: 0.2, memory_percent: 1.4, status: 'idle' },
   ],
 }

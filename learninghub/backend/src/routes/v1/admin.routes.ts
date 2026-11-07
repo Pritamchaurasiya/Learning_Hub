@@ -16,7 +16,14 @@ import {
   getSecurityEvents,
   getJobQueueHealth,
   triggerDataExport,
+  getAdminCourses,
+  createAdminCourse,
+  updateAdminCourse,
+  deleteAdminCourse,
+  getCourseAnalytics,
+  generateAICourse,
 } from '../../controllers/adminController'
+import { getExperimentResults } from '../../controllers/abTestingController'
 import {
   adminLogin,
   adminRegister,
@@ -127,5 +134,18 @@ router.post(
   validateUUIDParam('id'),
   triggerDataExport
 )
+
+// Course Management (Admin Console)
+router.get('/courses', authenticate, authorizeAdmin, getAdminCourses)
+router.post('/courses', authenticate, authorizeAdmin, createAdminCourse)
+router.put('/courses/:id', authenticate, authorizeAdmin, validateUUIDParam('id'), updateAdminCourse)
+router.delete('/courses/:id', authenticate, authorizeAdmin, validateUUIDParam('id'), deleteAdminCourse)
+router.get('/analytics/courses', authenticate, authorizeAdmin, getCourseAnalytics)
+
+// AI Course Generator Lab
+router.post('/ai/generate-course', authenticate, authorizeAdmin, generateAICourse)
+
+// A/B Testing Admin Results
+router.get('/ab-testing/results/:id', authenticate, authorizeAdmin, getExperimentResults)
 
 export default router

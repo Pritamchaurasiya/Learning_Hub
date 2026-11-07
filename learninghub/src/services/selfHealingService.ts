@@ -1,8 +1,5 @@
 import api from '../utils/api'
-import {
-  CodeSnippetPresetId,
-  CodeAnalysisPayload,
-} from '../types/selfHealing'
+import { CodeSnippetPresetId, CodeAnalysisPayload } from '../types/selfHealing'
 
 export const selfHealingService = {
   /**
@@ -20,10 +17,7 @@ export const selfHealingService = {
   /**
    * Submit source code for multi-vector AST analysis and automated patch synthesis.
    */
-  async analyzeCode(params: {
-    code: string
-    fileName?: string
-  }): Promise<CodeAnalysisPayload> {
+  async analyzeCode(params: { code: string; fileName?: string }): Promise<CodeAnalysisPayload> {
     const response = await api.post('/api/v1/self-healing/analyze', params)
     return response.data?.data || response.data
   },

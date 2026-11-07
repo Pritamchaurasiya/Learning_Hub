@@ -58,7 +58,6 @@ class ErrorTrackingService {
   initialize(): void {
     if (this.initialized || !isEnabled()) {
       if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
         console.warn('[ErrorTracking] Disabled (dev mode or no consent)')
       }
       return
@@ -73,7 +72,6 @@ class ErrorTrackingService {
     window.addEventListener('unhandledrejection', this.handleUnhandledRejection)
 
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
       console.warn('[ErrorTracking] Initialized')
     }
   }
@@ -133,7 +131,6 @@ class ErrorTrackingService {
   captureMessage(message: string, level: 'info' | 'warning' | 'error' = 'info'): void {
     if (!this.initialized) {
       if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
         console.warn(`[ErrorTracking] ${level}:`, message)
       }
       return
@@ -141,7 +138,7 @@ class ErrorTrackingService {
 
     if (!import.meta.env.DEV) {
       // Sentry.captureMessage(message, level)
-      // eslint-disable-next-line no-console
+
       console.warn(`[ErrorTracking] ${level}:`, message)
     }
   }
@@ -166,7 +163,6 @@ class ErrorTrackingService {
   setTag(key: string, value: string): void {
     // Store for Sentry integration
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
       console.warn(`[ErrorTracking] Tag: ${key}=${value}`)
     }
   }
@@ -203,7 +199,6 @@ class ErrorTrackingService {
         })
 
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
           console.warn(`[Performance] ${name}: ${duration.toFixed(2)}ms`)
         }
       },

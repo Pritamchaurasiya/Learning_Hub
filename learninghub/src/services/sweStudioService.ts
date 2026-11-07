@@ -94,7 +94,8 @@ export class SweStudioService {
   ): SweResolutionPipelineResult {
     const issueId = issueInput.id || 'SWE-101'
     const preset = FALLBACK_SWE_PRESETS.find(p => p.id === issueId) || FALLBACK_SWE_PRESETS[0]!
-    const issue: SweBenchmarkIssue = 'title' in issueInput ? (issueInput as SweBenchmarkIssue) : preset
+    const issue: SweBenchmarkIssue =
+      'title' in issueInput ? (issueInput as SweBenchmarkIssue) : preset
 
     const suspiciousLocations: SuspiciousCodeLocation[] = [
       {
@@ -120,15 +121,15 @@ export class SweStudioService {
     const patches: MultiFilePatch[] = [
       {
         filePath: issue.affectedFiles[0] || 'src/services/CacheCoordinator.ts',
-        originalCode: 'async invalidate(key: string): Promise<void> {\n  await this.redisClient.del(key)\n}',
+        originalCode:
+          'async invalidate(key: string): Promise<void> {\n  await this.redisClient.del(key)\n}',
         patchedCode:
           'async invalidate(key: string): Promise<void> {\n  return this.mutex.withLock(`cache:${key}`, async () => {\n    await this.redisClient.del(key)\n  })\n}',
-        unifiedDiff:
-          '--- a/' +
-          (issue.affectedFiles[0] || 'src/services/CacheCoordinator.ts') +
-          '\n+++ b/' +
-          (issue.affectedFiles[0] || 'src/services/CacheCoordinator.ts') +
-          '\n@@ -140,3 +140,5 @@\n-async invalidate(key: string): Promise<void> {\n-  await this.redisClient.del(key)\n-}\n+async invalidate(key: string): Promise<void> {\n+  return this.mutex.withLock(`cache:${key}`, async () => {\n+    await this.redisClient.del(key)\n+  })\n+}',
+        unifiedDiff: `--- a/${
+          issue.affectedFiles[0] || 'src/services/CacheCoordinator.ts'
+        }\n+++ b/${
+          issue.affectedFiles[0] || 'src/services/CacheCoordinator.ts'
+        }\n@@ -140,3 +140,5 @@\n-async invalidate(key: string): Promise<void> {\n-  await this.redisClient.del(key)\n-}\n+async invalidate(key: string): Promise<void> {\n+  return this.mutex.withLock(\`cache:\${key}\`, async () => {\n+    await this.redisClient.del(key)\n+  })\n+}`,
         linesAdded: 5,
         linesRemoved: 3,
         semanticRationale: 'Atomic distributed lock acquisition guarding cache deletion.',

@@ -117,9 +117,7 @@ export const MistakeRemediationModal: React.FC<MistakeRemediationModalProps> = (
               {summary.categories.map(cat => (
                 <button
                   key={cat.type}
-                  onClick={() =>
-                    setSelectedFilter(prev => (prev === cat.type ? 'ALL' : cat.type))
-                  }
+                  onClick={() => setSelectedFilter(prev => (prev === cat.type ? 'ALL' : cat.type))}
                   className={`p-3.5 rounded-xl border text-left transition-all ${
                     selectedFilter === cat.type
                       ? 'ring-2 ring-indigo-500 dark:ring-indigo-400 border-indigo-400 shadow-md bg-indigo-50/30 dark:bg-indigo-950/20'

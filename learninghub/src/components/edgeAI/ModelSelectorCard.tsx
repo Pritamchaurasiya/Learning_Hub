@@ -119,9 +119,7 @@ export const ModelSelectorCard: React.FC<ModelSelectorCardProps> = ({
               </div>
 
               <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {getBadges(model)}
-                </div>
+                <div className="flex items-center gap-1.5 flex-wrap">{getBadges(model)}</div>
 
                 {isLocalBrowser && !model.isDownloaded && (
                   <button

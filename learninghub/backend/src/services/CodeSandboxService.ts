@@ -207,7 +207,9 @@ export class CodeSandboxService {
         )
       }
     } else {
-      logger.warn('[CodeSandboxService] Circuit breaker is OPEN. Bypassing remote Piston execution.')
+      logger.warn(
+        '[CodeSandboxService] Circuit breaker is OPEN. Bypassing remote Piston execution.'
+      )
     }
 
     // Tier 3: Isolated Secure In-Memory VM Sandbox fallback for JavaScript/Node
@@ -449,7 +451,6 @@ export class CodeSandboxService {
     }
   }
 
-
   private static _executeLocalJs(
     code: string,
     testCases: Array<{ input: string; output: string }>,
@@ -477,18 +478,14 @@ export class CodeSandboxService {
           log: (...args: any[]) => {
             logs.push(
               args
-                .map(a =>
-                  typeof a === 'object' && a !== null ? JSON.stringify(a) : String(a)
-                )
+                .map(a => (typeof a === 'object' && a !== null ? JSON.stringify(a) : String(a)))
                 .join(' ')
             )
           },
           error: (...args: any[]) => {
             logs.push(
               args
-                .map(a =>
-                  typeof a === 'object' && a !== null ? JSON.stringify(a) : String(a)
-                )
+                .map(a => (typeof a === 'object' && a !== null ? JSON.stringify(a) : String(a)))
                 .join(' ')
             )
           },

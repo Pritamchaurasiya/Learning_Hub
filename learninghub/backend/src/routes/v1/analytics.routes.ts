@@ -8,10 +8,7 @@ import {
   getPerformanceTrend,
   getWeakAreas,
 } from '../../controllers/analyticsController'
-import {
-  getRecommendations,
-  getSpacedRepetition,
-} from '../../controllers/userAnalyticsController'
+import { getRecommendations, getSpacedRepetition } from '../../controllers/userAnalyticsController'
 
 const router = Router()
 

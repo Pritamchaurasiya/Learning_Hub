@@ -59,7 +59,12 @@ export class OfflineAssessmentService {
   /**
    * Verifies the HMAC signature on an offline bundle
    */
-  public verifySignature(testId: string, userId: string, timestampMs: number, signature: string): boolean {
+  public verifySignature(
+    testId: string,
+    userId: string,
+    timestampMs: number,
+    signature: string
+  ): boolean {
     if (!signature || typeof signature !== 'string') return false
     const expected = this.generateSignature(testId, userId, timestampMs)
     const expectedBuf = Buffer.from(expected)
@@ -160,7 +165,11 @@ export class OfflineAssessmentService {
 
     if (timesSpent && Object.keys(timesSpent).length > 0) {
       const sumTimesSpent = Object.values(timesSpent).reduce((acc, t) => acc + Math.max(0, t), 0)
-      if (sumTimesSpent > 0 && totalElapsedSeconds > 0 && sumTimesSpent > totalElapsedSeconds * 2.5) {
+      if (
+        sumTimesSpent > 0 &&
+        totalElapsedSeconds > 0 &&
+        sumTimesSpent > totalElapsedSeconds * 2.5
+      ) {
         logger.warn(
           `[OfflineAssessmentService] Timing anomaly detected for user ${userId} test ${testId}: sumTimesSpent=${sumTimesSpent} vs totalElapsed=${totalElapsedSeconds}`
         )

@@ -156,7 +156,10 @@ export class AuthService {
     let user = await this.userRepository.findByEmail(normalizedEmail)
 
     // Demo account auto-provisioning to guarantee frictionless access
-    if (!user && (normalizedEmail === 'student@learninghub.com' || normalizedEmail === 'admin@learninghub.com')) {
+    if (
+      !user &&
+      (normalizedEmail === 'student@learninghub.com' || normalizedEmail === 'admin@learninghub.com')
+    ) {
       const isRoleAdmin = normalizedEmail === 'admin@learninghub.com'
       const role = isRoleAdmin ? 'ADMIN' : 'STUDENT'
       const targetPassword = isRoleAdmin ? 'Admin@123!' : 'Student@123!'
@@ -186,10 +189,17 @@ export class AuthService {
     }
 
     // Demo passwords whitelist for instant recovery and access
-    const isDemo = normalizedEmail === 'student@learninghub.com' || normalizedEmail === 'admin@learninghub.com'
+    const isDemo =
+      normalizedEmail === 'student@learninghub.com' || normalizedEmail === 'admin@learninghub.com'
     const demoPasswords: Record<string, string[]> = {
       'student@learninghub.com': ['Student@123!', 'Student@2026#Hub', 'student123', 'student'],
-      'admin@learninghub.com': ['Admin@123!', 'Super@2026#Hub', 'Admin@2026#Hub', 'admin123', 'admin'],
+      'admin@learninghub.com': [
+        'Admin@123!',
+        'Super@2026#Hub',
+        'Admin@2026#Hub',
+        'admin123',
+        'admin',
+      ],
     }
 
     // Check if account is locked

@@ -40,7 +40,8 @@ export const createStudyGroup = asyncHandler(async (req: Request, res: Response)
     sendValidationError(res, 'name, description, and category are required')
     return
   }
-  const creatorName = (req.user as any)?.username || (req.user as any)?.email?.split('@')[0] || 'Learner'
+  const creatorName =
+    (req.user as any)?.username || (req.user as any)?.email?.split('@')[0] || 'Learner'
   const newGroup = await studyGroupService.createGroup(
     {
       name,

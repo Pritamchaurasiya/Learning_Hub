@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { X, GraduationCap, BellRing, Sparkles, CheckCircle2 } from 'lucide-react';
-import { updatesService } from '../../services/updatesService';
-import type { ResultWatcher } from '../../types/updates';
+import React, { useState } from 'react'
+import { X, GraduationCap, BellRing, Sparkles, CheckCircle2 } from 'lucide-react'
+import { updatesService } from '../../services/updatesService'
+import type { ResultWatcher } from '../../types/updates'
 
 export interface ResultWatcherModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onCreated?: (watcher: ResultWatcher) => void;
-  defaultInstitution?: string;
-  defaultCourse?: string;
+  isOpen: boolean
+  onClose: () => void
+  onCreated?: (watcher: ResultWatcher) => void
+  defaultInstitution?: string
+  defaultCourse?: string
 }
 
 const POPULAR_INSTITUTIONS = [
@@ -19,7 +19,7 @@ const POPULAR_INSTITUTIONS = [
   'University of Allahabad',
   'Deen Dayal Upadhyaya Gorakhpur University (DDU)',
   'Chhatrapati Shahu Ji Maharaj University (CSJMU)',
-];
+]
 
 export const ResultWatcherModal: React.FC<ResultWatcherModalProps> = ({
   isOpen,
@@ -28,47 +28,49 @@ export const ResultWatcherModal: React.FC<ResultWatcherModalProps> = ({
   defaultInstitution = '',
   defaultCourse = '',
 }) => {
-  const [institution, setInstitution] = useState(defaultInstitution || POPULAR_INSTITUTIONS[0]);
-  const [course, setCourse] = useState(defaultCourse || '');
-  const [semester, setSemester] = useState('');
-  const [rollNumber, setRollNumber] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
+  const [institution, setInstitution] = useState(defaultInstitution || POPULAR_INSTITUTIONS[0])
+  const [course, setCourse] = useState(defaultCourse || '')
+  const [semester, setSemester] = useState('')
+  const [rollNumber, setRollNumber] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [successMsg, setSuccessMsg] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!institution.trim() || !course.trim()) {
-      setErrorMsg('Please specify both university/institution and course name.');
-      return;
+      setErrorMsg('Please specify both university/institution and course name.')
+      return
     }
 
     try {
-      setIsSubmitting(true);
-      setErrorMsg('');
+      setIsSubmitting(true)
+      setErrorMsg('')
       const watcher = await updatesService.createResultWatcher({
         institution: institution.trim(),
         course: course.trim(),
         semester: semester.trim(),
         roll_number: rollNumber.trim(),
-      });
+      })
 
       if (watcher) {
-        setSuccessMsg(`Tracking active! We will alert you immediately when ${course} results are declared.`);
-        onCreated?.(watcher);
+        setSuccessMsg(
+          `Tracking active! We will alert you immediately when ${course} results are declared.`
+        )
+        onCreated?.(watcher)
         setTimeout(() => {
-          setSuccessMsg('');
-          onClose();
-        }, 1200);
+          setSuccessMsg('')
+          onClose()
+        }, 1200)
       }
     } catch {
-      setErrorMsg('Failed to activate result watcher. Please try again.');
+      setErrorMsg('Failed to activate result watcher. Please try again.')
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <div
@@ -85,7 +87,10 @@ export const ResultWatcherModal: React.FC<ResultWatcherModalProps> = ({
               <GraduationCap className="w-5 h-5" />
             </div>
             <div>
-              <h2 id="result-watcher-title" className="text-lg font-bold text-foreground flex items-center gap-2">
+              <h2
+                id="result-watcher-title"
+                className="text-lg font-bold text-foreground flex items-center gap-2"
+              >
                 Automated Result Watcher
                 <span className="px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-500/20">
                   Live Radar
@@ -124,17 +129,20 @@ export const ResultWatcherModal: React.FC<ResultWatcherModalProps> = ({
         {/* Form */}
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label htmlFor="watcher-institution" className="block text-xs font-semibold text-foreground mb-1">
+            <label
+              htmlFor="watcher-institution"
+              className="block text-xs font-semibold text-foreground mb-1"
+            >
               Select University / Exam Body
             </label>
             <div className="relative">
               <select
                 id="watcher-institution"
                 value={institution}
-                onChange={(e) => setInstitution(e.target.value)}
+                onChange={e => setInstitution(e.target.value)}
                 className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               >
-                {POPULAR_INSTITUTIONS.map((inst) => (
+                {POPULAR_INSTITUTIONS.map(inst => (
                   <option key={inst} value={inst}>
                     {inst}
                   </option>
@@ -145,7 +153,10 @@ export const ResultWatcherModal: React.FC<ResultWatcherModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label htmlFor="watcher-course" className="block text-xs font-semibold text-foreground mb-1">
+              <label
+                htmlFor="watcher-course"
+                className="block text-xs font-semibold text-foreground mb-1"
+              >
                 Course / Program <span className="text-rose-500">*</span>
               </label>
               <input
@@ -154,13 +165,16 @@ export const ResultWatcherModal: React.FC<ResultWatcherModalProps> = ({
                 required
                 placeholder="e.g. BCA, B.Tech, MCA"
                 value={course}
-                onChange={(e) => setCourse(e.target.value)}
+                onChange={e => setCourse(e.target.value)}
                 className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
 
             <div>
-              <label htmlFor="watcher-semester" className="block text-xs font-semibold text-foreground mb-1">
+              <label
+                htmlFor="watcher-semester"
+                className="block text-xs font-semibold text-foreground mb-1"
+              >
                 Semester / Year (Optional)
               </label>
               <input
@@ -168,7 +182,7 @@ export const ResultWatcherModal: React.FC<ResultWatcherModalProps> = ({
                 type="text"
                 placeholder="e.g. 4th Semester"
                 value={semester}
-                onChange={(e) => setSemester(e.target.value)}
+                onChange={e => setSemester(e.target.value)}
                 className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
@@ -179,14 +193,16 @@ export const ResultWatcherModal: React.FC<ResultWatcherModalProps> = ({
               <label htmlFor="watcher-roll" className="block text-xs font-semibold text-foreground">
                 Roll Number / Enrollment No (Optional)
               </label>
-              <span className="text-[11px] text-muted-foreground">Stored securely for direct score match</span>
+              <span className="text-[11px] text-muted-foreground">
+                Stored securely for direct score match
+              </span>
             </div>
             <input
               id="watcher-roll"
               type="text"
               placeholder="e.g. 2300582910"
               value={rollNumber}
-              onChange={(e) => setRollNumber(e.target.value)}
+              onChange={e => setRollNumber(e.target.value)}
               className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono"
             />
           </div>
@@ -198,7 +214,9 @@ export const ResultWatcherModal: React.FC<ResultWatcherModalProps> = ({
                 Zero-Noise Background Polling
               </p>
               <p>
-                Our official university crawler checks result gazettes every 15 minutes. The moment the verified PDF or web list is published, an emergency WebSocket push notification will appear on your screen.
+                Our official university crawler checks result gazettes every 15 minutes. The moment
+                the verified PDF or web list is published, an emergency WebSocket push notification
+                will appear on your screen.
               </p>
             </div>
           </div>
@@ -225,5 +243,5 @@ export const ResultWatcherModal: React.FC<ResultWatcherModalProps> = ({
         </form>
       </div>
     </div>
-  );
-};
+  )
+}

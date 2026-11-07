@@ -81,7 +81,10 @@ export const GraphInspectorPanel: React.FC<GraphInspectorPanelProps> = ({
 
       {/* Connect Edges */}
       {nodes.length >= 2 && (
-        <form onSubmit={handleCreateEdge} className="space-y-2 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+        <form
+          onSubmit={handleCreateEdge}
+          className="space-y-2 bg-slate-950/60 p-3 rounded-xl border border-slate-800"
+        >
           <div className="text-xs font-medium text-slate-400">Connect Vertices with Edge:</div>
           <div className="grid grid-cols-2 gap-2">
             <select

@@ -35,15 +35,14 @@ export const EquationRecognizerDrawer: React.FC<EquationRecognizerDrawerProps> =
 
       {result.formulaName && (
         <div className="text-xs text-slate-400">
-          Identified Formulation: <span className="text-white font-semibold">{result.formulaName}</span>
+          Identified Formulation:{' '}
+          <span className="text-white font-semibold">{result.formulaName}</span>
         </div>
       )}
 
       {/* Rendered Math Box */}
       <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
-        <code className="text-sm text-emerald-400 font-mono select-all">
-          {result.latexString}
-        </code>
+        <code className="text-sm text-emerald-400 font-mono select-all">{result.latexString}</code>
       </div>
 
       {/* Step Breakdown */}
@@ -70,7 +69,11 @@ export const EquationRecognizerDrawer: React.FC<EquationRecognizerDrawerProps> =
           onClick={handleCopy}
           className="flex-1 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 flex items-center justify-center gap-1.5 transition-colors"
         >
-          {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+          {copied ? (
+            <Check className="w-3.5 h-3.5 text-emerald-400" />
+          ) : (
+            <Copy className="w-3.5 h-3.5" />
+          )}
           <span>{copied ? 'Copied LaTeX' : 'Copy LaTeX'}</span>
         </button>
         <button

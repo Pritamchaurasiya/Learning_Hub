@@ -4,6 +4,7 @@ import { IRTScoringEngine } from './IRTScoringEngine'
 import { prisma } from '../prismaClient'
 import { defaultCatItems } from './catItemBank'
 import { domainEvents } from './DomainEventBus'
+import { cacheService } from './CacheService'
 
 export type ConfidenceLevel = 'LOW' | 'MEDIUM' | 'HIGH'
 
@@ -169,11 +170,21 @@ export class CatAdaptiveService {
         const b = (diffNum - 0.5) * 6.0
         let a = 1.4
         switch (q.bloomLevel) {
-          case 'REMEMBER': a = 1.1; break
-          case 'UNDERSTAND': a = 1.3; break
-          case 'APPLY': a = 1.5; break
-          case 'ANALYZE': a = 1.8; break
-          case 'EVALUATE': a = 2.1; break
+          case 'REMEMBER':
+            a = 1.1
+            break
+          case 'UNDERSTAND':
+            a = 1.3
+            break
+          case 'APPLY':
+            a = 1.5
+            break
+          case 'ANALYZE':
+            a = 1.8
+            break
+          case 'EVALUATE':
+            a = 2.1
+            break
         }
         const c = q.options.length > 0 ? 1 / q.options.length : 0.25
         const bloomMap: Record<string, CatItem['bloomLevel']> = {
@@ -201,7 +212,9 @@ export class CatAdaptiveService {
       }
       return added
     } catch (err) {
-      logger.warn(`[CatAdaptiveService] loadDbQuestions warning: ${err instanceof Error ? err.message : String(err)}`)
+      logger.warn(
+        `[CatAdaptiveService] loadDbQuestions warning: ${err instanceof Error ? err.message : String(err)}`
+      )
       return 0
     }
   }
@@ -215,7 +228,7 @@ export class CatAdaptiveService {
     const Q = 1 - P
     const denom = (1 - item.c) ** 2 * P
     if (denom <= 1e-8 || Q <= 1e-8) return 0.0
-    const numerator = (item.a ** 2) * ((P - item.c) ** 2) * Q
+    const numerator = item.a ** 2 * (P - item.c) ** 2 * Q
     return Math.max(0, numerator / denom)
   }
 
@@ -238,7 +251,10 @@ export class CatAdaptiveService {
    * Bayesian Expected A Posteriori (EAP) ability estimation
    * Hardened with the Log-Sum-Exp numerical stabilization trick to eliminate floating-point underflow.
    */
-  public estimateAbilityEAP(responses: boolean[], items: CatItem[]): { theta: number; sem: number } {
+  public estimateAbilityEAP(
+    responses: boolean[],
+    items: CatItem[]
+  ): { theta: number; sem: number } {
     if (responses.length === 0 || items.length === 0) {
       return { theta: 0.0, sem: 1.0 }
     }
@@ -329,10 +345,7 @@ export class CatAdaptiveService {
     const t = 1 / (1 + 0.2316419 * Math.abs(theta))
     const d = 0.3989423 * Math.exp((-theta * theta) / 2)
     const prob =
-      d *
-      t *
-      (0.3193815 +
-        t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))))
+      d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))))
     const cdf = theta >= 0 ? 1 - prob : prob
     return Math.round(cdf * 1000) / 10
   }
@@ -366,12 +379,15 @@ export class CatAdaptiveService {
   /**
    * Starts a new Computerized Adaptive Testing session
    */
-  
+
   /**
    * Filters item bank for items matching the specified subject or discipline.
    * Uses intelligent keyword and taxonomy matching with graceful fallback to available pool.
    */
-  public filterItemsBySubject(subject?: string, availablePool: CatItem[] = this.itemBank): CatItem[] {
+  public filterItemsBySubject(
+    subject?: string,
+    availablePool: CatItem[] = this.itemBank
+  ): CatItem[] {
     if (!subject || subject.trim() === '') {
       return availablePool
     }
@@ -387,9 +403,7 @@ export class CatAdaptiveService {
       const itemSub = item.subject.toLowerCase()
       const itemTopic = item.topic.toLowerCase()
       return (
-        itemSub.includes(cleanSub) ||
-        cleanSub.includes(itemSub) ||
-        itemTopic.includes(cleanSub)
+        itemSub.includes(cleanSub) || cleanSub.includes(itemSub) || itemTopic.includes(cleanSub)
       )
     })
 
@@ -410,7 +424,8 @@ export class CatAdaptiveService {
       if (isChemistry && /chemistry/.test(itemSub)) return true
       if (isMath && /mathematics/.test(itemSub)) return true
       if (isBio && /biology/.test(itemSub)) return true
-      if (isCS && /computer science|algorithm|distributed|database|data structure/.test(itemSub)) return true
+      if (isCS && /computer science|algorithm|distributed|database|data structure/.test(itemSub))
+        return true
       return false
     })
 
@@ -433,7 +448,8 @@ export class CatAdaptiveService {
 
     // Filter available items for subject
     const subjectItems = this.filterItemsBySubject(subject)
-    const initialItem = this.selectNextItem(initialTheta, subjectItems) || subjectItems[0] || this.itemBank[0]
+    const initialItem =
+      this.selectNextItem(initialTheta, subjectItems) || subjectItems[0] || this.itemBank[0]
 
     const session: CatSessionState = {
       sessionId,
@@ -466,7 +482,9 @@ export class CatAdaptiveService {
     }
 
     this.sessions.set(sessionId, session)
-    logger.info(`[CatAdaptiveService] Started CAT session ${sessionId} for user ${userId} (subject: ${subject}, exam: ${examSlug || 'all'})`)
+    logger.info(
+      `[CatAdaptiveService] Started CAT session ${sessionId} for user ${userId} (subject: ${subject}, exam: ${examSlug || 'all'})`
+    )
     return session
   }
 
@@ -500,7 +518,9 @@ export class CatAdaptiveService {
     const answeredItemIds = session.responses.map(r => r.itemId)
     answeredItemIds.push(currentItem.id)
 
-    const administeredItems = answeredItemIds.map(id => this.itemBank.find(i => i.id === id)!).filter(Boolean)
+    const administeredItems = answeredItemIds
+      .map(id => this.itemBank.find(i => i.id === id)!)
+      .filter(Boolean)
     const binaryResponses = session.responses.map(r => r.isCorrect)
     binaryResponses.push(isCorrect)
 
@@ -538,7 +558,8 @@ export class CatAdaptiveService {
 
     // Stopping criteria check:
     const hasMetStoppingCriteria =
-      (session.questionsAnswered >= session.minQuestions && session.currentSem <= session.targetSem) ||
+      (session.questionsAnswered >= session.minQuestions &&
+        session.currentSem <= session.targetSem) ||
       session.questionsAnswered >= session.maxQuestions
 
     if (hasMetStoppingCriteria) {
@@ -596,6 +617,27 @@ export class CatAdaptiveService {
   /**
    * Retrieves current session state
    */
+
+  public async getSessionAsync(sessionId: string): Promise<CatSessionState | undefined> {
+    const local = this.sessions.get(sessionId)
+    if (local) return local
+
+    try {
+      const cached = await cacheService.get<CatSessionState>(`cat:session:${sessionId}`)
+      if (cached) {
+        this.sessions.set(sessionId, cached)
+        return cached
+      }
+    } catch (err) {
+      logger.debug(`[CatAdaptiveService] getSessionAsync cache lookup skipped: ${err}`)
+    }
+    return undefined
+  }
+
+  public resetSessionsForTesting(): void {
+    this.sessions.clear()
+  }
+
   public getSession(sessionId: string): CatSessionState | undefined {
     return this.sessions.get(sessionId)
   }
@@ -646,7 +688,11 @@ export class CatAdaptiveService {
     })
 
     // Test Information Curve across theta [-3, 3]
-    const testInformationCurve: Array<{ thetaPoint: number; informationValue: number; semValue: number }> = []
+    const testInformationCurve: Array<{
+      thetaPoint: number
+      informationValue: number
+      semValue: number
+    }> = []
     const administeredItems = this.itemBank.filter(i =>
       session.responses.some(r => r.itemId === i.id)
     )
@@ -702,13 +748,15 @@ export class CatAdaptiveService {
       }
     })
 
-    let suggestedRemediationAction = 'Maintain daily practice cadence and challenge higher difficulty question tiers.'
+    let suggestedRemediationAction =
+      'Maintain daily practice cadence and challenge higher difficulty question tiers.'
     if (blindspotCount > 0) {
       suggestedRemediationAction = `High priority: Review fundamental axioms in ${lowestAccuracyTopic || 'flagged topics'} to eliminate overconfident blindspots.`
     } else if (session.abilityBand === 'BEGINNER' || session.abilityBand === 'INTERMEDIATE') {
       suggestedRemediationAction = `Focus on targeted topic drills and concept review in ${lowestAccuracyTopic || session.subject} before taking full mock exams.`
     } else if (session.abilityBand === 'ADVANCED' || session.abilityBand === 'MASTER') {
-      suggestedRemediationAction = 'Excellent mastery demonstrated. Proceed to timed multi-subject grand mocks and advanced competitive sets.'
+      suggestedRemediationAction =
+        'Excellent mastery demonstrated. Proceed to timed multi-subject grand mocks and advanced competitive sets.'
     }
 
     // Cryptographic audit proof
@@ -755,7 +803,14 @@ export class CatAdaptiveService {
   public getItemBankStats() {
     const totalItems = this.itemBank.length
     if (totalItems === 0) {
-      return { totalItems: 0, meanDifficulty: 0, meanDiscrimination: 0, meanGuessing: 0, bloomDistribution: {}, subjects: [] }
+      return {
+        totalItems: 0,
+        meanDifficulty: 0,
+        meanDiscrimination: 0,
+        meanGuessing: 0,
+        bloomDistribution: {},
+        subjects: [],
+      }
     }
     const sumA = this.itemBank.reduce((acc, i) => acc + i.a, 0)
     const sumB = this.itemBank.reduce((acc, i) => acc + i.b, 0)

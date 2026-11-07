@@ -2,11 +2,7 @@ export type ServiceHealthStatus = 'HEALTHY' | 'DEGRADED' | 'CRASHED' | 'RECOVERI
 export type CircuitBreakerState = 'CLOSED' | 'OPEN' | 'HALF_OPEN'
 export type NetworkLinkState = 'CONNECTED' | 'PARTITIONED' | 'DEGRADED_LATENCY' | 'PACKET_LOSS'
 export type ChaosFaultType =
-  | 'NETWORK_PARTITION'
-  | 'LATENCY_SPIKE'
-  | 'PACKET_LOSS'
-  | 'PROCESS_CRASH'
-  | 'THREAD_POOL_SATURATION'
+  'NETWORK_PARTITION' | 'LATENCY_SPIKE' | 'PACKET_LOSS' | 'PROCESS_CRASH' | 'THREAD_POOL_SATURATION'
 
 export interface ServiceNode {
   id: string

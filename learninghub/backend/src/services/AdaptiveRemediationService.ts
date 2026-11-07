@@ -1,18 +1,14 @@
 /**
  * AdaptiveRemediationService.ts
- * 
+ *
  * Milestone 32: AI-Powered Computerized Adaptive Remediation (CAR)
  * Analyzes question telemetry (response time, difficulty, discrimination, choice)
  * to classify mistake etiology (Knowledge Deficit, Careless Slip, Lucky Guess, Fatigue),
  * synthesize dynamic 3-step scaffolding remediation drills, and calculate BKT mastery updates.
  */
 
-export type MistakeEtiology = 
-  | 'KNOWLEDGE_DEFICIT'
-  | 'CARELESS_SLIP'
-  | 'LUCKY_GUESS'
-  | 'FATIGUE_FLAG'
-  | 'CONCEPT_CONFUSION'
+export type MistakeEtiology =
+  'KNOWLEDGE_DEFICIT' | 'CARELESS_SLIP' | 'LUCKY_GUESS' | 'FATIGUE_FLAG' | 'CONCEPT_CONFUSION'
 
 export interface QuestionTelemetry {
   questionId: string
@@ -95,35 +91,42 @@ export class AdaptiveRemediationService {
       if (isFast && telemetry.difficulty > 1.2 && lowPriorMastery) {
         etiology = 'LUCKY_GUESS'
         confidence = 0.88
-        explanation = 'Rapid response on high-difficulty item with low baseline mastery indicates speculative guessing.'
+        explanation =
+          'Rapid response on high-difficulty item with low baseline mastery indicates speculative guessing.'
       } else {
         etiology = 'KNOWLEDGE_DEFICIT' // Not a mistake, but base fallback
         confidence = 0.95
-        explanation = 'Question was answered correctly according to normative cognitive expectation.'
+        explanation =
+          'Question was answered correctly according to normative cognitive expectation.'
       }
     } else {
       // Question is incorrect
       if (isFast && highPriorMastery && telemetry.difficulty < 0.5) {
         etiology = 'CARELESS_SLIP'
         confidence = 0.92
-        explanation = 'Swift response time below 35% of benchmark with high historical mastery indicates speed-induced cognitive error rather than deep conceptual lack.'
+        explanation =
+          'Swift response time below 35% of benchmark with high historical mastery indicates speed-induced cognitive error rather than deep conceptual lack.'
       } else if (isVerySlow && telemetry.difficulty > 1.0) {
         etiology = 'CONCEPT_CONFUSION'
         confidence = 0.87
-        explanation = 'Extended cognitive effort exceeding 175% of benchmark reflects struggle with competing multi-step reasoning models or ambiguous problem constraints.'
+        explanation =
+          'Extended cognitive effort exceeding 175% of benchmark reflects struggle with competing multi-step reasoning models or ambiguous problem constraints.'
       } else if (lowPriorMastery || telemetry.difficulty >= 0) {
         etiology = 'KNOWLEDGE_DEFICIT'
         confidence = 0.94
-        explanation = 'Direct deficit in fundamental domain knowledge and prerequisite conceptual models.'
+        explanation =
+          'Direct deficit in fundamental domain knowledge and prerequisite conceptual models.'
       } else {
         etiology = 'FATIGUE_FLAG'
         confidence = 0.78
-        explanation = 'Pattern shows sub-optimal cognitive pacing and potential mental fatigue during sustained test-taking.'
+        explanation =
+          'Pattern shows sub-optimal cognitive pacing and potential mental fatigue during sustained test-taking.'
       }
     }
 
     const prereqId = telemetry.prerequisiteConceptId || `prereq-${telemetry.conceptId}`
-    const prereqName = telemetry.prerequisiteConceptName || `Foundational Principles of ${telemetry.conceptName}`
+    const prereqName =
+      telemetry.prerequisiteConceptName || `Foundational Principles of ${telemetry.conceptName}`
 
     return {
       questionId: telemetry.questionId,
@@ -137,15 +140,19 @@ export class AdaptiveRemediationService {
         prerequisiteName: prereqName,
         targetDifficulty: Math.max(-2.0, parseFloat((telemetry.difficulty - 0.6).toFixed(2))),
         drillStepCount: etiology === 'CARELESS_SLIP' ? 1 : 3,
-        estimatedRecoveryTimeMinutes: etiology === 'CARELESS_SLIP' ? 2 : 6
-      }
+        estimatedRecoveryTimeMinutes: etiology === 'CARELESS_SLIP' ? 2 : 6,
+      },
     }
   }
 
   /**
    * Generates a calibrated 3-step scaffolding drill tailored to concept & etiology.
    */
-  public generateScaffoldDrill(conceptId: string, conceptName: string, etiology: MistakeEtiology): RemediationDrillPayload {
+  public generateScaffoldDrill(
+    conceptId: string,
+    conceptName: string,
+    etiology: MistakeEtiology
+  ): RemediationDrillPayload {
     const isCareless = etiology === 'CARELESS_SLIP'
 
     const steps: RemediationDrillStep[] = [
@@ -157,13 +164,13 @@ export class AdaptiveRemediationService {
           `Conservation of state invariants and continuous bounded conditions`,
           `Unrestricted asymptotic divergence without convergence checks`,
           `Randomized heuristic fallback under deterministic edge cases`,
-          `Inverse boundary skipping during sequential traversal`
+          `Inverse boundary skipping during sequential traversal`,
         ],
         correctIndex: 0,
         hint: `Focus on the conservation law or mathematical identity that always holds true.`,
         explanation: `Foundational mastery requires verifying that boundary invariants remain conserved before evaluating advanced compound transformations.`,
-        difficulty: -0.5
-      }
+        difficulty: -0.5,
+      },
     ]
 
     if (!isCareless) {
@@ -175,12 +182,12 @@ export class AdaptiveRemediationService {
           `Scale parameters proportionally while dampening high-frequency oscillation`,
           `Discard all prior boundary bounds and reset to uniform priors`,
           `Double the learning rate arbitrarily to overcome local minima`,
-          `Negate the denominator without checking non-zero criteria`
+          `Negate the denominator without checking non-zero criteria`,
         ],
         correctIndex: 0,
         hint: `Think about stability criteria and dampening factor constraints.`,
         explanation: `In compound applications, stabilizing the system through proportional parameter scaling prevents asymptotic divergence.`,
-        difficulty: 0.2
+        difficulty: 0.2,
       })
 
       steps.push({
@@ -191,12 +198,12 @@ export class AdaptiveRemediationService {
           `Activate idempotent fallback handler, preserve invariant snapshot, and alert supervisor`,
           `Suppress the error exception and continue stream processing without audit log`,
           `Force synchronous thread block until manual operator intervention`,
-          `Flush all cached persistent state to disk in an unencrypted temporary buffer`
+          `Flush all cached persistent state to disk in an unencrypted temporary buffer`,
         ],
         correctIndex: 0,
         hint: `Prioritize idempotency, auditability, and state consistency.`,
         explanation: `Robust systems maintain deterministic guarantees by combining idempotent fallback execution with state snapshot integrity.`,
-        difficulty: 0.8
+        difficulty: 0.8,
       })
     }
 
@@ -207,7 +214,7 @@ export class AdaptiveRemediationService {
       conceptName,
       etiology,
       steps,
-      potentialMasteryDelta: potentialDelta
+      potentialMasteryDelta: potentialDelta,
     }
   }
 
@@ -236,24 +243,31 @@ export class AdaptiveRemediationService {
     // P(L_n | Correct) = (P(L_{n-1}) * (1 - s)) / (P(L_{n-1}) * (1 - s) + (1 - P(L_{n-1})) * g)
     // Here simplified into a calibrated bounded delta based on drill performance:
     let masteryDelta = 0
-    let status: 'FULLY_RECOVERED' | 'PARTIALLY_RECOVERED' | 'NEEDS_PREREQUISITE_COURSE' = 'NEEDS_PREREQUISITE_COURSE'
+    let status: 'FULLY_RECOVERED' | 'PARTIALLY_RECOVERED' | 'NEEDS_PREREQUISITE_COURSE' =
+      'NEEDS_PREREQUISITE_COURSE'
     let feedback = ''
 
     if (passRate === 1.0) {
       masteryDelta = 0.16 * (1.0 - priorMastery)
       status = 'FULLY_RECOVERED'
-      feedback = 'Outstanding! You correctly resolved all scaffolding drill steps and fully repaired the underlying concept.'
+      feedback =
+        'Outstanding! You correctly resolved all scaffolding drill steps and fully repaired the underlying concept.'
     } else if (passed) {
       masteryDelta = 0.09 * (1.0 - priorMastery)
       status = 'PARTIALLY_RECOVERED'
-      feedback = 'Good recovery. You demonstrated solid understanding on fundamental steps but should review the synthesis tier.'
+      feedback =
+        'Good recovery. You demonstrated solid understanding on fundamental steps but should review the synthesis tier.'
     } else {
       masteryDelta = -0.04 * priorMastery
       status = 'NEEDS_PREREQUISITE_COURSE'
-      feedback = 'Prerequisite concept gap detected. We recommend taking the dedicated foundational prerequisite lesson module.'
+      feedback =
+        'Prerequisite concept gap detected. We recommend taking the dedicated foundational prerequisite lesson module.'
     }
 
-    const updatedMastery = Math.min(1.0, Math.max(0.05, parseFloat((priorMastery + masteryDelta).toFixed(3))))
+    const updatedMastery = Math.min(
+      1.0,
+      Math.max(0.05, parseFloat((priorMastery + masteryDelta).toFixed(3)))
+    )
 
     return {
       conceptId,
@@ -263,7 +277,7 @@ export class AdaptiveRemediationService {
       updatedMastery,
       masteryDelta: parseFloat(masteryDelta.toFixed(3)),
       feedback,
-      recoveredStatus: status
+      recoveredStatus: status,
     }
   }
 }

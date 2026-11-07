@@ -18,7 +18,25 @@ test.describe('Two-Factor Authentication (2FA) User Journey', () => {
     // Seed authenticated session in localStorage
     await page.addInitScript(() => {
       window.localStorage.setItem('cookieConsent', 'accepted')
+      window.localStorage.setItem('lh_location_permission_requested', 'true')
       window.localStorage.setItem('lh_access_token', 'mock-valid-token')
+      window.localStorage.setItem(
+        'learninghub-storage',
+        JSON.stringify({
+          state: {
+            auth: {
+              isAuthenticated: true,
+              user: {
+                id: 'user-mfa-enroll',
+                email: 'student@learninghub.com',
+                role: 'STUDENT',
+                mfaEnabled: false,
+              },
+            },
+          },
+          version: 0,
+        })
+      )
       window.localStorage.setItem(
         'user',
         JSON.stringify({
@@ -82,8 +100,8 @@ test.describe('Two-Factor Authentication (2FA) User Journey', () => {
       })
     })
 
-    // Mock MFA verification endpoint
-    await page.route('**/auth/mfa/verify', async route => {
+    // Mock MFA verification endpoint (matches /auth/mfa/verify and /auth/mfa/verify-enable)
+    await page.route('**/auth/mfa/verify*', async route => {
       const payload = JSON.parse(route.request().postData() || '{}')
       if (payload.token === '849201') {
         userMfaEnabled = true

@@ -230,7 +230,11 @@ export const generatePracticeTest = asyncHandler(
       sendSuccess(res, result)
     } catch (err) {
       // If AI fails AND mode allows fallback, try question bank
-      if (params.aiMode === 'AI_OPTIONAL' || params.aiMode === 'HYBRID' || params.aiMode === 'NO_AI') {
+      if (
+        params.aiMode === 'AI_OPTIONAL' ||
+        params.aiMode === 'HYBRID' ||
+        params.aiMode === 'NO_AI'
+      ) {
         logger.warn('[AIController] AI generation failed, falling back to question bank', {
           aiMode: params.aiMode,
           error: err instanceof Error ? err.message : String(err),
@@ -380,29 +384,27 @@ export const deleteChatSession = asyncHandler(
 /**
  * POST /api/v1/ai/council/consult
  */
-export const consultCouncil = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const userId = req.user!.userId
-    const { query, codeSnippet, language, problemTitle, problemDescription, studentLevel } = req.body
+export const consultCouncil = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.userId
+  const { query, codeSnippet, language, problemTitle, problemDescription, studentLevel } = req.body
 
-    if (!query || typeof query !== 'string' || query.trim().length === 0) {
-      sendValidationError(res, 'Query is required')
-      return
-    }
-
-    const result = await multiAgentCouncilService.consultCouncil({
-      userId,
-      query: query.trim(),
-      codeSnippet: typeof codeSnippet === 'string' ? codeSnippet : undefined,
-      language: typeof language === 'string' ? language : undefined,
-      problemTitle: typeof problemTitle === 'string' ? problemTitle : undefined,
-      problemDescription: typeof problemDescription === 'string' ? problemDescription : undefined,
-      studentLevel: studentLevel || 'intermediate',
-    })
-
-    sendSuccess(res, result)
+  if (!query || typeof query !== 'string' || query.trim().length === 0) {
+    sendValidationError(res, 'Query is required')
+    return
   }
-)
+
+  const result = await multiAgentCouncilService.consultCouncil({
+    userId,
+    query: query.trim(),
+    codeSnippet: typeof codeSnippet === 'string' ? codeSnippet : undefined,
+    language: typeof language === 'string' ? language : undefined,
+    problemTitle: typeof problemTitle === 'string' ? problemTitle : undefined,
+    problemDescription: typeof problemDescription === 'string' ? problemDescription : undefined,
+    studentLevel: studentLevel || 'intermediate',
+  })
+
+  sendSuccess(res, result)
+})
 
 /**
  * POST /api/v1/ai/council/specialist
@@ -447,7 +449,8 @@ export const getAvailableAIModels = asyncHandler(
     const hasAnthropic = Boolean(process.env.ANTHROPIC_API_KEY)
 
     const modelCatalog = {
-      defaultProvider: process.env.AI_PROVIDER || (hasGroq ? 'groq' : hasGemini ? 'gemini' : 'mock'),
+      defaultProvider:
+        process.env.AI_PROVIDER || (hasGroq ? 'groq' : hasGemini ? 'gemini' : 'mock'),
       providers: [
         {
           id: 'groq',
@@ -510,7 +513,8 @@ export const getAvailableAIModels = asyncHandler(
         {
           id: 'ollama',
           name: 'Local Ollama Engine',
-          description: '100% Free, Private, Offline AI running directly on your laptop/workstation.',
+          description:
+            '100% Free, Private, Offline AI running directly on your laptop/workstation.',
           isConfigured: true,
           isFreeTier: true,
           isLocalOffline: true,
@@ -542,7 +546,8 @@ export const getAvailableAIModels = asyncHandler(
         {
           id: 'edge_webgpu',
           name: 'Client-Side WebGPU Edge AI (Milestone 13)',
-          description: 'Runs directly in your browser tab via WebGPU shaders. Zero server cost, zero latency, works completely offline.',
+          description:
+            'Runs directly in your browser tab via WebGPU shaders. Zero server cost, zero latency, works completely offline.',
           isConfigured: true,
           isFreeTier: true,
           isInBrowser: true,
@@ -596,5 +601,3 @@ export const getAvailableAIModels = asyncHandler(
     sendSuccess(res, modelCatalog)
   }
 )
-
-

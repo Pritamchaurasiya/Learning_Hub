@@ -48,10 +48,7 @@ export default function VerifyCertificatePage() {
   }, [routeCode])
 
   // Legacy Certificate Query
-  const {
-    data: verificationData,
-    isLoading: isCertLoading,
-  } = useQuery({
+  const { data: verificationData, isLoading: isCertLoading } = useQuery({
     queryKey: ['verifyCertificate', activeCode],
     queryFn: async () => {
       if (!activeCode.trim()) return null
@@ -67,35 +64,33 @@ export default function VerifyCertificatePage() {
   })
 
   // W3C DID Verifiable Credential Query
-  const {
-    data: w3cVerificationData,
-    isLoading: isW3cLoading,
-  } = useQuery<CredentialVerificationResult | null>({
-    queryKey: ['verifyW3CCredential', activeCode, uploadedCredential],
-    queryFn: async () => {
-      if (uploadedCredential) {
+  const { data: w3cVerificationData, isLoading: isW3cLoading } =
+    useQuery<CredentialVerificationResult | null>({
+      queryKey: ['verifyW3CCredential', activeCode, uploadedCredential],
+      queryFn: async () => {
+        if (uploadedCredential) {
+          try {
+            const res = await verifiableCredentialService.verifyCredential(uploadedCredential)
+            return res.data
+          } catch {
+            return null
+          }
+        }
+        if (!activeCode.trim()) return null
+        // Check if it matches UUID, DID, or raw JSON format
         try {
-          const res = await verifiableCredentialService.verifyCredential(uploadedCredential)
-          return res.data
+          const res = await verifiableCredentialService.verifyCredential(activeCode.trim())
+          if (res?.data?.valid || res?.data?.auditReport?.signatureValid) {
+            return res.data
+          }
         } catch {
-          return null
+          // Fallback to legacy
         }
-      }
-      if (!activeCode.trim()) return null
-      // Check if it matches UUID, DID, or raw JSON format
-      try {
-        const res = await verifiableCredentialService.verifyCredential(activeCode.trim())
-        if (res?.data?.valid || res?.data?.auditReport?.signatureValid) {
-          return res.data
-        }
-      } catch {
-        // Fallback to legacy
-      }
-      return null
-    },
-    enabled: Boolean(activeCode.trim() || uploadedCredential),
-    retry: 0,
-  })
+        return null
+      },
+      enabled: Boolean(activeCode.trim() || uploadedCredential),
+      retry: 0,
+    })
 
   const isLoading = Boolean(activeCode.trim()) && isCertLoading && isW3cLoading
   const isW3C = Boolean(w3cVerificationData && (w3cVerificationData.valid || uploadedCredential))
@@ -250,7 +245,8 @@ export default function VerifyCertificatePage() {
                     Certificate Verification Failed
                   </h2>
                   <p className="text-sm text-rose-700 dark:text-rose-300 max-w-md mx-auto">
-                    The specified certificate code or credential could not be verified in the registry. Please double check the ID.
+                    The specified certificate code or credential could not be verified in the
+                    registry. Please double check the ID.
                   </p>
                 </Card>
               </motion.div>

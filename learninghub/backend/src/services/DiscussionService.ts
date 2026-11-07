@@ -195,14 +195,19 @@ export class DiscussionService {
     userId?: string
   }): Promise<{
     data: DiscussionThread[]
-    meta: { total: number; page: number; limit: number; pages: number; hasNext: boolean; hasPrev: boolean }
+    meta: {
+      total: number
+      page: number
+      limit: number
+      pages: number
+      hasNext: boolean
+      hasPrev: boolean
+    }
   }> {
     const rawPage = params?.page ?? 1
     const rawLimit = params?.limit ?? 20
     const page = Number.isFinite(rawPage) ? Math.max(1, Math.floor(rawPage)) : 1
-    const limit = Number.isFinite(rawLimit)
-      ? Math.min(50, Math.max(1, Math.floor(rawLimit)))
-      : 20
+    const limit = Number.isFinite(rawLimit) ? Math.min(50, Math.max(1, Math.floor(rawLimit))) : 20
     const search = params?.search?.toLowerCase()
 
     let results = [...fallbackDiscussions]

@@ -28,7 +28,9 @@ export const RetentionAnalyticsCard: React.FC<RetentionAnalyticsCardProps> = ({
   const avgRetentionPct = Math.round(stats.average_retention * 100)
 
   return (
-    <Card className={`p-6 rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-xl ${className}`}>
+    <Card
+      className={`p-6 rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-xl ${className}`}
+    >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100 dark:border-gray-800">
         <div className="flex items-center gap-3">
@@ -105,9 +107,7 @@ export const RetentionAnalyticsCard: React.FC<RetentionAnalyticsCardProps> = ({
           <div className="text-2xl font-black text-purple-600 dark:text-purple-400">
             {avgRetentionPct}%
           </div>
-          <div className="text-[11px] font-medium text-gray-400 mt-1">
-            Average retrievability
-          </div>
+          <div className="text-[11px] font-medium text-gray-400 mt-1">Average retrievability</div>
         </div>
 
         <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
@@ -117,9 +117,7 @@ export const RetentionAnalyticsCard: React.FC<RetentionAnalyticsCardProps> = ({
           <div className="text-2xl font-black text-amber-600 dark:text-amber-400">
             {stats.due_today}
           </div>
-          <div className="text-[11px] font-medium text-gray-400 mt-1">
-            Prioritized by SM-2
-          </div>
+          <div className="text-[11px] font-medium text-gray-400 mt-1">Prioritized by SM-2</div>
         </div>
       </div>
 
@@ -162,24 +160,35 @@ export const RetentionAnalyticsCard: React.FC<RetentionAnalyticsCardProps> = ({
             Topic Retention & Mastery Levels
           </div>
           <div className="space-y-2.5">
-            {stats.topic_breakdown.slice(0, 5).map(topic => (
-              <div key={topic.topic} className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    {topic.topic}
-                  </span>
-                  <span className="font-mono text-gray-500 dark:text-gray-400">
-                    {topic.mastered_cards}/{topic.total_cards} cards · {Math.round(topic.average_retention * 100)}% retention
-                  </span>
+            {stats.topic_breakdown.slice(0, 5).map(topic => {
+              const mastered = topic.mastered_cards ?? 0
+              const total = topic.total_cards ?? (topic as any).card_count ?? 1
+              const retVal = topic.average_retention ?? (topic as any).retention ?? 0.85
+              const pct = isNaN(retVal) ? 85 : Math.round(retVal <= 1.0 ? retVal * 100 : retVal)
+              const masteryWidth = Math.min(
+                100,
+                topic.mastery_percentage ?? (total > 0 ? Math.round((mastered / total) * 100) : pct)
+              )
+
+              return (
+                <div key={topic.topic} className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="font-semibold text-gray-700 dark:text-gray-300">
+                      {topic.topic}
+                    </span>
+                    <span className="font-mono text-gray-500 dark:text-gray-400">
+                      {mastered}/{total} cards · {pct}% retention
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-300"
+                      style={{ width: `${masteryWidth}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="w-full h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-300"
-                    style={{ width: `${Math.min(100, topic.mastery_percentage)}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}

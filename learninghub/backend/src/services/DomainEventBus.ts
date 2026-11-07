@@ -183,14 +183,14 @@ class DomainEventBus {
         payload: JSON.stringify(data),
         timestamp,
       })
-      .catch((err) => {
+      .catch(err => {
         logger.debug(`[DomainEventBus] Redis stream publishing skipped: ${err?.message || err}`)
       })
 
     const handlers = this.handlers.get(event) ?? []
     const allHandlers = [
-      ...handlers.map((h) => () => h(data)),
-      ...this.wildcardHandlers.map((h) => () => h(event, data)),
+      ...handlers.map(h => () => h(data)),
+      ...this.wildcardHandlers.map(h => () => h(event, data)),
     ]
 
     if (allHandlers.length === 0) {
@@ -201,7 +201,7 @@ class DomainEventBus {
     logger.info(`[DomainEventBus] Emitting ${event} to ${allHandlers.length} handler(s)`)
 
     // Run all handlers concurrently; failures are isolated
-    const results = await Promise.allSettled(allHandlers.map((h) => h()))
+    const results = await Promise.allSettled(allHandlers.map(h => h()))
 
     for (let i = 0; i < results.length; i++) {
       const result = results[i]

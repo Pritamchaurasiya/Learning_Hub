@@ -1,15 +1,6 @@
 import React from 'react'
-import {
-  ArchitecturePresetId,
-  ChaosFaultType,
-} from '../../types/systemDesign'
-import {
-  Flame,
-  Zap,
-  Sliders,
-  RotateCcw,
-  ShieldAlert,
-} from 'lucide-react'
+import { ArchitecturePresetId, ChaosFaultType } from '../../types/systemDesign'
+import { Flame, Zap, Sliders, RotateCcw, ShieldAlert } from 'lucide-react'
 
 interface ChaosControlPanelProps {
   selectedPreset: ArchitecturePresetId
@@ -58,11 +49,36 @@ export const ChaosControlPanel: React.FC<ChaosControlPanelProps> = ({
   ]
 
   const chaosFaults: { id: ChaosFaultType; label: string; badge: string; color: string }[] = [
-    { id: 'NONE', label: 'Nominal Health (0 Faults)', badge: 'STABLE', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-    { id: 'PRIMARY_DB_CRASH', label: 'Primary DB Node Crash', badge: 'CRITICAL', color: 'bg-rose-500/20 text-rose-400 border-rose-500/30' },
-    { id: 'CACHE_THUNDERING_HERD', label: 'Cache Thundering Herd', badge: 'HIGH LATENCY', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
-    { id: 'NETWORK_PARTITION_SPLIT_BRAIN', label: 'Cross-Region Partition', badge: 'SPLIT-BRAIN', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
-    { id: 'HIGH_PACKET_LOSS', label: 'WAN Packet Degradation', badge: '5X JITTER', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
+    {
+      id: 'NONE',
+      label: 'Nominal Health (0 Faults)',
+      badge: 'STABLE',
+      color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    },
+    {
+      id: 'PRIMARY_DB_CRASH',
+      label: 'Primary DB Node Crash',
+      badge: 'CRITICAL',
+      color: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
+    },
+    {
+      id: 'CACHE_THUNDERING_HERD',
+      label: 'Cache Thundering Herd',
+      badge: 'HIGH LATENCY',
+      color: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+    },
+    {
+      id: 'NETWORK_PARTITION_SPLIT_BRAIN',
+      label: 'Cross-Region Partition',
+      badge: 'SPLIT-BRAIN',
+      color: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+    },
+    {
+      id: 'HIGH_PACKET_LOSS',
+      label: 'WAN Packet Degradation',
+      badge: '5X JITTER',
+      color: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+    },
   ]
 
   return (
@@ -74,8 +90,12 @@ export const ChaosControlPanel: React.FC<ChaosControlPanelProps> = ({
             <Flame className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">Chaos Engineering & Traffic Controller</h3>
-            <p className="text-xs text-slate-400">Configure real-time synthetic load and inject infrastructure faults.</p>
+            <h3 className="text-base font-bold text-white">
+              Chaos Engineering & Traffic Controller
+            </h3>
+            <p className="text-xs text-slate-400">
+              Configure real-time synthetic load and inject infrastructure faults.
+            </p>
           </div>
         </div>
 
@@ -163,7 +183,9 @@ export const ChaosControlPanel: React.FC<ChaosControlPanelProps> = ({
               }`}
             >
               <div className="text-xs font-medium truncate">{f.label}</div>
-              <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border whitespace-nowrap ${f.color}`}>
+              <span
+                className={`text-[10px] font-mono px-1.5 py-0.5 rounded border whitespace-nowrap ${f.color}`}
+              >
                 {f.badge}
               </span>
             </button>

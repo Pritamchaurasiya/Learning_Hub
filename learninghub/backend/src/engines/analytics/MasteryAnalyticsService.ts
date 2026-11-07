@@ -59,184 +59,172 @@ export class MasteryAnalyticsService {
       const { bktService } = await import('./BayesianKnowledgeTracingService')
       const { jobQueueService } = await import('../../services/JobQueueService')
 
-      // Phase 1: Sequential BKT Updates
+      if (!responses || responses.length === 0) return
+
+      // Sort responses chronologically to preserve accurate Bayesian knowledge tracing updates
       const sortedResponses = [...responses].sort(
         (a, b) => a.completedAt.getTime() - b.completedAt.getTime()
       )
 
+      // 1. Group responses by topic in memory to eliminate N+1 database roundtrips
+      const topicGroups = new Map<
+        string,
+        Array<{
+          topicId: string
+          topicName: string
+          subjectName?: string
+          isCorrect: boolean
+          timeSpentSeconds: number
+          completedAt: Date
+        }>
+      >()
+
       for (const r of sortedResponses) {
         const topicId = r.topicId ?? r.topicName ?? 'unknown'
-        let retryCount = 0
-        let success = false
-
-        while (retryCount < 3 && !success) {
-          try {
-            await prisma.$transaction(
-              async (tx: any) => {
-                const existing = await tx.topicPerformance.findUnique({
-                  where: { userId_topicId: { userId, topicId } },
-                })
-
-                const prevTotal = existing?.totalAttempts ?? 0
-                const newTotal = prevTotal + 1
-                const newCorrect = (existing?.correctAnswers ?? 0) + (r.isCorrect ? 1 : 0)
-                const avgTime =
-                  newTotal > 0
-                    ? ((existing?.avgTimeSeconds ?? 0) * prevTotal + r.timeSpentSeconds) / newTotal
-                    : 0
-
-                // BKT Math: probability derived from accuracy or initialized
-                const currentProb = existing ? existing.accuracy / 100 : 0.1 // pInit
-                const nextProb = bktService.calculateNextProbability(currentProb, r.isCorrect)
-                const nextAccuracy = nextProb * 100
-
-                let strengthLevel = 'developing'
-                if (newTotal < 3) strengthLevel = 'developing'
-                else if (nextProb >= 0.9) strengthLevel = 'mastered'
-                else if (nextProb >= 0.7) strengthLevel = 'proficient'
-                else if (nextProb >= 0.45) strengthLevel = 'familiar'
-                else if (nextProb >= 0.25) strengthLevel = 'developing'
-                else strengthLevel = 'weak'
-
-                if (existing) {
-                  await tx.topicPerformance.update({
-                    where: { id: existing.id },
-                    data: {
-                      totalAttempts: newTotal,
-                      correctAnswers: newCorrect,
-                      accuracy: nextAccuracy, // Storing BKT prob as accuracy
-                      avgTimeSeconds: Math.round(avgTime * 100) / 100,
-                      strengthLevel,
-                      lastAttemptAt: r.completedAt,
-                      subjectName: r.subjectName ?? existing.subjectName,
-                    },
-                  })
-                } else {
-                  await tx.topicPerformance.create({
-                    data: {
-                      userId,
-                      topicId,
-                      topicName: r.topicName ?? 'General',
-                      subjectName: r.subjectName,
-                      accuracy: nextAccuracy,
-                      totalAttempts: newTotal,
-                      correctAnswers: newCorrect,
-                      avgTimeSeconds: Math.round(avgTime * 100) / 100,
-                      strengthLevel,
-                      lastAttemptAt: r.completedAt,
-                    },
-                  })
-                }
-
-                const prevMasteryScore = existing?.accuracy ?? 0
-                const masteryDelta = nextAccuracy - prevMasteryScore
-
-                // Dispatch ML jobs in the background (post-transaction or floating promise)
-                void jobQueueService.addAIJob({
-                  userId,
-                  operation: 'KNOWLEDGE_GRAPH',
-                  params: {
-                    topicName: r.topicName ?? 'unknown',
-                    masteryScore: nextAccuracy,
-                    masteryDelta,
-                  },
-                })
-
-                void jobQueueService.addAIJob({
-                  userId,
-                  operation: 'SPACED_REPETITION',
-                  params: {
-                    topicId,
-                    accuracy: r.isCorrect ? 1 : 0,
-                  },
-                })
-              },
-              { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
-            )
-            success = true
-          } catch (e) {
-            retryCount++
-            if (retryCount >= 3) {
-              logger.error(
-                `Failed to execute BKT sequential update for topic ${topicId}`,
-                e instanceof Error ? e : new Error(String(e))
-              )
-            }
-            await new Promise(res => setTimeout(res, 100 * Math.pow(2, retryCount)))
-          }
-        }
-      }
-
-      // Phase 2: Supplementary Updates (avgTimeSeconds, subjectName only)
-      // Phase 1 already handled totalAttempts, correctAnswers, accuracy (BKT), and strengthLevel.
-      // Phase 2 must NOT re-increment counts or overwrite BKT-derived accuracy.
-      const grouped = new Map<
-        string,
-        {
-          totalTime: number
-          lastAttemptAt: Date
-          subjectName?: string
-          topicId?: string
-          responseCount: number
-        }
-      >()
-      for (const r of responses) {
-        const key = r.topicId ?? r.topicName ?? 'unknown'
-        const existing = grouped.get(key) ?? {
-          topicId: r.topicId ?? 'unknown',
-          totalTime: 0,
-          lastAttemptAt: r.completedAt,
+        const group = topicGroups.get(topicId) ?? []
+        group.push({
+          topicId,
+          topicName: r.topicName ?? 'General',
           subjectName: r.subjectName ?? undefined,
-          responseCount: 0,
-        }
-        existing.responseCount++
-        existing.totalTime += r.timeSpentSeconds
-        if (r.completedAt > existing.lastAttemptAt) existing.lastAttemptAt = r.completedAt
-        grouped.set(key, existing)
+          isCorrect: r.isCorrect,
+          timeSpentSeconds: r.timeSpentSeconds,
+          completedAt: r.completedAt,
+        })
+        topicGroups.set(topicId, group)
       }
 
-      for (const [_topicId, stats] of grouped.entries()) {
-        let retryCount = 0
-        let success = false
-        while (retryCount < 3 && !success) {
-          try {
-            await prisma.$transaction(
-              async (tx: any) => {
-                const record = await tx.topicPerformance.findUnique({
-                  where: { userId_topicId: { userId, topicId: stats.topicId || 'unknown' } },
-                })
-                if (!record) return // Phase 1 should have created it; skip if missing
+      const topicIds = Array.from(topicGroups.keys())
 
-                // Compute weighted average time from existing + new responses
-                const prevTotal = Math.max(0, record.totalAttempts - stats.responseCount)
-                const avgTime =
-                  record.totalAttempts > 0
-                    ? ((record.avgTimeSeconds ?? 0) * prevTotal + stats.totalTime) /
-                      record.totalAttempts
-                    : 0
+      // 2. Batch fetch all existing topic performance records in a SINGLE query
+      const existingList = await prisma.topicPerformance.findMany({
+        where: {
+          userId,
+          topicId: { in: topicIds },
+        },
+      })
+      const existingMap = new Map<string, any>(existingList.map((rec: any) => [rec.topicId, rec]))
 
-                await tx.topicPerformance.update({
-                  where: { id: record.id },
-                  data: {
-                    avgTimeSeconds: Math.round(avgTime * 100) / 100,
-                    subjectName: stats.subjectName ?? record.subjectName,
-                  },
-                })
-              },
-              { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
-            )
-            success = true
-          } catch {
-            retryCount++
-            if (retryCount >= 3) {
-              logger.warn(
-                `[MasteryAnalytics] Topic mastery supplementary update failed after 3 retries for ${userId}/${stats.topicId}`
-              )
-            }
+      // 3. Compute in-memory BKT, running average time, and strength level for each topic
+      const operations: any[] = []
+      const aiJobsToDispatch: Array<{
+        operation: 'KNOWLEDGE_GRAPH' | 'SPACED_REPETITION'
+        params: any
+      }> = []
+
+      for (const [topicId, topicResponses] of topicGroups.entries()) {
+        const existing = existingMap.get(topicId)
+        const sample = topicResponses[0]
+
+        const prevTotal = existing?.totalAttempts ?? 0
+        const prevCorrect = existing?.correctAnswers ?? 0
+        const prevAvgTime = existing?.avgTimeSeconds ?? 0
+
+        let totalAttempts = prevTotal
+        let correctAnswers = prevCorrect
+        let totalTimeAccumulator = prevAvgTime * prevTotal
+        let currentProb = existing ? existing.accuracy / 100 : 0.1
+        let latestCompletedAt = existing?.lastAttemptAt ?? new Date(0)
+        let subjectName = existing?.subjectName
+
+        for (const r of topicResponses) {
+          totalAttempts += 1
+          if (r.isCorrect) correctAnswers += 1
+          totalTimeAccumulator += r.timeSpentSeconds
+          currentProb = bktService.calculateNextProbability(currentProb, r.isCorrect)
+
+          if (r.completedAt > latestCompletedAt) {
+            latestCompletedAt = r.completedAt
+          }
+          if (r.subjectName) {
+            subjectName = r.subjectName
           }
         }
+
+        const nextAccuracy = Math.round(currentProb * 100 * 100) / 100
+        const avgTimeSeconds =
+          totalAttempts > 0 ? Math.round((totalTimeAccumulator / totalAttempts) * 100) / 100 : 0
+
+        let strengthLevel = 'developing'
+        if (totalAttempts < 3) strengthLevel = 'developing'
+        else if (currentProb >= 0.9) strengthLevel = 'mastered'
+        else if (currentProb >= 0.7) strengthLevel = 'proficient'
+        else if (currentProb >= 0.45) strengthLevel = 'familiar'
+        else if (currentProb >= 0.25) strengthLevel = 'developing'
+        else strengthLevel = 'weak'
+
+        if (existing) {
+          operations.push(
+            prisma.topicPerformance.update({
+              where: { id: existing.id },
+              data: {
+                totalAttempts,
+                correctAnswers,
+                accuracy: nextAccuracy,
+                avgTimeSeconds,
+                strengthLevel,
+                lastAttemptAt: latestCompletedAt,
+                subjectName: subjectName ?? existing.subjectName,
+              },
+            })
+          )
+        } else {
+          operations.push(
+            prisma.topicPerformance.create({
+              data: {
+                userId,
+                topicId,
+                topicName: sample.topicName ?? 'General',
+                subjectName,
+                accuracy: nextAccuracy,
+                totalAttempts,
+                correctAnswers,
+                avgTimeSeconds,
+                strengthLevel,
+                lastAttemptAt: latestCompletedAt,
+              },
+            })
+          )
+        }
+
+        const prevMasteryScore = existing?.accuracy ?? 0
+        const masteryDelta = nextAccuracy - prevMasteryScore
+
+        aiJobsToDispatch.push({
+          operation: 'KNOWLEDGE_GRAPH',
+          params: {
+            topicName: sample.topicName ?? 'unknown',
+            masteryScore: nextAccuracy,
+            masteryDelta,
+          },
+        })
+
+        const lastResponse = topicResponses[topicResponses.length - 1]
+        aiJobsToDispatch.push({
+          operation: 'SPACED_REPETITION',
+          params: {
+            topicId,
+            accuracy: lastResponse.isCorrect ? 1 : 0,
+          },
+        })
       }
 
+      // 4. Execute all updates/creates in ONE atomic batch transaction
+      if (operations.length > 0) {
+        await prisma.$transaction(operations, {
+          isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+        })
+      }
+
+      // 5. Asynchronously dispatch background AI jobs
+      for (const job of aiJobsToDispatch) {
+        void jobQueueService.addAIJob({
+          userId,
+          operation: job.operation,
+          params: job.params,
+        })
+      }
+
+      // 6. Invalidate caches once for all modified topics
       await cacheService.delete(cacheService.topicMasteryKey(userId))
       await cacheService.delete(cacheService.topicWeakKey(userId))
       await cacheService.delete(cacheService.topicReviewKey(userId))

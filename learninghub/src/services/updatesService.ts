@@ -2,7 +2,7 @@
  * Student Updates Hub Client Service.
  * Connects directly to /api/v1/updates with resilient offline fallbacks.
  */
-import { fetchApi } from '../utils/api';
+import { fetchApi } from '../utils/api'
 import type {
   StudentUpdate,
   UpdateBookmark,
@@ -17,7 +17,7 @@ import type {
   UpdateEngagementEventPayload,
   UpdateAnalyticsData,
   GlobalEngagementAnalytics,
-} from '../types/updates';
+} from '../types/updates'
 
 export const DEMO_STUDENT_UPDATES: StudentUpdate[] = [
   {
@@ -202,7 +202,8 @@ export const DEMO_STUDENT_UPDATES: StudentUpdate[] = [
   },
   {
     id: 'upd-up-scholarship-aadhaar-2026',
-    title: 'Uttar Pradesh State Post-Matric Scholarship Biometric Attendance & Aadhaar Seeding Notice',
+    title:
+      'Uttar Pradesh State Post-Matric Scholarship Biometric Attendance & Aadhaar Seeding Notice',
     summary:
       'All students availing UP Social Welfare Department scholarship must ensure 75% biometric attendance and link Aadhaar with bank accounts before the university verification freeze date.',
     ai_summary:
@@ -373,7 +374,7 @@ export const DEMO_STUDENT_UPDATES: StudentUpdate[] = [
     is_bookmarked: false,
     created_at: new Date(Date.now() - 12 * 3600000).toISOString(),
   },
-];
+]
 
 export const DEMO_RESULT_WATCHERS: ResultWatcher[] = [
   {
@@ -397,7 +398,7 @@ export const DEMO_RESULT_WATCHERS: ResultWatcher[] = [
     notified_at: new Date(Date.now() - 86400000).toISOString(),
     created_at: new Date(Date.now() - 7 * 86400000).toISOString(),
   },
-];
+]
 
 export const DEMO_SOURCES: UpdateSource[] = [
   {
@@ -414,10 +415,34 @@ export const DEMO_SOURCES: UpdateSource[] = [
     polling_interval_minutes: 30,
     is_enabled: true,
     endpoints: [
-      { id: 'ep-1', name: 'General Notice Board', sub_category: 'NOTICE_BOARD', endpoint_url: 'https://mgkvp.ac.in/Home/NoticeList', is_active: true },
-      { id: 'ep-2', name: 'Examination & Forms', sub_category: 'EXAMINATION', endpoint_url: 'https://mgkvp.ac.in/Home/ExamNotices', is_active: true },
-      { id: 'ep-3', name: 'Time Table & Centers', sub_category: 'TIMETABLE', endpoint_url: 'https://mgkvp.ac.in/Home/TimeTable', is_active: true },
-      { id: 'ep-4', name: 'Evaluation & Results', sub_category: 'RESULTS', endpoint_url: 'https://mgkvp.ac.in/Home/Results', is_active: true },
+      {
+        id: 'ep-1',
+        name: 'General Notice Board',
+        sub_category: 'NOTICE_BOARD',
+        endpoint_url: 'https://mgkvp.ac.in/Home/NoticeList',
+        is_active: true,
+      },
+      {
+        id: 'ep-2',
+        name: 'Examination & Forms',
+        sub_category: 'EXAMINATION',
+        endpoint_url: 'https://mgkvp.ac.in/Home/ExamNotices',
+        is_active: true,
+      },
+      {
+        id: 'ep-3',
+        name: 'Time Table & Centers',
+        sub_category: 'TIMETABLE',
+        endpoint_url: 'https://mgkvp.ac.in/Home/TimeTable',
+        is_active: true,
+      },
+      {
+        id: 'ep-4',
+        name: 'Evaluation & Results',
+        sub_category: 'RESULTS',
+        endpoint_url: 'https://mgkvp.ac.in/Home/Results',
+        is_active: true,
+      },
     ],
   },
   {
@@ -434,7 +459,13 @@ export const DEMO_SOURCES: UpdateSource[] = [
     polling_interval_minutes: 60,
     is_enabled: true,
     endpoints: [
-      { id: 'ep-5', name: 'Circulars & Notices', sub_category: 'EXAMINATION', endpoint_url: 'https://aktu.ac.in/circulars.html', is_active: true },
+      {
+        id: 'ep-5',
+        name: 'Circulars & Notices',
+        sub_category: 'EXAMINATION',
+        endpoint_url: 'https://aktu.ac.in/circulars.html',
+        is_active: true,
+      },
     ],
   },
   {
@@ -451,8 +482,20 @@ export const DEMO_SOURCES: UpdateSource[] = [
     polling_interval_minutes: 30,
     is_enabled: true,
     endpoints: [
-      { id: 'ep-lu-1', name: 'Notices and Circulars', sub_category: 'NOTICE_BOARD', endpoint_url: 'https://lkouniv.ac.in/en/article/notices-and-circulars', is_active: true },
-      { id: 'ep-lu-2', name: 'Examination Schedules', sub_category: 'EXAMINATION', endpoint_url: 'https://lkouniv.ac.in/en/article/examination-schedule', is_active: true },
+      {
+        id: 'ep-lu-1',
+        name: 'Notices and Circulars',
+        sub_category: 'NOTICE_BOARD',
+        endpoint_url: 'https://lkouniv.ac.in/en/article/notices-and-circulars',
+        is_active: true,
+      },
+      {
+        id: 'ep-lu-2',
+        name: 'Examination Schedules',
+        sub_category: 'EXAMINATION',
+        endpoint_url: 'https://lkouniv.ac.in/en/article/examination-schedule',
+        is_active: true,
+      },
     ],
   },
   {
@@ -469,7 +512,13 @@ export const DEMO_SOURCES: UpdateSource[] = [
     polling_interval_minutes: 30,
     is_enabled: true,
     endpoints: [
-      { id: 'ep-bhu-1', name: 'Student Portal & Notices', sub_category: 'NOTICE_BOARD', endpoint_url: 'https://bhu.ac.in/Site/NoticeBoard', is_active: true },
+      {
+        id: 'ep-bhu-1',
+        name: 'Student Portal & Notices',
+        sub_category: 'NOTICE_BOARD',
+        endpoint_url: 'https://bhu.ac.in/Site/NoticeBoard',
+        is_active: true,
+      },
     ],
   },
   {
@@ -486,7 +535,13 @@ export const DEMO_SOURCES: UpdateSource[] = [
     polling_interval_minutes: 45,
     is_enabled: true,
     endpoints: [
-      { id: 'ep-ddu-1', name: 'General & Exam Notices', sub_category: 'NOTICE_BOARD', endpoint_url: 'https://ddugu.ac.in/notice.aspx', is_active: true },
+      {
+        id: 'ep-ddu-1',
+        name: 'General & Exam Notices',
+        sub_category: 'NOTICE_BOARD',
+        endpoint_url: 'https://ddugu.ac.in/notice.aspx',
+        is_active: true,
+      },
     ],
   },
   {
@@ -503,7 +558,13 @@ export const DEMO_SOURCES: UpdateSource[] = [
     polling_interval_minutes: 120,
     is_enabled: true,
     endpoints: [
-      { id: 'ep-6', name: 'Notice Board', sub_category: 'NOTICE_BOARD', endpoint_url: 'https://ssc.gov.in', is_active: true },
+      {
+        id: 'ep-6',
+        name: 'Notice Board',
+        sub_category: 'NOTICE_BOARD',
+        endpoint_url: 'https://ssc.gov.in',
+        is_active: true,
+      },
     ],
   },
   {
@@ -520,33 +581,40 @@ export const DEMO_SOURCES: UpdateSource[] = [
     polling_interval_minutes: 30,
     is_enabled: true,
     endpoints: [
-      { id: 'ep-nta-1', name: 'Public Notices', sub_category: 'NOTICE_BOARD', endpoint_url: 'https://nta.ac.in/NoticeArchive', is_active: true },
+      {
+        id: 'ep-nta-1',
+        name: 'Public Notices',
+        sub_category: 'NOTICE_BOARD',
+        endpoint_url: 'https://nta.ac.in/NoticeArchive',
+        is_active: true,
+      },
     ],
   },
-];
+]
 
 export const updatesService = {
   async getUpdates(filters?: {
-    category?: string;
-    search?: string;
-    institution?: string;
-    importance?: string;
-    course?: string;
-    onlyDeadlines?: boolean;
+    category?: string
+    search?: string
+    institution?: string
+    importance?: string
+    course?: string
+    onlyDeadlines?: boolean
   }): Promise<StudentUpdate[]> {
     try {
-      const params = new URLSearchParams();
-      if (filters?.category && filters.category !== 'ALL') params.append('category', filters.category);
-      if (filters?.search) params.append('search', filters.search);
-      if (filters?.institution) params.append('institution', filters.institution);
-      if (filters?.importance) params.append('importance', filters.importance);
-      if (filters?.course) params.append('course', filters.course);
-      if (filters?.onlyDeadlines) params.append('only_deadlines', 'true');
+      const params = new URLSearchParams()
+      if (filters?.category && filters.category !== 'ALL')
+        params.append('category', filters.category)
+      if (filters?.search) params.append('search', filters.search)
+      if (filters?.institution) params.append('institution', filters.institution)
+      if (filters?.importance) params.append('importance', filters.importance)
+      if (filters?.course) params.append('course', filters.course)
+      if (filters?.onlyDeadlines) params.append('only_deadlines', 'true')
 
-      const url = `/api/v1/updates/feed/${params.toString() ? `?${params.toString()}` : ''}`;
-      const res = await fetchApi(url);
+      const url = `/api/v1/updates/feed/${params.toString() ? `?${params.toString()}` : ''}`
+      const res = await fetchApi(url)
       if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
-        return res.data;
+        return res.data
       }
     } catch {
       // Fallback to local demo updates
@@ -554,83 +622,93 @@ export const updatesService = {
 
     // Filter local demo records
     return DEMO_STUDENT_UPDATES.filter(u => {
-      if (filters?.category && filters.category !== 'ALL' && u.category !== filters.category) return false;
-      if (filters?.importance && filters.importance !== 'ALL' && u.importance !== filters.importance) return false;
-      if (filters?.onlyDeadlines && !u.deadline) return false;
+      if (filters?.category && filters.category !== 'ALL' && u.category !== filters.category)
+        return false
+      if (
+        filters?.importance &&
+        filters.importance !== 'ALL' &&
+        u.importance !== filters.importance
+      )
+        return false
+      if (filters?.onlyDeadlines && !u.deadline) return false
       if (filters?.search) {
-        const q = filters.search.toLowerCase();
+        const q = filters.search.toLowerCase()
         return (
           u.title.toLowerCase().includes(q) ||
           u.summary.toLowerCase().includes(q) ||
           u.institution.toLowerCase().includes(q)
-        );
+        )
       }
-      return true;
-    });
+      return true
+    })
   },
 
   async getPersonalizedFeed(): Promise<StudentUpdate[]> {
     try {
-      const res = await fetchApi('/api/v1/updates/personalized/');
+      const res = await fetchApi('/api/v1/updates/personalized/')
       if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
-        return res.data;
+        return res.data
       }
     } catch {
       // Fallback
     }
-    return DEMO_STUDENT_UPDATES.slice(0, 4);
+    return DEMO_STUDENT_UPDATES.slice(0, 4)
   },
 
   async getUpcomingDeadlines(): Promise<StudentUpdate[]> {
     try {
-      const res = await fetchApi('/api/v1/updates/deadlines/');
+      const res = await fetchApi('/api/v1/updates/deadlines/')
       if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
-        return res.data;
+        return res.data
       }
     } catch {
       // Fallback
     }
-    return DEMO_STUDENT_UPDATES.filter(u => !!u.deadline).sort((a, b) =>
-      new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime()
-    );
+    return DEMO_STUDENT_UPDATES.filter(u => !!u.deadline).sort(
+      (a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime()
+    )
   },
 
   async getUpdateById(id: string): Promise<StudentUpdate | null> {
     try {
-      const res = await fetchApi(`/api/v1/updates/${id}/`);
+      const res = await fetchApi(`/api/v1/updates/${id}/`)
       if (res?.data) {
-        return res.data;
+        return res.data
       }
     } catch {
       // Fallback
     }
-    return DEMO_STUDENT_UPDATES.find(u => u.id === id) || null;
+    return DEMO_STUDENT_UPDATES.find(u => u.id === id) || null
   },
 
   async getBookmarks(): Promise<UpdateBookmark[]> {
     try {
-      const res = await fetchApi('/api/v1/updates/bookmarks/');
+      const res = await fetchApi('/api/v1/updates/bookmarks/')
       if (res?.data && Array.isArray(res.data)) {
-        return res.data;
+        return res.data
       }
     } catch {
       // Fallback
     }
-    return [];
+    return []
   },
 
-  async saveBookmark(updateId: string, notes = '', tag = 'General'): Promise<UpdateBookmark | null> {
+  async saveBookmark(
+    updateId: string,
+    notes = '',
+    tag = 'General'
+  ): Promise<UpdateBookmark | null> {
     try {
       const res = await fetchApi('/api/v1/updates/bookmarks/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ update_id: updateId, notes, tag }),
-      });
-      return res?.data || null;
+      })
+      return res?.data || null
     } catch {
-      const update = DEMO_STUDENT_UPDATES.find(u => u.id === updateId);
+      const update = DEMO_STUDENT_UPDATES.find(u => u.id === updateId)
       if (update) {
-        update.is_bookmarked = true;
+        update.is_bookmarked = true
         return {
           id: `bmk-local-${Date.now()}`,
           update,
@@ -638,9 +716,9 @@ export const updatesService = {
           tag,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        };
+        }
       }
-      return null;
+      return null
     }
   },
 
@@ -648,37 +726,40 @@ export const updatesService = {
     try {
       await fetchApi(`/api/v1/updates/bookmarks/${updateId}/`, {
         method: 'DELETE',
-      });
-      return true;
+      })
+      return true
     } catch {
-      const update = DEMO_STUDENT_UPDATES.find(u => u.id === updateId);
-      if (update) update.is_bookmarked = false;
-      return true;
+      const update = DEMO_STUDENT_UPDATES.find(u => u.id === updateId)
+      if (update) update.is_bookmarked = false
+      return true
     }
   },
 
   async getReminders(): Promise<UpdateReminder[]> {
     try {
-      const res = await fetchApi('/api/v1/updates/reminders/');
+      const res = await fetchApi('/api/v1/updates/reminders/')
       if (res?.data && Array.isArray(res.data)) {
-        return res.data;
+        return res.data
       }
     } catch {
       // Fallback
     }
-    return [];
+    return []
   },
 
-  async createReminder(updateId: string, reminderType = '1_DAY_BEFORE'): Promise<UpdateReminder | null> {
+  async createReminder(
+    updateId: string,
+    reminderType = '1_DAY_BEFORE'
+  ): Promise<UpdateReminder | null> {
     try {
       const res = await fetchApi('/api/v1/updates/reminders/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ update_id: updateId, reminder_type: reminderType }),
-      });
-      return res?.data || null;
+      })
+      return res?.data || null
     } catch {
-      const update = DEMO_STUDENT_UPDATES.find(u => u.id === updateId);
+      const update = DEMO_STUDENT_UPDATES.find(u => u.id === updateId)
       if (update) {
         return {
           id: `rem-local-${Date.now()}`,
@@ -687,9 +768,9 @@ export const updatesService = {
           trigger_at: new Date(Date.now() + 86400000).toISOString(),
           is_dispatched: false,
           created_at: new Date().toISOString(),
-        };
+        }
       }
-      return null;
+      return null
     }
   },
 
@@ -697,40 +778,43 @@ export const updatesService = {
     try {
       await fetchApi(`/api/v1/updates/reminders/${reminderId}/`, {
         method: 'DELETE',
-      });
-      return true;
+      })
+      return true
     } catch {
-      return true;
+      return true
     }
   },
 
   async getSubscriptions(): Promise<UpdateSubscription[]> {
     try {
-      const res = await fetchApi('/api/v1/updates/subscriptions/');
+      const res = await fetchApi('/api/v1/updates/subscriptions/')
       if (res?.data && Array.isArray(res.data)) {
-        return res.data;
+        return res.data
       }
     } catch {
       // Fallback
     }
-    return [];
+    return []
   },
 
-  async subscribeTarget(targetType: string, targetValue: string): Promise<UpdateSubscription | null> {
+  async subscribeTarget(
+    targetType: string,
+    targetValue: string
+  ): Promise<UpdateSubscription | null> {
     try {
       const res = await fetchApi('/api/v1/updates/subscriptions/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ target_type: targetType, target_value: targetValue }),
-      });
-      return res?.data || null;
+      })
+      return res?.data || null
     } catch {
       return {
         id: `sub-local-${Date.now()}`,
         target_type: targetType as any,
         target_value: targetValue,
         created_at: new Date().toISOString(),
-      };
+      }
     }
   },
 
@@ -738,30 +822,30 @@ export const updatesService = {
     try {
       await fetchApi(`/api/v1/updates/subscriptions/${subscriptionId}/`, {
         method: 'DELETE',
-      });
-      return true;
+      })
+      return true
     } catch {
-      return true;
+      return true
     }
   },
 
   async getSources(): Promise<UpdateSource[]> {
     try {
-      const res = await fetchApi('/api/v1/updates/sources/');
+      const res = await fetchApi('/api/v1/updates/sources/')
       if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
-        return res.data;
+        return res.data
       }
     } catch {
       // Fallback
     }
-    return DEMO_SOURCES;
+    return DEMO_SOURCES
   },
 
   async getStats(): Promise<UpdatesStatistics> {
     try {
-      const res = await fetchApi('/api/v1/updates/stats/');
+      const res = await fetchApi('/api/v1/updates/stats/')
       if (res?.data) {
-        return res.data;
+        return res.data
       }
     } catch {
       // Fallback
@@ -771,42 +855,42 @@ export const updatesService = {
       urgent_updates: DEMO_STUDENT_UPDATES.filter(u => u.importance === 'URGENT').length,
       active_deadlines: DEMO_STUDENT_UPDATES.filter(u => !!u.deadline).length,
       tracked_sources: DEMO_SOURCES.length,
-    };
+    }
   },
 
   async seedInitialData(): Promise<any> {
     try {
-      return await fetchApi('/api/v1/updates/seed/', { method: 'POST' });
+      return await fetchApi('/api/v1/updates/seed/', { method: 'POST' })
     } catch (e) {
-      return { success: false, error: e };
+      return { success: false, error: e }
     }
   },
 
   async getResultWatchers(): Promise<ResultWatcher[]> {
     try {
-      const res = await fetchApi('/api/v1/updates/result-watchers/');
+      const res = await fetchApi('/api/v1/updates/result-watchers/')
       if (res?.data && Array.isArray(res.data)) {
-        return res.data;
+        return res.data
       }
     } catch {
       // Fallback
     }
-    return DEMO_RESULT_WATCHERS;
+    return DEMO_RESULT_WATCHERS
   },
 
   async createResultWatcher(payload: {
-    institution: string;
-    course: string;
-    semester?: string;
-    roll_number?: string;
+    institution: string
+    course: string
+    semester?: string
+    roll_number?: string
   }): Promise<ResultWatcher | null> {
     try {
       const res = await fetchApi('/api/v1/updates/result-watchers/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      });
-      return res?.data || null;
+      })
+      return res?.data || null
     } catch {
       const newWatcher: ResultWatcher = {
         id: `watch-local-${Date.now()}`,
@@ -817,9 +901,9 @@ export const updatesService = {
         status: 'ACTIVE',
         result_url: '',
         created_at: new Date().toISOString(),
-      };
-      DEMO_RESULT_WATCHERS.unshift(newWatcher);
-      return newWatcher;
+      }
+      DEMO_RESULT_WATCHERS.unshift(newWatcher)
+      return newWatcher
     }
   },
 
@@ -827,14 +911,14 @@ export const updatesService = {
     try {
       await fetchApi(`/api/v1/updates/result-watchers/${watcherId}/`, {
         method: 'DELETE',
-      });
-      return true;
+      })
+      return true
     } catch {
-      const idx = DEMO_RESULT_WATCHERS.findIndex(w => w.id === watcherId);
+      const idx = DEMO_RESULT_WATCHERS.findIndex(w => w.id === watcherId)
       if (idx !== -1) {
-        DEMO_RESULT_WATCHERS[idx].status = 'CANCELLED';
+        DEMO_RESULT_WATCHERS[idx].status = 'CANCELLED'
       }
-      return true;
+      return true
     }
   },
 
@@ -842,12 +926,12 @@ export const updatesService = {
     try {
       const res = await fetchApi(`/api/v1/updates/${updateId}/auto-remind/`, {
         method: 'POST',
-      });
+      })
       if (res?.data && Array.isArray(res.data)) {
-        return res.data;
+        return res.data
       }
     } catch {
-      const update = DEMO_STUDENT_UPDATES.find(u => u.id === updateId);
+      const update = DEMO_STUDENT_UPDATES.find(u => u.id === updateId)
       if (update) {
         return [
           {
@@ -882,16 +966,16 @@ export const updatesService = {
             is_dispatched: false,
             created_at: new Date().toISOString(),
           },
-        ];
+        ]
       }
     }
-    return [];
+    return []
   },
 
   async getNotificationPreferences(): Promise<UpdateNotificationPreference | null> {
     try {
-      const res = await fetchApi('/api/v1/updates/preferences/');
-      return res?.data || null;
+      const res = await fetchApi('/api/v1/updates/preferences/')
+      return res?.data || null
     } catch {
       return {
         quiet_hours_enabled: true,
@@ -899,7 +983,7 @@ export const updatesService = {
         quiet_hours_end: '07:00:00',
         max_daily_push: 8,
         subscribed_categories: ['ALL'],
-      };
+      }
     }
   },
 
@@ -911,8 +995,8 @@ export const updatesService = {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(prefs),
-      });
-      return res?.data || null;
+      })
+      return res?.data || null
     } catch {
       return {
         quiet_hours_enabled: prefs.quiet_hours_enabled ?? true,
@@ -920,22 +1004,31 @@ export const updatesService = {
         quiet_hours_end: prefs.quiet_hours_end ?? '07:00:00',
         max_daily_push: prefs.max_daily_push ?? 8,
         subscribed_categories: prefs.subscribed_categories ?? ['ALL'],
-      };
+      }
     }
   },
 
-  async bookmarkUpdate(updateId: string, notes = '', tag = 'General'): Promise<UpdateBookmark | null> {
-    return this.saveBookmark(updateId, notes, tag);
+  async bookmarkUpdate(
+    updateId: string,
+    notes = '',
+    tag = 'General'
+  ): Promise<UpdateBookmark | null> {
+    return this.saveBookmark(updateId, notes, tag)
   },
 
-  async setReminder(updateId: string, reminderType: any = '1_DAY_BEFORE'): Promise<UpdateReminder | null> {
-    const rType = Array.isArray(reminderType) ? reminderType[0] : reminderType;
-    return this.createReminder(updateId, rType);
+  async setReminder(
+    updateId: string,
+    reminderType: any = '1_DAY_BEFORE'
+  ): Promise<UpdateReminder | null> {
+    const rType = Array.isArray(reminderType) ? reminderType[0] : reminderType
+    return this.createReminder(updateId, rType)
   },
 
   generateSynergyCrossLinks(update: StudentUpdate): UpdateCrossLink[] {
-    const course = update.course || (update.category === 'COMPETITIVE_EXAMS' ? 'Competitive Exam' : 'Core Semester');
-    const examKeyword = update.sub_category === 'EXAM_FORM' ? 'Mock Assessment' : 'Practice Test';
+    const course =
+      update.course ||
+      (update.category === 'COMPETITIVE_EXAMS' ? 'Competitive Exam' : 'Core Semester')
+    const examKeyword = update.sub_category === 'EXAM_FORM' ? 'Mock Assessment' : 'Practice Test'
     return [
       {
         id: `syn-test-${update.id}`,
@@ -961,14 +1054,14 @@ export const updatesService = {
         action_cta: 'Explore Course',
         action_url: `/library?tab=courses&search=${encodeURIComponent(course)}`,
       },
-    ];
+    ]
   },
 
   async syncToStudyPlanner(update: StudentUpdate): Promise<boolean> {
     try {
       const scheduledDate = update.deadline
         ? new Date(update.deadline).toISOString().slice(0, 10)
-        : new Date().toISOString().slice(0, 10);
+        : new Date().toISOString().slice(0, 10)
 
       await fetchApi('/study-planner/tasks', {
         method: 'POST',
@@ -981,10 +1074,10 @@ export const updatesService = {
           priority: update.importance === 'URGENT' ? 'high' : 'medium',
           duration_minutes: 60,
         }),
-      });
-      return true;
+      })
+      return true
     } catch {
-      return true;
+      return true
     }
   },
 
@@ -994,10 +1087,10 @@ export const updatesService = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      });
-      return res?.data || null;
+      })
+      return res?.data || null
     } catch (e) {
-      console.warn('Fallback: simulate circular creation offline', e);
+      console.warn('Fallback: simulate circular creation offline', e)
       const fallbackCircular: StudentUpdate = {
         id: `upd-dept-${Date.now()}`,
         title: payload.title,
@@ -1019,8 +1112,8 @@ export const updatesService = {
         authority_level: 2,
         version: 1,
         created_at: new Date().toISOString(),
-      };
-      return fallbackCircular;
+      }
+      return fallbackCircular
     }
   },
 
@@ -1028,18 +1121,18 @@ export const updatesService = {
     params: { institution?: string; department?: string; page_size?: number } = {}
   ): Promise<{ results: StudentUpdate[]; total_count: number }> {
     try {
-      const q = new URLSearchParams();
-      if (params.institution) q.set('institution', params.institution);
-      if (params.department) q.set('department', params.department);
-      if (params.page_size) q.set('page_size', String(params.page_size));
+      const q = new URLSearchParams()
+      if (params.institution) q.set('institution', params.institution)
+      if (params.department) q.set('department', params.department)
+      if (params.page_size) q.set('page_size', String(params.page_size))
 
-      const res = await fetchApi(`/api/v1/updates/college-circulars/?${q.toString()}`);
-      return res?.data || { results: [], total_count: 0 };
+      const res = await fetchApi(`/api/v1/updates/college-circulars/?${q.toString()}`)
+      return res?.data || { results: [], total_count: 0 }
     } catch {
       return {
         results: DEMO_STUDENT_UPDATES.filter(u => !!u.department),
         total_count: DEMO_STUDENT_UPDATES.filter(u => !!u.department).length,
-      };
+      }
     }
   },
 
@@ -1053,17 +1146,17 @@ export const updatesService = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ event_type: eventType, client_hash: clientHash }),
-      });
-      return true;
+      })
+      return true
     } catch {
-      return false;
+      return false
     }
   },
 
   async getUpdateAnalytics(updateId: string): Promise<UpdateAnalyticsData | null> {
     try {
-      const res = await fetchApi(`/api/v1/updates/${updateId}/analytics/`);
-      return res?.data || null;
+      const res = await fetchApi(`/api/v1/updates/${updateId}/analytics/`)
+      return res?.data || null
     } catch {
       return {
         update_id: updateId,
@@ -1076,14 +1169,14 @@ export const updatesService = {
         bookmarks: 9,
         reminders_set: 14,
         click_through_rate: 37.5,
-      };
+      }
     }
   },
 
   async getGlobalEngagementAnalytics(): Promise<GlobalEngagementAnalytics | null> {
     try {
-      const res = await fetchApi('/api/v1/updates/analytics/overview/');
-      return res?.data || null;
+      const res = await fetchApi('/api/v1/updates/analytics/overview/')
+      return res?.data || null
     } catch {
       return {
         total_events: 1540,
@@ -1100,8 +1193,7 @@ export const updatesService = {
           { update__category: 'ADMISSION', event_count: 210 },
           { update__category: 'SCHOLARSHIP', event_count: 160 },
         ],
-      };
+      }
     }
   },
-};
-
+}

@@ -275,7 +275,12 @@ export const ebookService = {
           if (flashcards.length >= 4) break
           if (dl.includes(':') && !dl.startsWith('http')) {
             const parts = dl.replace(/^[-*#]\s*/, '').split(/:\s+/)
-            if (parts.length >= 2 && parts[0].length > 3 && parts[0].length < 80 && parts[1].length > 10) {
+            if (
+              parts.length >= 2 &&
+              parts[0].length > 3 &&
+              parts[0].length < 80 &&
+              parts[1].length > 10
+            ) {
               flashcards.push({
                 id: `card-${chapterId}-${cardIndex++}`,
                 chapterId,

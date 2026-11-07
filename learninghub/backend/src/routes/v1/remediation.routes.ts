@@ -1,6 +1,6 @@
 /**
  * remediation.routes.ts
- * 
+ *
  * Express router for Adaptive Remediation endpoints.
  */
 

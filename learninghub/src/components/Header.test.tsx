@@ -108,6 +108,7 @@ vi.mock('./ui/ProgressRing', () => ({
 }))
 
 import Header from './Header'
+import { offlineSyncService } from '../services/offlineSyncService'
 
 function renderHeader(initialEntries = ['/']) {
   return render(
@@ -261,4 +262,32 @@ describe('Header Component', () => {
       delete (window as any).desktopAPI
     })
   })
-})
+  describe('Offline and Sync Status Badges', () => {
+    it('renders offline badge when offlineSyncService notifies offline', () => {
+      vi.spyOn(offlineSyncService, 'subscribe').mockImplementation(fn => {
+        fn(false, 3)
+        return () => {}
+      })
+      renderHeader()
+      const offlineBadge = screen.getByTestId('header-offline-badge')
+      expect(offlineBadge).toBeInTheDocument()
+      expect(screen.getByText('Offline')).toBeInTheDocument()
+      expect(screen.getByText('3')).toBeInTheDocument()
+    })
+
+    it('renders syncing badge when online with pending sync items and flushes queue on click', () => {
+      const flushSpy = vi.spyOn(offlineSyncService, 'flushQueue').mockResolvedValue({ synced: 2, failed: 0 })
+      vi.spyOn(offlineSyncService, 'subscribe').mockImplementation(fn => {
+        fn(true, 2)
+        return () => {}
+      })
+      renderHeader()
+      const syncBadge = screen.getByTestId('header-syncing-badge')
+      expect(syncBadge).toBeInTheDocument()
+      expect(screen.getByText('Syncing')).toBeInTheDocument()
+      expect(screen.getByText('2')).toBeInTheDocument()
+      fireEvent.click(syncBadge)
+      expect(flushSpy).toHaveBeenCalledTimes(1)
+    })
+  })
+});

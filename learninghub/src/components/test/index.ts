@@ -38,3 +38,6 @@ export * from './AdaptiveRemediationModal'
 export * from './CatAdaptiveModal'
 export * from './CatPsychometricCharts'
 export * from './KeyboardShortcutsModal'
+
+export * from './QuestionPaceRadar'
+export * from './PacingEfficiencyCard'

@@ -55,7 +55,9 @@ export const CountryProvider: React.FC<CountryProviderProps> = ({ children }) =>
   const setStoreContext = useLearningContextStore(s => s.setContext)
 
   const [availableCountries, setAvailableCountries] = useState<ActiveCountryInfo[]>([])
-  const [activeCountry, setActiveCountryState] = useState<ActiveCountryInfo | null>(storeActiveCountry)
+  const [activeCountry, setActiveCountryState] = useState<ActiveCountryInfo | null>(
+    storeActiveCountry
+  )
   const [detectionMethod, setDetectionMethod] = useState<DetectionMethod>('fallback')
   const [isLoading, setIsLoading] = useState(true)
   const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false)
@@ -70,11 +72,7 @@ export const CountryProvider: React.FC<CountryProviderProps> = ({ children }) =>
   const loadCountries = useCallback(async (): Promise<ActiveCountryInfo[]> => {
     try {
       const res = await fetchApi('/exam-content/countries')
-      const rawList = Array.isArray(res?.data)
-        ? res.data
-        : Array.isArray(res)
-          ? res
-          : []
+      const rawList = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : []
 
       const formatted: ActiveCountryInfo[] = rawList.map((c: Record<string, unknown>) => ({
         id: String(c.id),
@@ -110,9 +108,7 @@ export const CountryProvider: React.FC<CountryProviderProps> = ({ children }) =>
       if (typeof target === 'string') {
         const needle = target.trim().toUpperCase()
         matchedCountry =
-          availableCountries.find(
-            c => c.id === target || c.code.toUpperCase() === needle
-          ) || null
+          availableCountries.find(c => c.id === target || c.code.toUpperCase() === needle) || null
         if (!matchedCountry) {
           matchedCountry = {
             id: target,
@@ -203,10 +199,13 @@ export const CountryProvider: React.FC<CountryProviderProps> = ({ children }) =>
           if (matched) {
             setActiveCountryState(matched)
             setDetectionMethod(result.method)
-            void setStoreContext({
-              countryId: matched.id,
-              activeCountry: matched,
-            }, false)
+            void setStoreContext(
+              {
+                countryId: matched.id,
+                activeCountry: matched,
+              },
+              false
+            )
           }
         }
       } catch (err) {

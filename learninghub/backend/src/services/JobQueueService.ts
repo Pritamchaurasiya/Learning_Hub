@@ -93,7 +93,9 @@ class JobQueueService {
     if (shouldProcessJobs) {
       this.setupProcessors()
     } else {
-      logger.info('[JobQueueService] Background worker processing disabled on this instance (API mode).')
+      logger.info(
+        '[JobQueueService] Background worker processing disabled on this instance (API mode).'
+      )
     }
     this.setupEventHandlers()
   }

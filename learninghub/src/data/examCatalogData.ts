@@ -6,11 +6,7 @@
  * offline, in flaky network conditions, or before backend warmup.
  */
 
-import type {
-  ActiveCountryInfo,
-  ActiveExamInfo,
-  ActiveSubjectInfo,
-} from '../types/learningContext'
+import type { ActiveCountryInfo, ActiveExamInfo, ActiveSubjectInfo } from '../types/learningContext'
 
 export interface CatalogExam extends ActiveExamInfo {
   badge?: string
@@ -65,7 +61,11 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         topics: [
           { id: 'top-jp-1', name: 'Kinematics & Laws of Motion', slug: 'kinematics' },
           { id: 'top-jp-2', name: 'Work, Energy & Power', slug: 'work-energy-power' },
-          { id: 'top-jp-3', name: 'Rotational Dynamics & Gravitation', slug: 'rotational-dynamics' },
+          {
+            id: 'top-jp-3',
+            name: 'Rotational Dynamics & Gravitation',
+            slug: 'rotational-dynamics',
+          },
           { id: 'top-jp-4', name: 'Electrostatics & Current Electricity', slug: 'electrostatics' },
           { id: 'top-jp-5', name: 'Optics (Ray & Wave)', slug: 'optics' },
           { id: 'top-jp-6', name: 'Modern Physics & Semiconductors', slug: 'modern-physics' },
@@ -76,11 +76,19 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Chemistry',
         slug: 'jee-main-chemistry',
         topics: [
-          { id: 'top-jc-1', name: 'Chemical Bonding & Molecular Structure', slug: 'chemical-bonding' },
+          {
+            id: 'top-jc-1',
+            name: 'Chemical Bonding & Molecular Structure',
+            slug: 'chemical-bonding',
+          },
           { id: 'top-jc-2', name: 'Chemical & Ionic Equilibrium', slug: 'equilibrium' },
           { id: 'top-jc-3', name: 'Thermodynamics & Solutions', slug: 'thermodynamics' },
           { id: 'top-jc-4', name: 'General Organic Chemistry (GOC)', slug: 'goc' },
-          { id: 'top-jc-5', name: 'Coordination Compounds & p-Block', slug: 'coordination-compounds' },
+          {
+            id: 'top-jc-5',
+            name: 'Coordination Compounds & p-Block',
+            slug: 'coordination-compounds',
+          },
         ],
       },
       {
@@ -88,8 +96,16 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Mathematics',
         slug: 'jee-main-mathematics',
         topics: [
-          { id: 'top-jm-1', name: 'Calculus (Limits, Continuity, Derivatives)', slug: 'calculus-derivatives' },
-          { id: 'top-jm-2', name: 'Integral Calculus & Differential Equations', slug: 'integral-calculus' },
+          {
+            id: 'top-jm-1',
+            name: 'Calculus (Limits, Continuity, Derivatives)',
+            slug: 'calculus-derivatives',
+          },
+          {
+            id: 'top-jm-2',
+            name: 'Integral Calculus & Differential Equations',
+            slug: 'integral-calculus',
+          },
           { id: 'top-jm-3', name: 'Coordinate Geometry (Conic Sections)', slug: 'conic-sections' },
           { id: 'top-jm-4', name: 'Vectors & 3D Geometry', slug: 'vectors-3d' },
           { id: 'top-jm-5', name: 'Matrices, Determinants & Probability', slug: 'matrices' },
@@ -126,8 +142,16 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Advanced Chemistry',
         slug: 'jee-adv-chemistry',
         topics: [
-          { id: 'top-ac-1', name: 'Organic Reaction Mechanisms & Stereochemistry', slug: 'organic-mechanisms' },
-          { id: 'top-ac-2', name: 'Physical Chemistry & Electrochemistry', slug: 'electrochemistry' },
+          {
+            id: 'top-ac-1',
+            name: 'Organic Reaction Mechanisms & Stereochemistry',
+            slug: 'organic-mechanisms',
+          },
+          {
+            id: 'top-ac-2',
+            name: 'Physical Chemistry & Electrochemistry',
+            slug: 'electrochemistry',
+          },
           { id: 'top-ac-3', name: 'Inorganic Qualitative Analysis', slug: 'qualitative-analysis' },
         ],
       },
@@ -138,7 +162,11 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         topics: [
           { id: 'top-am-1', name: 'Advanced Real Analysis & Functions', slug: 'real-analysis' },
           { id: 'top-am-2', name: 'Complex Numbers & Polynomials', slug: 'complex-numbers' },
-          { id: 'top-am-3', name: 'Definite Integrals & Area under Curves', slug: 'definite-integrals' },
+          {
+            id: 'top-am-3',
+            name: 'Definite Integrals & Area under Curves',
+            slug: 'definite-integrals',
+          },
         ],
       },
     ],
@@ -184,9 +212,21 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Chemistry for NEET',
         slug: 'neet-chemistry',
         topics: [
-          { id: 'top-nc-1', name: 'Organic Chemistry & Biomolecules', slug: 'organic-biomolecules' },
-          { id: 'top-nc-2', name: 'Chemical Kinetics, Equilibrium & Solutions', slug: 'kinetics-solutions' },
-          { id: 'top-nc-3', name: 'Periodic Table & Coordination Compounds', slug: 'coordination-compounds' },
+          {
+            id: 'top-nc-1',
+            name: 'Organic Chemistry & Biomolecules',
+            slug: 'organic-biomolecules',
+          },
+          {
+            id: 'top-nc-2',
+            name: 'Chemical Kinetics, Equilibrium & Solutions',
+            slug: 'kinetics-solutions',
+          },
+          {
+            id: 'top-nc-3',
+            name: 'Periodic Table & Coordination Compounds',
+            slug: 'coordination-compounds',
+          },
         ],
       },
     ],
@@ -262,10 +302,22 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Quantitative Aptitude',
         slug: 'ssc-quantitative-aptitude',
         topics: [
-          { id: 'top-sq-1', name: 'Arithmetic (Percentage, Profit & Loss, SI/CI)', slug: 'arithmetic' },
+          {
+            id: 'top-sq-1',
+            name: 'Arithmetic (Percentage, Profit & Loss, SI/CI)',
+            slug: 'arithmetic',
+          },
           { id: 'top-sq-2', name: 'Time, Speed, Distance & Work', slug: 'time-work' },
-          { id: 'top-sq-3', name: 'Advance Maths (Algebra, Trigonometry, Geometry)', slug: 'advance-maths' },
-          { id: 'top-sq-4', name: 'Mensuration 2D & 3D and Data Interpretation', slug: 'mensuration-di' },
+          {
+            id: 'top-sq-3',
+            name: 'Advance Maths (Algebra, Trigonometry, Geometry)',
+            slug: 'advance-maths',
+          },
+          {
+            id: 'top-sq-4',
+            name: 'Mensuration 2D & 3D and Data Interpretation',
+            slug: 'mensuration-di',
+          },
         ],
       },
       {
@@ -274,7 +326,11 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         slug: 'ssc-reasoning',
         topics: [
           { id: 'top-sr-1', name: 'Analogies, Classification & Series', slug: 'analogies-series' },
-          { id: 'top-sr-2', name: 'Blood Relations & Direction Sense', slug: 'relations-directions' },
+          {
+            id: 'top-sr-2',
+            name: 'Blood Relations & Direction Sense',
+            slug: 'relations-directions',
+          },
           { id: 'top-sr-3', name: 'Syllogism, Venn Diagrams & Puzzles', slug: 'syllogism-puzzles' },
           { id: 'top-sr-4', name: 'Non-Verbal & Mirror/Water Images', slug: 'non-verbal' },
         ],
@@ -285,8 +341,16 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         slug: 'ssc-english',
         topics: [
           { id: 'top-se-1', name: 'Reading Comprehension & Cloze Test', slug: 'rc-cloze' },
-          { id: 'top-se-2', name: 'Grammar (Spotting Errors, Sentence Improvement)', slug: 'grammar-errors' },
-          { id: 'top-se-3', name: 'Vocabulary, Idioms & One-Word Substitution', slug: 'vocabulary-idioms' },
+          {
+            id: 'top-se-2',
+            name: 'Grammar (Spotting Errors, Sentence Improvement)',
+            slug: 'grammar-errors',
+          },
+          {
+            id: 'top-se-3',
+            name: 'Vocabulary, Idioms & One-Word Substitution',
+            slug: 'vocabulary-idioms',
+          },
         ],
       },
       {
@@ -297,7 +361,11 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
           { id: 'top-sa-1', name: 'Indian Polity & Constitution', slug: 'polity-constitution' },
           { id: 'top-sa-2', name: 'Modern & Ancient Indian History', slug: 'history' },
           { id: 'top-sa-3', name: 'Geography & Economy Basics', slug: 'geography-economy' },
-          { id: 'top-sa-4', name: 'General Science & Current Affairs', slug: 'science-current-affairs' },
+          {
+            id: 'top-sa-4',
+            name: 'General Science & Current Affairs',
+            slug: 'science-current-affairs',
+          },
         ],
       },
     ],
@@ -320,10 +388,18 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'General Studies Paper 1 (Prelims)',
         slug: 'upsc-gs-1',
         topics: [
-          { id: 'top-ug-1', name: 'Indian Polity, Governance & Judiciary', slug: 'polity-governance' },
+          {
+            id: 'top-ug-1',
+            name: 'Indian Polity, Governance & Judiciary',
+            slug: 'polity-governance',
+          },
           { id: 'top-ug-2', name: 'Indian History & Art and Culture', slug: 'history-culture' },
           { id: 'top-ug-3', name: 'Physical, Social & Economic Geography', slug: 'geography' },
-          { id: 'top-ug-4', name: 'Macroeconomics, Sustainable Development & Budget', slug: 'economics' },
+          {
+            id: 'top-ug-4',
+            name: 'Macroeconomics, Sustainable Development & Budget',
+            slug: 'economics',
+          },
           { id: 'top-ug-5', name: 'Environment, Ecology & Climate Change', slug: 'environment' },
         ],
       },
@@ -332,9 +408,17 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'CSAT (General Studies Paper 2)',
         slug: 'upsc-csat',
         topics: [
-          { id: 'top-uc-1', name: 'Reading Comprehension & Critical Reasoning', slug: 'rc-critical' },
+          {
+            id: 'top-uc-1',
+            name: 'Reading Comprehension & Critical Reasoning',
+            slug: 'rc-critical',
+          },
           { id: 'top-uc-2', name: 'Basic Numeracy & Data Interpretation', slug: 'numeracy' },
-          { id: 'top-uc-3', name: 'Logical Reasoning & Analytical Ability', slug: 'logical-reasoning' },
+          {
+            id: 'top-uc-3',
+            name: 'Logical Reasoning & Analytical Ability',
+            slug: 'logical-reasoning',
+          },
         ],
       },
     ],
@@ -357,10 +441,18 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Data Structures & Algorithms',
         slug: 'gate-dsa',
         topics: [
-          { id: 'top-gd-1', name: 'Asymptotic Analysis & Recurrences', slug: 'asymptotic-analysis' },
+          {
+            id: 'top-gd-1',
+            name: 'Asymptotic Analysis & Recurrences',
+            slug: 'asymptotic-analysis',
+          },
           { id: 'top-gd-2', name: 'Arrays, Stacks, Queues & Linked Lists', slug: 'linear-ds' },
           { id: 'top-gd-3', name: 'Trees, Binary Search Trees & Heaps', slug: 'trees-heaps' },
-          { id: 'top-gd-4', name: 'Graph Traversals, MST & Shortest Paths', slug: 'graph-algorithms' },
+          {
+            id: 'top-gd-4',
+            name: 'Graph Traversals, MST & Shortest Paths',
+            slug: 'graph-algorithms',
+          },
           { id: 'top-gd-5', name: 'Dynamic Programming & Greedy Algorithms', slug: 'dp-greedy' },
         ],
       },
@@ -369,10 +461,18 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Operating Systems',
         slug: 'gate-os',
         topics: [
-          { id: 'top-go-1', name: 'Processes, Threads & CPU Scheduling', slug: 'processes-scheduling' },
+          {
+            id: 'top-go-1',
+            name: 'Processes, Threads & CPU Scheduling',
+            slug: 'processes-scheduling',
+          },
           { id: 'top-go-2', name: 'Process Synchronization & Semaphores', slug: 'synchronization' },
           { id: 'top-go-3', name: 'Deadlock Handling & Bankers Algorithm', slug: 'deadlocks' },
-          { id: 'top-go-4', name: 'Virtual Memory, Paging & Page Replacement', slug: 'virtual-memory' },
+          {
+            id: 'top-go-4',
+            name: 'Virtual Memory, Paging & Page Replacement',
+            slug: 'virtual-memory',
+          },
           { id: 'top-go-5', name: 'File Systems & Disk Scheduling', slug: 'file-systems' },
         ],
       },
@@ -384,7 +484,11 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
           { id: 'top-gdb-1', name: 'ER Diagrams & Relational Model', slug: 'relational-model' },
           { id: 'top-gdb-2', name: 'SQL & Relational Algebra Queries', slug: 'sql-algebra' },
           { id: 'top-gdb-3', name: 'Normalization (1NF, 2NF, 3NF, BCNF)', slug: 'normalization' },
-          { id: 'top-gdb-4', name: 'Transactions, ACID & Concurrency Control', slug: 'transactions' },
+          {
+            id: 'top-gdb-4',
+            name: 'Transactions, ACID & Concurrency Control',
+            slug: 'transactions',
+          },
           { id: 'top-gdb-5', name: 'Indexing & B/B+ Trees', slug: 'indexing-trees' },
         ],
       },
@@ -405,8 +509,16 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         slug: 'gate-computer-networks',
         topics: [
           { id: 'top-gn-1', name: 'OSI & TCP/IP Layering Concepts', slug: 'layering' },
-          { id: 'top-gn-2', name: 'Data Link Layer (Flow Control, Error Detection)', slug: 'datalink' },
-          { id: 'top-gn-3', name: 'Routing Algorithms (OSPF, BGP, Distance Vector)', slug: 'routing' },
+          {
+            id: 'top-gn-2',
+            name: 'Data Link Layer (Flow Control, Error Detection)',
+            slug: 'datalink',
+          },
+          {
+            id: 'top-gn-3',
+            name: 'Routing Algorithms (OSPF, BGP, Distance Vector)',
+            slug: 'routing',
+          },
           { id: 'top-gn-4', name: 'TCP/UDP, Congestion Control & Sockets', slug: 'transport' },
         ],
       },
@@ -416,7 +528,11 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         slug: 'gate-engineering-mathematics',
         topics: [
           { id: 'top-gm-1', name: 'Discrete Math & Propositional Logic', slug: 'discrete-math' },
-          { id: 'top-gm-2', name: 'Linear Algebra (Matrices, Eigenvalues)', slug: 'linear-algebra' },
+          {
+            id: 'top-gm-2',
+            name: 'Linear Algebra (Matrices, Eigenvalues)',
+            slug: 'linear-algebra',
+          },
           { id: 'top-gm-3', name: 'Probability Distributions & Statistics', slug: 'probability' },
         ],
       },
@@ -440,10 +556,18 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Quantitative Aptitude (QA)',
         slug: 'cat-qa',
         topics: [
-          { id: 'top-cq-1', name: 'Arithmetic (Averages, Ratios, Time-Work)', slug: 'cat-arithmetic' },
+          {
+            id: 'top-cq-1',
+            name: 'Arithmetic (Averages, Ratios, Time-Work)',
+            slug: 'cat-arithmetic',
+          },
           { id: 'top-cq-2', name: 'Algebra & Higher Degree Polynomials', slug: 'cat-algebra' },
           { id: 'top-cq-3', name: 'Geometry, Coordinate & Mensuration', slug: 'cat-geometry' },
-          { id: 'top-cq-4', name: 'Number Systems & Modern Math (P&C, Probability)', slug: 'cat-modern-math' },
+          {
+            id: 'top-cq-4',
+            name: 'Number Systems & Modern Math (P&C, Probability)',
+            slug: 'cat-modern-math',
+          },
         ],
       },
       {
@@ -461,7 +585,11 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Verbal Ability & Reading Comprehension (VARC)',
         slug: 'cat-varc',
         topics: [
-          { id: 'top-cv-1', name: 'Long RC Passages (Philosophy, Science, Economics)', slug: 'rc-passages' },
+          {
+            id: 'top-cv-1',
+            name: 'Long RC Passages (Philosophy, Science, Economics)',
+            slug: 'rc-passages',
+          },
           { id: 'top-cv-2', name: 'Parajumbles, Summary & Odd-One-Out', slug: 'parajumbles' },
         ],
       },
@@ -533,11 +661,27 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Data Structures & Algorithms',
         slug: 'dsa-core',
         topics: [
-          { id: 'top-dc-1', name: 'Arrays, Two Pointers & Sliding Window', slug: 'arrays-sliding-window' },
+          {
+            id: 'top-dc-1',
+            name: 'Arrays, Two Pointers & Sliding Window',
+            slug: 'arrays-sliding-window',
+          },
           { id: 'top-dc-2', name: 'Binary Trees, BSTs & Trie Trees', slug: 'trees-bst-trie' },
-          { id: 'top-dc-3', name: 'Graph Algorithms (BFS, DFS, Dijkstra, Topo Sort)', slug: 'graphs-dijkstra' },
-          { id: 'top-dc-4', name: 'Dynamic Programming (1D, 2D, Knapsack, Intervals)', slug: 'dp-algorithms' },
-          { id: 'top-dc-5', name: 'Heaps, Priority Queues & Monotonic Stacks', slug: 'heaps-stacks' },
+          {
+            id: 'top-dc-3',
+            name: 'Graph Algorithms (BFS, DFS, Dijkstra, Topo Sort)',
+            slug: 'graphs-dijkstra',
+          },
+          {
+            id: 'top-dc-4',
+            name: 'Dynamic Programming (1D, 2D, Knapsack, Intervals)',
+            slug: 'dp-algorithms',
+          },
+          {
+            id: 'top-dc-5',
+            name: 'Heaps, Priority Queues & Monotonic Stacks',
+            slug: 'heaps-stacks',
+          },
         ],
       },
       {
@@ -546,9 +690,21 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         slug: 'system-design',
         topics: [
           { id: 'top-sd-1', name: 'Horizontal Scaling, Load Balancing & CDN', slug: 'scaling-cdn' },
-          { id: 'top-sd-2', name: 'Database Sharding, Replication & CAP Theorem', slug: 'database-sharding' },
-          { id: 'top-sd-3', name: 'Caching (Redis) & Distributed Queues (Kafka)', slug: 'caching-kafka' },
-          { id: 'top-sd-4', name: 'Microservices, API Gateways & Rate Limiting', slug: 'microservices-gateways' },
+          {
+            id: 'top-sd-2',
+            name: 'Database Sharding, Replication & CAP Theorem',
+            slug: 'database-sharding',
+          },
+          {
+            id: 'top-sd-3',
+            name: 'Caching (Redis) & Distributed Queues (Kafka)',
+            slug: 'caching-kafka',
+          },
+          {
+            id: 'top-sd-4',
+            name: 'Microservices, API Gateways & Rate Limiting',
+            slug: 'microservices-gateways',
+          },
         ],
       },
       {
@@ -556,9 +712,21 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Core Computer Science Fundamentals',
         slug: 'core-cs-fundamentals',
         topics: [
-          { id: 'top-cf-1', name: 'Operating Systems (Processes, Threads, Concurrency)', slug: 'os-concurrency' },
-          { id: 'top-cf-2', name: 'Database Internals (Indexes, ACID, B-Trees)', slug: 'db-internals' },
-          { id: 'top-cf-3', name: 'Computer Networks (HTTP/3, TCP/IP, WebSockets)', slug: 'network-protocols' },
+          {
+            id: 'top-cf-1',
+            name: 'Operating Systems (Processes, Threads, Concurrency)',
+            slug: 'os-concurrency',
+          },
+          {
+            id: 'top-cf-2',
+            name: 'Database Internals (Indexes, ACID, B-Trees)',
+            slug: 'db-internals',
+          },
+          {
+            id: 'top-cf-3',
+            name: 'Computer Networks (HTTP/3, TCP/IP, WebSockets)',
+            slug: 'network-protocols',
+          },
         ],
       },
       {
@@ -567,8 +735,16 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         slug: 'lld-ood',
         topics: [
           { id: 'top-ld-1', name: 'SOLID Principles & Design Patterns', slug: 'solid-patterns' },
-          { id: 'top-ld-2', name: 'Clean Architecture & Domain Modeling', slug: 'clean-architecture' },
-          { id: 'top-ld-3', name: 'Real-world System Modeling (Parking Lot, Ride Share)', slug: 'system-modeling' },
+          {
+            id: 'top-ld-2',
+            name: 'Clean Architecture & Domain Modeling',
+            slug: 'clean-architecture',
+          },
+          {
+            id: 'top-ld-3',
+            name: 'Real-world System Modeling (Parking Lot, Ride Share)',
+            slug: 'system-modeling',
+          },
         ],
       },
     ],
@@ -592,8 +768,16 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         slug: 'react-typescript',
         topics: [
           { id: 'top-rt-1', name: 'React Hooks, Context & State Management', slug: 'react-state' },
-          { id: 'top-rt-2', name: 'TypeScript Generics, Utility Types & Type Guards', slug: 'ts-generics' },
-          { id: 'top-rt-3', name: 'Performance Optimization & Web Vitals', slug: 'web-performance' },
+          {
+            id: 'top-rt-2',
+            name: 'TypeScript Generics, Utility Types & Type Guards',
+            slug: 'ts-generics',
+          },
+          {
+            id: 'top-rt-3',
+            name: 'Performance Optimization & Web Vitals',
+            slug: 'web-performance',
+          },
         ],
       },
       {
@@ -601,9 +785,17 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Backend Architecture & Databases',
         slug: 'backend-databases',
         topics: [
-          { id: 'top-bd-1', name: 'Node.js, Express & RESTful API Best Practices', slug: 'rest-apis' },
+          {
+            id: 'top-bd-1',
+            name: 'Node.js, Express & RESTful API Best Practices',
+            slug: 'rest-apis',
+          },
           { id: 'top-bd-2', name: 'PostgreSQL, Prisma ORM & Migrations', slug: 'postgres-prisma' },
-          { id: 'top-bd-3', name: 'Auth, JWT, Session Security & CSRF Defense', slug: 'auth-security' },
+          {
+            id: 'top-bd-3',
+            name: 'Auth, JWT, Session Security & CSRF Defense',
+            slug: 'auth-security',
+          },
         ],
       },
       {
@@ -612,7 +804,11 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         slug: 'cloud-cicd',
         topics: [
           { id: 'top-cc-1', name: 'Docker Containerization & Compose', slug: 'docker' },
-          { id: 'top-cc-2', name: 'GitHub Actions & Automated Deployments', slug: 'github-actions' },
+          {
+            id: 'top-cc-2',
+            name: 'GitHub Actions & Automated Deployments',
+            slug: 'github-actions',
+          },
         ],
       },
     ],
@@ -635,9 +831,21 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Machine Learning Foundations',
         slug: 'ml-foundations',
         topics: [
-          { id: 'top-mf-1', name: 'Supervised Learning (Regression & Classification)', slug: 'supervised-learning' },
-          { id: 'top-mf-2', name: 'Feature Engineering, Regularization & Metrics', slug: 'feature-engineering' },
-          { id: 'top-mf-3', name: 'Unsupervised Learning & Dimensionality Reduction', slug: 'unsupervised' },
+          {
+            id: 'top-mf-1',
+            name: 'Supervised Learning (Regression & Classification)',
+            slug: 'supervised-learning',
+          },
+          {
+            id: 'top-mf-2',
+            name: 'Feature Engineering, Regularization & Metrics',
+            slug: 'feature-engineering',
+          },
+          {
+            id: 'top-mf-3',
+            name: 'Unsupervised Learning & Dimensionality Reduction',
+            slug: 'unsupervised',
+          },
         ],
       },
       {
@@ -645,9 +853,21 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Deep Learning & LLM Systems',
         slug: 'deep-learning-llms',
         topics: [
-          { id: 'top-dl-1', name: 'PyTorch, Neural Networks & Backpropagation', slug: 'pytorch-nn' },
-          { id: 'top-dl-2', name: 'Transformer Architecture & Self-Attention', slug: 'transformers' },
-          { id: 'top-dl-3', name: 'Retrieval Augmented Generation (RAG) & Vector DBs', slug: 'rag-vector-db' },
+          {
+            id: 'top-dl-1',
+            name: 'PyTorch, Neural Networks & Backpropagation',
+            slug: 'pytorch-nn',
+          },
+          {
+            id: 'top-dl-2',
+            name: 'Transformer Architecture & Self-Attention',
+            slug: 'transformers',
+          },
+          {
+            id: 'top-dl-3',
+            name: 'Retrieval Augmented Generation (RAG) & Vector DBs',
+            slug: 'rag-vector-db',
+          },
         ],
       },
     ],
@@ -672,10 +892,26 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Reading and Writing',
         slug: 'sat-reading-writing',
         topics: [
-          { id: 'top-sr-1', name: 'Craft and Structure (Words in Context)', slug: 'craft-structure' },
-          { id: 'top-sr-2', name: 'Information and Ideas (Evidence & Arguments)', slug: 'information-ideas' },
-          { id: 'top-sr-3', name: 'Standard English Conventions (Grammar & Punctuation)', slug: 'conventions' },
-          { id: 'top-sr-4', name: 'Expression of Ideas (Rhetorical Synthesis)', slug: 'expression' },
+          {
+            id: 'top-sr-1',
+            name: 'Craft and Structure (Words in Context)',
+            slug: 'craft-structure',
+          },
+          {
+            id: 'top-sr-2',
+            name: 'Information and Ideas (Evidence & Arguments)',
+            slug: 'information-ideas',
+          },
+          {
+            id: 'top-sr-3',
+            name: 'Standard English Conventions (Grammar & Punctuation)',
+            slug: 'conventions',
+          },
+          {
+            id: 'top-sr-4',
+            name: 'Expression of Ideas (Rhetorical Synthesis)',
+            slug: 'expression',
+          },
         ],
       },
       {
@@ -683,10 +919,26 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Mathematics',
         slug: 'sat-math',
         topics: [
-          { id: 'top-sm-1', name: 'Algebra (Linear Equations, Systems & Inequalities)', slug: 'algebra' },
-          { id: 'top-sm-2', name: 'Advanced Math (Quadratic, Exponential & Polynomials)', slug: 'advanced-math' },
-          { id: 'top-sm-3', name: 'Problem-Solving & Data Analysis (Percentages, Rates)', slug: 'data-analysis' },
-          { id: 'top-sm-4', name: 'Geometry & Trigonometry (Triangles, Circles)', slug: 'geometry-trig' },
+          {
+            id: 'top-sm-1',
+            name: 'Algebra (Linear Equations, Systems & Inequalities)',
+            slug: 'algebra',
+          },
+          {
+            id: 'top-sm-2',
+            name: 'Advanced Math (Quadratic, Exponential & Polynomials)',
+            slug: 'advanced-math',
+          },
+          {
+            id: 'top-sm-3',
+            name: 'Problem-Solving & Data Analysis (Percentages, Rates)',
+            slug: 'data-analysis',
+          },
+          {
+            id: 'top-sm-4',
+            name: 'Geometry & Trigonometry (Triangles, Circles)',
+            slug: 'geometry-trig',
+          },
         ],
       },
     ],
@@ -709,9 +961,21 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Verbal Reasoning',
         slug: 'gre-verbal',
         topics: [
-          { id: 'top-gv-1', name: 'Reading Comprehension (Complex Academic Prose)', slug: 'reading-comp' },
-          { id: 'top-gv-2', name: 'Text Completion (Single, Double & Triple Blanks)', slug: 'text-completion' },
-          { id: 'top-gv-3', name: 'Sentence Equivalence (Vocabulary Nuance)', slug: 'sentence-equiv' },
+          {
+            id: 'top-gv-1',
+            name: 'Reading Comprehension (Complex Academic Prose)',
+            slug: 'reading-comp',
+          },
+          {
+            id: 'top-gv-2',
+            name: 'Text Completion (Single, Double & Triple Blanks)',
+            slug: 'text-completion',
+          },
+          {
+            id: 'top-gv-3',
+            name: 'Sentence Equivalence (Vocabulary Nuance)',
+            slug: 'sentence-equiv',
+          },
         ],
       },
       {
@@ -721,7 +985,11 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         topics: [
           { id: 'top-gq-1', name: 'Arithmetic & Number Properties', slug: 'arithmetic' },
           { id: 'top-gq-2', name: 'Algebra & Coordinate Geometry', slug: 'algebra' },
-          { id: 'top-gq-3', name: 'Data Analysis (Statistics, Distributions & Counting)', slug: 'data-analysis' },
+          {
+            id: 'top-gq-3',
+            name: 'Data Analysis (Statistics, Distributions & Counting)',
+            slug: 'data-analysis',
+          },
           { id: 'top-gq-4', name: 'Quantitative Comparison Questions', slug: 'quant-comp' },
         ],
       },
@@ -729,9 +997,7 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         id: 'sub-gre-awa',
         name: 'Analytical Writing (AWA)',
         slug: 'gre-awa',
-        topics: [
-          { id: 'top-ga-1', name: 'Analyze an Issue Essay Task', slug: 'issue-task' },
-        ],
+        topics: [{ id: 'top-ga-1', name: 'Analyze an Issue Essay Task', slug: 'issue-task' }],
       },
     ],
   },
@@ -762,8 +1028,16 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Chemical & Physical Foundations',
         slug: 'mcat-chem-phys',
         topics: [
-          { id: 'top-mc-1', name: 'General Chemistry, Thermodynamics & Kinetics', slug: 'gen-chem' },
-          { id: 'top-mc-2', name: 'Organic Chemistry & Physics for Biology', slug: 'org-chem-phys' },
+          {
+            id: 'top-mc-1',
+            name: 'General Chemistry, Thermodynamics & Kinetics',
+            slug: 'gen-chem',
+          },
+          {
+            id: 'top-mc-2',
+            name: 'Organic Chemistry & Physics for Biology',
+            slug: 'org-chem-phys',
+          },
         ],
       },
       {
@@ -771,7 +1045,11 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Critical Analysis & Reasoning (CARS)',
         slug: 'mcat-cars',
         topics: [
-          { id: 'top-mr-1', name: 'Humanities & Social Sciences Comprehension', slug: 'humanities-reasoning' },
+          {
+            id: 'top-mr-1',
+            name: 'Humanities & Social Sciences Comprehension',
+            slug: 'humanities-reasoning',
+          },
         ],
       },
     ],
@@ -839,8 +1117,16 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Reading Academic',
         slug: 'ielts-reading',
         topics: [
-          { id: 'top-ir-1', name: 'True/False/Not Given & Heading Matching', slug: 'heading-matching' },
-          { id: 'top-ir-2', name: 'Skimming, Scanning & Summary Completion', slug: 'summary-completion' },
+          {
+            id: 'top-ir-1',
+            name: 'True/False/Not Given & Heading Matching',
+            slug: 'heading-matching',
+          },
+          {
+            id: 'top-ir-2',
+            name: 'Skimming, Scanning & Summary Completion',
+            slug: 'summary-completion',
+          },
         ],
       },
       {
@@ -848,7 +1134,11 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Writing Task 1 & 2',
         slug: 'ielts-writing',
         topics: [
-          { id: 'top-iw-1', name: 'Task 1: Describing Charts, Maps & Diagrams', slug: 'task-1-charts' },
+          {
+            id: 'top-iw-1',
+            name: 'Task 1: Describing Charts, Maps & Diagrams',
+            slug: 'task-1-charts',
+          },
           { id: 'top-iw-2', name: 'Task 2: Discursive Academic Essays', slug: 'task-2-essays' },
         ],
       },
@@ -865,7 +1155,11 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Speaking',
         slug: 'ielts-speaking',
         topics: [
-          { id: 'top-is-1', name: 'Cue Card Presentation & Discussion', slug: 'cue-card-discussion' },
+          {
+            id: 'top-is-1',
+            name: 'Cue Card Presentation & Discussion',
+            slug: 'cue-card-discussion',
+          },
         ],
       },
     ],
@@ -888,7 +1182,11 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Reading',
         slug: 'celpip-reading',
         topics: [
-          { id: 'top-clr-1', name: 'Reading Correspondence & Applying Information', slug: 'reading-correspondence' },
+          {
+            id: 'top-clr-1',
+            name: 'Reading Correspondence & Applying Information',
+            slug: 'reading-correspondence',
+          },
           { id: 'top-clr-2', name: 'Reading for Viewpoints & Diagrams', slug: 'viewpoints' },
         ],
       },
@@ -898,7 +1196,11 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         slug: 'celpip-writing',
         topics: [
           { id: 'top-clw-1', name: 'Task 1: Writing an Email', slug: 'email-writing' },
-          { id: 'top-clw-2', name: 'Task 2: Responding to Survey Questions', slug: 'survey-response' },
+          {
+            id: 'top-clw-2',
+            name: 'Task 2: Responding to Survey Questions',
+            slug: 'survey-response',
+          },
         ],
       },
       {
@@ -940,7 +1242,11 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         slug: 'pte-reading',
         topics: [
           { id: 'top-pr-1', name: 'Reading & Writing Fill in the Blanks', slug: 'rw-blanks' },
-          { id: 'top-pr-2', name: 'Re-order Paragraphs & Multiple Choice', slug: 'reorder-paragraphs' },
+          {
+            id: 'top-pr-2',
+            name: 'Re-order Paragraphs & Multiple Choice',
+            slug: 'reorder-paragraphs',
+          },
         ],
       },
       {
@@ -948,7 +1254,11 @@ export const DEFAULT_EXAMS: CatalogExam[] = [
         name: 'Listening',
         slug: 'pte-listening',
         topics: [
-          { id: 'top-pl-1', name: 'Summarize Spoken Text & Write from Dictation', slug: 'write-dictation' },
+          {
+            id: 'top-pl-1',
+            name: 'Summarize Spoken Text & Write from Dictation',
+            slug: 'write-dictation',
+          },
         ],
       },
     ],
@@ -977,7 +1287,12 @@ export function getExamCategory(exam: { name: string; slug: string; category?: s
     return 'Government & Civil Services'
   }
 
-  if (text.includes('neet') || text.includes('mcat') || text.includes('medical') || text.includes('aiims')) {
+  if (
+    text.includes('neet') ||
+    text.includes('mcat') ||
+    text.includes('medical') ||
+    text.includes('aiims')
+  ) {
     return 'Medical & Healthcare'
   }
 
@@ -1003,7 +1318,12 @@ export function getExamCategory(exam: { name: string; slug: string; category?: s
     return 'Software & Computer Science'
   }
 
-  if (text.includes('cat') || text.includes('gmat') || text.includes('mba') || text.includes('management')) {
+  if (
+    text.includes('cat') ||
+    text.includes('gmat') ||
+    text.includes('mba') ||
+    text.includes('management')
+  ) {
     return 'Management & MBA'
   }
 
@@ -1019,7 +1339,13 @@ export function getExamCategory(exam: { name: string; slug: string; category?: s
     return 'Global & College Entrance'
   }
 
-  if (text.includes('cbse') || text.includes('icse') || text.includes('a-level') || text.includes('board') || text.includes('gcse')) {
+  if (
+    text.includes('cbse') ||
+    text.includes('icse') ||
+    text.includes('a-level') ||
+    text.includes('board') ||
+    text.includes('gcse')
+  ) {
     return 'School Boards (K-12)'
   }
 
@@ -1043,7 +1369,11 @@ export function getCuratedSubjectsForExam(examId: string, slug?: string): Active
       slug: `${slug || examId}-core-concepts`,
       topics: [
         { id: `${examId}-top-1`, name: 'Fundamental Principles & Theory', slug: 'fundamentals' },
-        { id: `${examId}-top-2`, name: 'Practice Problem Sets & Applications', slug: 'practice-problems' },
+        {
+          id: `${examId}-top-2`,
+          name: 'Practice Problem Sets & Applications',
+          slug: 'practice-problems',
+        },
         { id: `${examId}-top-3`, name: 'Comprehensive Review & Mock Drills', slug: 'mock-drills' },
       ],
     },

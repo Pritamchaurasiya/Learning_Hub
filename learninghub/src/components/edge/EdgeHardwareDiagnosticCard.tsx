@@ -14,7 +14,9 @@ export const EdgeHardwareDiagnosticCard: React.FC<EdgeHardwareDiagnosticCardProp
   lastBenchmark,
 }) => {
   const [isRunningBench, setIsRunningBench] = useState(false)
-  const [currentBench, setCurrentBench] = useState<EdgeHardwareBenchmark | null>(lastBenchmark || null)
+  const [currentBench, setCurrentBench] = useState<EdgeHardwareBenchmark | null>(
+    lastBenchmark || null
+  )
 
   const handleBenchmarkClick = async () => {
     setIsRunningBench(true)
@@ -66,7 +68,9 @@ export const EdgeHardwareDiagnosticCard: React.FC<EdgeHardwareDiagnosticCardProp
                 <ShieldCheck className="w-3 h-3 mr-1" /> 100% On-Device
               </span>
             </h3>
-            <p className="text-xs text-slate-400">Direct-to-metal shader micro-inference pipeline</p>
+            <p className="text-xs text-slate-400">
+              Direct-to-metal shader micro-inference pipeline
+            </p>
           </div>
         </div>
 
@@ -76,7 +80,10 @@ export const EdgeHardwareDiagnosticCard: React.FC<EdgeHardwareDiagnosticCardProp
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-4">
         <div className="bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/60">
           <span className="text-slate-400 block mb-0.5">GPU Device</span>
-          <span className="text-slate-200 font-medium truncate block" title={deviceInfo?.adapterName}>
+          <span
+            className="text-slate-200 font-medium truncate block"
+            title={deviceInfo?.adapterName}
+          >
             {deviceInfo?.adapterName || 'Detecting...'}
           </span>
         </div>
@@ -84,7 +91,9 @@ export const EdgeHardwareDiagnosticCard: React.FC<EdgeHardwareDiagnosticCardProp
         <div className="bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/60">
           <span className="text-slate-400 block mb-0.5">Est. VRAM Capacity</span>
           <span className="text-slate-200 font-medium font-mono">
-            {deviceInfo?.vramEstimateMB ? `${(deviceInfo.vramEstimateMB / 1024).toFixed(1)} GB` : '--'}
+            {deviceInfo?.vramEstimateMB
+              ? `${(deviceInfo.vramEstimateMB / 1024).toFixed(1)} GB`
+              : '--'}
           </span>
         </div>
 
@@ -121,7 +130,10 @@ export const EdgeHardwareDiagnosticCard: React.FC<EdgeHardwareDiagnosticCardProp
             <div className="flex items-center gap-3 text-xs">
               <span className="text-slate-400 flex items-center gap-1">
                 <Activity className="w-3.5 h-3.5 text-indigo-400" />
-                Speed: <strong className="text-slate-200 font-mono">{currentBench.tokensPerSec} tok/s</strong>
+                Speed:{' '}
+                <strong className="text-slate-200 font-mono">
+                  {currentBench.tokensPerSec} tok/s
+                </strong>
               </span>
               <span className="text-slate-400">
                 TTFT: <strong className="text-slate-200 font-mono">{currentBench.ttftMs}ms</strong>

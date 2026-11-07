@@ -97,7 +97,9 @@ export interface TestSlice {
   }) => void
 
   // Assessment Mode actions
-  setAssessmentMode: (mode: 'ai' | 'non_ai' | 'offline' | 'adaptive' | 'contest' | 'practice') => void
+  setAssessmentMode: (
+    mode: 'ai' | 'non_ai' | 'offline' | 'adaptive' | 'contest' | 'practice'
+  ) => void
   setAdaptiveMetrics: (theta: number, sem: number) => void
   stepAdaptiveQuestion: (nextQuestion: TestQuestion) => void
   recordProctorViolation: () => void
@@ -345,9 +347,7 @@ export const createTestSlice: StateCreator<AppState & TestSlice, [], [], TestSli
   ) => {
     const resolvedSections = sections ?? testInfo.sections ?? []
     const firstSectionId = resolvedSections.length > 0 ? resolvedSections[0].id : null
-    const initialLocked = resolvedSections
-      .filter(s => s.is_locked || s.isLocked)
-      .map(s => s.id)
+    const initialLocked = resolvedSections.filter(s => s.is_locked || s.isLocked).map(s => s.id)
     const initialSectionTimers: Record<string, number> = {}
     resolvedSections.forEach(s => {
       const duration = s.duration_minutes || s.durationMinutes

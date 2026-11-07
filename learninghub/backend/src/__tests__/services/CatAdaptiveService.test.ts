@@ -230,5 +230,23 @@ describe('CatAdaptiveService (Milestone 26 Computerized Adaptive Testing Engine)
       expect(scorecard.suggestedRemediationAction).toContain('High priority')
       expect(scorecard.examSlug).toBe('jee-main')
     })
+    it('hydrates CAT session asynchronously from cache upon cluster node switch', async () => {
+      const session = service.startSession('user-cat-cache-01', 'Computer Science & Systems')
+      const sessionId = session.sessionId
+
+      // Clear memory to simulate request landing on a different cluster instance
+      service.resetSessionsForTesting()
+      expect(service.getSession(sessionId)).toBeUndefined()
+
+      // Mock cacheService
+      const { cacheService } = require('../../services/CacheService')
+      jest.spyOn(cacheService, 'get').mockResolvedValue(session)
+
+      const restoredSession = await service.getSessionAsync(sessionId)
+      expect(restoredSession).toBeDefined()
+      expect(restoredSession?.sessionId).toBe(sessionId)
+      expect(restoredSession?.userId).toBe('user-cat-cache-01')
+    })
   })
-});
+})
+

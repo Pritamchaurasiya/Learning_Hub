@@ -394,10 +394,7 @@ export class CartService {
   /**
    * Recalculate cart totals within a transaction.
    */
-  private async recalculateInTx(
-    tx: any,
-    cartId: string
-  ) {
+  private async recalculateInTx(tx: any, cartId: string) {
     const items = await tx.cartItem.findMany({ where: { cartId } })
 
     const subtotal = items.reduce((sum: number, i: any) => sum + i.price * i.quantity, 0)
@@ -423,33 +420,31 @@ export class CartService {
   /**
    * Transform DB cart to API-compatible shape for backward compatibility.
    */
-  private toApiCart(
-    cart: {
+  private toApiCart(cart: {
+    id: string
+    userId: string
+    couponCode: string | null
+    discount: number
+    subtotal: number
+    total: number
+    currency: string
+    createdAt: Date
+    updatedAt: Date
+    items: Array<{
       id: string
-      userId: string
-      couponCode: string | null
-      discount: number
-      subtotal: number
-      total: number
-      currency: string
-      createdAt: Date
-      updatedAt: Date
-      items: Array<{
-        id: string
-        courseId: string
-        courseTitle: string
-        courseThumbnail: string | null
-        instructorName: string | null
-        price: number
-        originalPrice: number | null
-        quantity: number
-        addedAt: Date
-      }>
-    }
-  ): Cart {
+      courseId: string
+      courseTitle: string
+      courseThumbnail: string | null
+      instructorName: string | null
+      price: number
+      originalPrice: number | null
+      quantity: number
+      addedAt: Date
+    }>
+  }): Cart {
     return {
       id: cart.id,
-      items: cart.items.map((i) => ({
+      items: cart.items.map(i => ({
         id: i.id,
         course: {
           id: i.courseId,

@@ -147,7 +147,10 @@ export const reviewQuestion = asyncHandler(async (req: Request, res: Response): 
   const { status, feedback, rating } = req.body
 
   if (!status) {
-    sendValidationError(res, 'Review status is required (APPROVED, REJECTED, PENDING_REVIEW, DRAFT)')
+    sendValidationError(
+      res,
+      'Review status is required (APPROVED, REJECTED, PENDING_REVIEW, DRAFT)'
+    )
     return
   }
 

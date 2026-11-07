@@ -127,7 +127,10 @@ export function parseQuestionsCSV(csvContent: string): CSVParseResult {
     }
 
     if (text.length < 3) {
-      result.errors.push({ row: rowNum, error: 'Question text must be at least 3 characters long.' })
+      result.errors.push({
+        row: rowNum,
+        error: 'Question text must be at least 3 characters long.',
+      })
       continue
     }
 
@@ -141,9 +144,7 @@ export function parseQuestionsCSV(csvContent: string): CSVParseResult {
       'SUBJECTIVE',
       'CODING',
     ]
-    const type: RawQuestionInput['type'] = validTypes.includes(
-      rawType as RawQuestionInput['type']
-    )
+    const type: RawQuestionInput['type'] = validTypes.includes(rawType as RawQuestionInput['type'])
       ? (rawType as RawQuestionInput['type'])
       : 'MCQ'
 
@@ -187,10 +188,7 @@ export function parseQuestionsCSV(csvContent: string): CSVParseResult {
 
     if (type === 'TRUE_FALSE') {
       const isTrueCorrect =
-        rawCorrect === 'TRUE' ||
-        rawCorrect === 'T' ||
-        rawCorrect === '1' ||
-        rawCorrect === 'A'
+        rawCorrect === 'TRUE' || rawCorrect === 'T' || rawCorrect === '1' || rawCorrect === 'A'
       options.push(
         { text: 'True', isCorrect: isTrueCorrect, order: 0 },
         { text: 'False', isCorrect: !isTrueCorrect, order: 1 }

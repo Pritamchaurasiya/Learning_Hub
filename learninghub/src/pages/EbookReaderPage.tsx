@@ -237,7 +237,9 @@ export default function EbookReaderPage() {
                   <span className="text-[10px] text-gray-400 block font-normal">
                     Previous Chapter
                   </span>
-                  <span className="truncate max-w-[160px] sm:max-w-[200px] block">{prevChapter.title}</span>
+                  <span className="truncate max-w-[160px] sm:max-w-[200px] block">
+                    {prevChapter.title}
+                  </span>
                 </div>
               </div>
             </button>
@@ -252,7 +254,9 @@ export default function EbookReaderPage() {
             >
               <div className="text-left sm:text-right">
                 <span className="text-[10px] text-indigo-200 block font-normal">Next Chapter</span>
-                <span className="truncate max-w-[160px] sm:max-w-[200px] block">{nextChapter.title}</span>
+                <span className="truncate max-w-[160px] sm:max-w-[200px] block">
+                  {nextChapter.title}
+                </span>
               </div>
               <ChevronRight className="w-4 h-4" />
             </button>

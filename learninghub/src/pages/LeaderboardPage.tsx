@@ -163,7 +163,8 @@ export default function LeaderboardPage() {
               </span>
             </div>
             <p className="text-xs text-slate-300 mt-1">
-              Top 3 Scholars promote to Grandmaster League & unlock 1-Month Scholar Pro + Verified Credential.
+              Top 3 Scholars promote to Grandmaster League & unlock 1-Month Scholar Pro + Verified
+              Credential.
             </p>
           </div>
         </div>
@@ -559,7 +560,9 @@ export default function LeaderboardPage() {
                   </div>
                   <div>
                     <h2 className="text-xl font-black text-white">Global League Division Rules</h2>
-                    <p className="text-xs text-slate-400">Competitive season promotion tiers & multipliers</p>
+                    <p className="text-xs text-slate-400">
+                      Competitive season promotion tiers & multipliers
+                    </p>
                   </div>
                 </div>
                 <button
@@ -577,7 +580,9 @@ export default function LeaderboardPage() {
                     <Crown className="w-5 h-5 text-amber-400" />
                     <div>
                       <div className="text-xs font-bold text-white">Grandmaster Tier (Top 1–3)</div>
-                      <div className="text-[11px] text-slate-400">Promotes to Elite Council + 1-Mo Scholar Pro</div>
+                      <div className="text-[11px] text-slate-400">
+                        Promotes to Elite Council + 1-Mo Scholar Pro
+                      </div>
                     </div>
                   </div>
                   <span className="text-xs font-mono font-bold text-amber-400">2.0x XP</span>
@@ -588,7 +593,9 @@ export default function LeaderboardPage() {
                     <Sparkles className="w-5 h-5 text-purple-400" />
                     <div>
                       <div className="text-xs font-bold text-white">Diamond Tier (Top 4–10)</div>
-                      <div className="text-[11px] text-slate-400">High-Priority Recruiter Simulation Access</div>
+                      <div className="text-[11px] text-slate-400">
+                        High-Priority Recruiter Simulation Access
+                      </div>
                     </div>
                   </div>
                   <span className="text-xs font-mono font-bold text-purple-400">1.5x XP</span>
@@ -599,7 +606,9 @@ export default function LeaderboardPage() {
                     <ShieldCheck className="w-5 h-5 text-blue-400" />
                     <div>
                       <div className="text-xs font-bold text-white">Platinum Tier (Top 11–25)</div>
-                      <div className="text-[11px] text-slate-400">Streak Freeze Protection Vault Unlocked</div>
+                      <div className="text-[11px] text-slate-400">
+                        Streak Freeze Protection Vault Unlocked
+                      </div>
                     </div>
                   </div>
                   <span className="text-xs font-mono font-bold text-blue-400">1.25x XP</span>

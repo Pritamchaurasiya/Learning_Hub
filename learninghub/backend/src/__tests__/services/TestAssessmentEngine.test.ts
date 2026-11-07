@@ -12,23 +12,26 @@
  */
 
 import { TestScoringService } from '../../services/TestScoringService'
-import { prisma } from '../../prismaClient'
+import { prisma } from '@/prismaClient'
 import { jobQueueService } from '../../services/JobQueueService'
 import { IRTScoringEngine } from '../../services/IRTScoringEngine'
 
-jest.mock('../../prismaClient', () => ({
-  prisma: {
-    test: { findUnique: jest.fn() },
-    testResult: {
-      findFirst: jest.fn(),
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      count: jest.fn(),
-    },
-    testAttemptAnswer: { upsert: jest.fn() },
-    $transaction: jest.fn(),
+// Mock prisma client with testAttemptAnswer.deleteMany
+const mockPrisma = {
+  test: { findUnique: jest.fn() },
+  testResult: {
+    findFirst: jest.fn(),
+    findUnique: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    count: jest.fn(),
   },
+  testAttemptAnswer: { upsert: jest.fn(), deleteMany: jest.fn() },
+  $transaction: jest.fn((cb: any) => cb(mockPrisma)),
+}
+
+jest.mock('@/prismaClient', () => ({
+  prisma: mockPrisma,
 }))
 
 jest.mock('../../services/TopicPerformanceService', () => ({

@@ -13,7 +13,6 @@ import {
   Swords,
   RotateCcw,
   Calendar,
-
   Trophy,
   BellRing,
   Settings,
@@ -21,9 +20,6 @@ import {
   X,
   ChevronRight,
   Sparkles,
-
-
-
 } from 'lucide-react'
 import { cn } from '../utils/cn'
 import { useStore } from '../stores/useStore'
@@ -124,7 +120,6 @@ export default function MobileNav() {
   const userXp = useStore(s => s.progress?.xp ?? 0)
   const userLevel = useStore(s => s.progress?.level ?? 1)
   const userStreak = useStore(s => s.progress?.streak ?? 0)
-
 
   const location = useLocation()
   const navigate = useNavigate()

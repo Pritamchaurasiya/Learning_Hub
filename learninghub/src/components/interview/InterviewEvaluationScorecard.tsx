@@ -1,4 +1,12 @@
-import { Award, CheckCircle, ArrowRight, BrainCircuit, Sparkles, BookOpen, Layers } from 'lucide-react'
+import {
+  Award,
+  CheckCircle,
+  ArrowRight,
+  BrainCircuit,
+  Sparkles,
+  BookOpen,
+  Layers,
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { InterviewEvaluationReport } from '../../types/interview'
 import { Button } from '../ui/Button'
@@ -18,7 +26,10 @@ export function InterviewEvaluationScorecard({
   const getRecommendationBadge = (rec: InterviewEvaluationReport['hiringRecommendation']) => {
     switch (rec) {
       case 'STRONG_HIRE':
-        return { text: 'Strong Hire', bg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' }
+        return {
+          text: 'Strong Hire',
+          bg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+        }
       case 'HIRE':
         return { text: 'Hire', bg: 'bg-teal-500/20 text-teal-400 border-teal-500/30' }
       case 'LEANING_HIRE':
@@ -50,9 +61,7 @@ export function InterviewEvaluationScorecard({
             <h2 className="text-2xl font-extrabold tracking-tight text-white">
               Technical Interview Performance Report
             </h2>
-            <p className="text-sm text-slate-300 mt-1 max-w-xl">
-              {evaluation.executiveSummary}
-            </p>
+            <p className="text-sm text-slate-300 mt-1 max-w-xl">{evaluation.executiveSummary}</p>
           </div>
 
           <div className="flex items-center gap-4 bg-slate-900/80 p-4 rounded-xl border border-slate-800">
@@ -101,8 +110,8 @@ export function InterviewEvaluationScorecard({
                       factor.score >= 80
                         ? 'text-emerald-400'
                         : factor.score >= 65
-                        ? 'text-indigo-400'
-                        : 'text-amber-400'
+                          ? 'text-indigo-400'
+                          : 'text-amber-400'
                     }`}
                   >
                     {factor.score}
@@ -118,8 +127,8 @@ export function InterviewEvaluationScorecard({
                     factor.score >= 80
                       ? 'bg-emerald-500'
                       : factor.score >= 65
-                      ? 'bg-indigo-500'
-                      : 'bg-amber-500'
+                        ? 'bg-indigo-500'
+                        : 'bg-amber-500'
                   }`}
                   style={{ width: `${factor.score}%` }}
                 />
@@ -201,7 +210,11 @@ export function InterviewEvaluationScorecard({
 
         <div className="flex items-center gap-3">
           <Link to="/revision">
-            <Button variant="outline" size="sm" className="border-indigo-500/40 text-indigo-300 gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-indigo-500/40 text-indigo-300 gap-1.5"
+            >
               <Layers className="w-4 h-4" /> Spaced Flashcards
             </Button>
           </Link>

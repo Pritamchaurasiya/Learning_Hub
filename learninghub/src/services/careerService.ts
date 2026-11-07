@@ -92,7 +92,10 @@ class CareerService {
       // Offline fallback
     }
 
-    const total = params.counterOffer.baseSalary + params.counterOffer.equityValueUsd + params.counterOffer.signingBonus
+    const total =
+      params.counterOffer.baseSalary +
+      params.counterOffer.equityValueUsd +
+      params.counterOffer.signingBonus
     const isHighLeverage = params.leverageScore >= 75
 
     return {
@@ -126,7 +129,12 @@ class CareerService {
         signingBonusUsd: 45000,
         currency: 'USD',
         track: 'DISTRIBUTED_SYSTEMS',
-        requiredSkills: ['Distributed Consensus (Raft/Paxos)', 'Go / Rust', 'Kubernetes Architecture', 'Zero-Trust Security'],
+        requiredSkills: [
+          'Distributed Consensus (Raft/Paxos)',
+          'Go / Rust',
+          'Kubernetes Architecture',
+          'Zero-Trust Security',
+        ],
         preferredSkills: ['CRDTs', 'eBPF Profiling', 'Chaos Engineering'],
         minimumElo: 1800,
         matchAffinityScore: 96,
@@ -137,7 +145,8 @@ class CareerService {
           bktMasteryMatch: true,
           interviewReadinessMatch: true,
         },
-        description: 'Architect planetary-scale replication engines, multi-region state machine persistence, and fault-tolerant telemetry pipelines.',
+        description:
+          'Architect planetary-scale replication engines, multi-region state machine persistence, and fault-tolerant telemetry pipelines.',
       },
       {
         id: 'job-ai-res-02',
@@ -152,8 +161,17 @@ class CareerService {
         signingBonusUsd: 60000,
         currency: 'USD',
         track: 'AI_RESEARCH',
-        requiredSkills: ['LLM Kernel Optimization', 'PyTorch / CUDA', 'WebGPU Micro-Inference', 'Bayesian Active Learning'],
-        preferredSkills: ['Quantization (AWQ/GPTQ)', 'Distributed Training (Megatron-LM)', 'Speculative Decoding'],
+        requiredSkills: [
+          'LLM Kernel Optimization',
+          'PyTorch / CUDA',
+          'WebGPU Micro-Inference',
+          'Bayesian Active Learning',
+        ],
+        preferredSkills: [
+          'Quantization (AWQ/GPTQ)',
+          'Distributed Training (Megatron-LM)',
+          'Speculative Decoding',
+        ],
         minimumElo: 1950,
         matchAffinityScore: 92,
         matchedSkills: ['LLM Kernel Optimization', 'PyTorch / CUDA', 'WebGPU Micro-Inference'],
@@ -163,7 +181,8 @@ class CareerService {
           bktMasteryMatch: true,
           interviewReadinessMatch: true,
         },
-        description: 'Build low-latency on-device micro-inference runtimes and autonomous multi-agent reasoning councils for frontier systems.',
+        description:
+          'Build low-latency on-device micro-inference runtimes and autonomous multi-agent reasoning councils for frontier systems.',
       },
       {
         id: 'job-web3-03',
@@ -178,18 +197,32 @@ class CareerService {
         signingBonusUsd: 40000,
         currency: 'USD',
         track: 'FULL_STACK_WEB3',
-        requiredSkills: ['Zero-Knowledge Proofs (Groth16/Plonk)', 'Solidity / Rust', 'TypeScript / React 18', 'W3C DID & VC Architecture'],
-        preferredSkills: ['Account Abstraction (ERC-4337)', 'Merkle Tree Inclusion Proofs', 'IPFS Pinning'],
+        requiredSkills: [
+          'Zero-Knowledge Proofs (Groth16/Plonk)',
+          'Solidity / Rust',
+          'TypeScript / React 18',
+          'W3C DID & VC Architecture',
+        ],
+        preferredSkills: [
+          'Account Abstraction (ERC-4337)',
+          'Merkle Tree Inclusion Proofs',
+          'IPFS Pinning',
+        ],
         minimumElo: 1700,
         matchAffinityScore: 89,
-        matchedSkills: ['TypeScript / React 18', 'W3C DID & VC Architecture', 'Zero-Knowledge Proofs (Groth16/Plonk)'],
+        matchedSkills: [
+          'TypeScript / React 18',
+          'W3C DID & VC Architecture',
+          'Zero-Knowledge Proofs (Groth16/Plonk)',
+        ],
         missingSkills: ['Solidity / Rust'],
         telemetryAlignment: {
           eloRatingMatch: true,
           bktMasteryMatch: true,
           interviewReadinessMatch: true,
         },
-        description: 'Develop tamper-proof decentralized credential protocols, privacy-preserving zero-knowledge identity, and real-time state trees.',
+        description:
+          'Develop tamper-proof decentralized credential protocols, privacy-preserving zero-knowledge identity, and real-time state trees.',
       },
       {
         id: 'job-sre-04',
@@ -204,8 +237,17 @@ class CareerService {
         signingBonusUsd: 50000,
         currency: 'USD',
         track: 'STAFF_SRE',
-        requiredSkills: ['Chaos Mesh / Fault Injection', 'Distributed Tracing (OpenTelemetry)', 'Circuit Breakers', 'Prometheus & Grafana'],
-        preferredSkills: ['Incident Post-Mortem Scribe', 'Capacity Little\'s Law Modeling', 'Linux Kernel Cgroups'],
+        requiredSkills: [
+          'Chaos Mesh / Fault Injection',
+          'Distributed Tracing (OpenTelemetry)',
+          'Circuit Breakers',
+          'Prometheus & Grafana',
+        ],
+        preferredSkills: [
+          'Incident Post-Mortem Scribe',
+          "Capacity Little's Law Modeling",
+          'Linux Kernel Cgroups',
+        ],
         minimumElo: 1750,
         matchAffinityScore: 86,
         matchedSkills: ['Circuit Breakers', 'Prometheus & Grafana'],
@@ -215,17 +257,21 @@ class CareerService {
           bktMasteryMatch: false,
           interviewReadinessMatch: true,
         },
-        description: 'Fortify mission-critical tier-0 services through proactive chaos simulations, zero-downtime rollouts, and automated blast-radius containment.',
+        description:
+          'Fortify mission-critical tier-0 services through proactive chaos simulations, zero-downtime rollouts, and automated blast-radius containment.',
       },
     ]
 
     let filtered = list
     if (params?.track) filtered = filtered.filter(j => j.track === params.track)
-    if (params?.minSalary) filtered = filtered.filter(j => j.baseSalaryMax >= (params.minSalary || 0))
+    if (params?.minSalary)
+      filtered = filtered.filter(j => j.baseSalaryMax >= (params.minSalary || 0))
     if (params?.remoteOnly) filtered = filtered.filter(j => j.workplaceType === 'REMOTE')
     if (params?.searchQuery) {
       const q = params.searchQuery.toLowerCase()
-      filtered = filtered.filter(j => j.title.toLowerCase().includes(q) || j.company.toLowerCase().includes(q))
+      filtered = filtered.filter(
+        j => j.title.toLowerCase().includes(q) || j.company.toLowerCase().includes(q)
+      )
     }
 
     return filtered

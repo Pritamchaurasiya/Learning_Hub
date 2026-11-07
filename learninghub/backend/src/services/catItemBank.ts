@@ -29,7 +29,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.2,
     b: -1.5,
     c: 0.25,
-    explanation: 'Randomized QuickSort has an expected runtime of O(N log N), but the worst-case runtime remains O(N^2) if the pivot selection consistently chooses an extreme element.',
+    explanation:
+      'Randomized QuickSort has an expected runtime of O(N log N), but the worst-case runtime remains O(N^2) if the pivot selection consistently chooses an extreme element.',
     bloomLevel: 'REMEMBER',
   },
   {
@@ -38,7 +39,10 @@ export const defaultCatItems: CatItemData[] = [
     subject: 'Computer Science',
     topic: 'Balanced Trees',
     options: [
-      { id: 'opt-a', text: 'Balance factor of every node satisfies |height(left) - height(right)| <= 1' },
+      {
+        id: 'opt-a',
+        text: 'Balance factor of every node satisfies |height(left) - height(right)| <= 1',
+      },
       { id: 'opt-b', text: 'All leaves are at the exact same depth from root' },
       { id: 'opt-c', text: 'Red nodes cannot have red children' },
       { id: 'opt-d', text: 'Subtree sizes differ by at most a factor of 2' },
@@ -47,7 +51,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.45,
     b: -0.7,
     c: 0.25,
-    explanation: 'AVL balance condition explicitly mandates that node heights differ by at most 1, yielding maximum height <= 1.44 log2(N).',
+    explanation:
+      'AVL balance condition explicitly mandates that node heights differ by at most 1, yielding maximum height <= 1.44 log2(N).',
     bloomLevel: 'UNDERSTAND',
   },
   {
@@ -65,7 +70,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.8,
     b: 0.35,
     c: 0.25,
-    explanation: 'PACELC theorem: If Partition (P), choose Availability (A) or Consistency (C); Else (E), choose Latency (L) or Consistency (C).',
+    explanation:
+      'PACELC theorem: If Partition (P), choose Availability (A) or Consistency (C); Else (E), choose Latency (L) or Consistency (C).',
     bloomLevel: 'ANALYZE',
   },
   {
@@ -74,7 +80,10 @@ export const defaultCatItems: CatItemData[] = [
     subject: 'Computer Science',
     topic: 'Consensus Protocols',
     options: [
-      { id: 'opt-a', text: 'To prevent older, stale proposers from overwriting newer consensus rounds' },
+      {
+        id: 'opt-a',
+        text: 'To prevent older, stale proposers from overwriting newer consensus rounds',
+      },
       { id: 'opt-b', text: 'To synchronize physical NTP clocks across distributed nodes' },
       { id: 'opt-c', text: 'To enforce strict FIFO message delivery order' },
       { id: 'opt-d', text: 'To encrypt proposal messages under TLS 1.3' },
@@ -83,7 +92,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.95,
     b: 1.1,
     c: 0.25,
-    explanation: 'Phase 1b promises ensure that proposals with lower ballot numbers cannot be committed once a higher ballot is initiated, preserving safety.',
+    explanation:
+      'Phase 1b promises ensure that proposals with lower ballot numbers cannot be committed once a higher ballot is initiated, preserving safety.',
     bloomLevel: 'ANALYZE',
   },
   {
@@ -101,7 +111,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.5,
     b: -0.2,
     c: 0.25,
-    explanation: 'By traversing the weight array backwards from W down to item weight, the DP table can be compressed into a single 1D array of size O(W).',
+    explanation:
+      'By traversing the weight array backwards from W down to item weight, the DP table can be compressed into a single 1D array of size O(W).',
     bloomLevel: 'APPLY',
   },
   {
@@ -119,7 +130,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.6,
     b: 0.85,
     c: 0.25,
-    explanation: 'Snapshot Isolation allows Write Skew where concurrent transactions evaluate disjoint write sets conditioned on overlapping read views.',
+    explanation:
+      'Snapshot Isolation allows Write Skew where concurrent transactions evaluate disjoint write sets conditioned on overlapping read views.',
     bloomLevel: 'EVALUATE',
   },
   {
@@ -128,7 +140,10 @@ export const defaultCatItems: CatItemData[] = [
     subject: 'Computer Science',
     topic: 'Consensus Protocols',
     options: [
-      { id: 'opt-a', text: 'Receive votes from a majority of cluster nodes and possess an up-to-date log' },
+      {
+        id: 'opt-a',
+        text: 'Receive votes from a majority of cluster nodes and possess an up-to-date log',
+      },
       { id: 'opt-b', text: 'Have the lowest node IP address' },
       { id: 'opt-c', text: 'Generate the fastest cryptographic HMAC signature' },
       { id: 'opt-d', text: 'Have zero uncommitted entries in state machine' },
@@ -137,7 +152,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.75,
     b: 1.4,
     c: 0.25,
-    explanation: 'Raft election safety requires majority consensus and candidate log completeness (Election Restriction).',
+    explanation:
+      'Raft election safety requires majority consensus and candidate log completeness (Election Restriction).',
     bloomLevel: 'ANALYZE',
   },
   {
@@ -155,7 +171,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.1,
     b: -1.8,
     c: 0.25,
-    explanation: 'By aggregate analysis, N insertions require <= 3N operations, giving an amortized cost of O(1).',
+    explanation:
+      'By aggregate analysis, N insertions require <= 3N operations, giving an amortized cost of O(1).',
     bloomLevel: 'UNDERSTAND',
   },
   {
@@ -211,7 +228,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.5,
     b: 0.2,
     c: 0.25,
-    explanation: 'Linear acceleration for rolling without slipping is a = g sin(theta) / (1 + I / (m R^2)). For solid sphere I = (2/5)mR^2 (a1 = 5/7 g sin theta). For hollow sphere I = (2/3)mR^2 (a2 = 3/5 g sin theta). Ratio = (5/7) / (3/5) = 25/21.',
+    explanation:
+      'Linear acceleration for rolling without slipping is a = g sin(theta) / (1 + I / (m R^2)). For solid sphere I = (2/5)mR^2 (a1 = 5/7 g sin theta). For hollow sphere I = (2/3)mR^2 (a2 = 3/5 g sin theta). Ratio = (5/7) / (3/5) = 25/21.',
     bloomLevel: 'APPLY',
   },
   {
@@ -229,7 +247,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.7,
     b: 0.8,
     c: 0.25,
-    explanation: "By Gauss's Law, the enclosed charge q_enc = Q * (r^3 / R^3). Thus 4 * pi * r^2 * E = q_enc / epsilon_0 => E = Q * r / (4 * pi * epsilon_0 * R^3).",
+    explanation:
+      "By Gauss's Law, the enclosed charge q_enc = Q * (r^3 / R^3). Thus 4 * pi * r^2 * E = q_enc / epsilon_0 => E = Q * r / (4 * pi * epsilon_0 * R^3).",
     bloomLevel: 'ANALYZE',
   },
   {
@@ -238,7 +257,10 @@ export const defaultCatItems: CatItemData[] = [
     subject: 'Physics',
     topic: 'Dual Nature of Radiation',
     options: [
-      { id: 'opt-a', text: 'It is halved because the number of incident photons per second halves at constant intensity' },
+      {
+        id: 'opt-a',
+        text: 'It is halved because the number of incident photons per second halves at constant intensity',
+      },
       { id: 'opt-b', text: 'It doubles because photon energy doubles' },
       { id: 'opt-c', text: 'It remains unchanged' },
       { id: 'opt-d', text: 'It quadruples' },
@@ -247,7 +269,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.6,
     b: -0.4,
     c: 0.25,
-    explanation: 'Intensity I = n * h * nu where n is photon flux. When frequency nu is doubled at fixed intensity, photon flux n is halved, reducing emitted photoelectrons per second by half.',
+    explanation:
+      'Intensity I = n * h * nu where n is photon flux. When frequency nu is doubled at fixed intensity, photon flux n is halved, reducing emitted photoelectrons per second by half.',
     bloomLevel: 'UNDERSTAND',
   },
   {
@@ -265,7 +288,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.3,
     b: -1.2,
     c: 0.25,
-    explanation: 'Carnot efficiency eta = 1 - (T_cold / T_hot) = 1 - (300 / 600) = 0.5. Work W = eta * Q_hot = 0.5 * 1200 J = 600 J.',
+    explanation:
+      'Carnot efficiency eta = 1 - (T_cold / T_hot) = 1 - (300 / 600) = 0.5. Work W = eta * Q_hot = 0.5 * 1200 J = 600 J.',
     bloomLevel: 'APPLY',
   },
   {
@@ -283,7 +307,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.8,
     b: 1.2,
     c: 0.25,
-    explanation: "Fringe width beta = lambda * D / d. In a medium of refractive index mu, lambda' = lambda / mu. Hence beta' = beta / (4/3) = (3/4) * beta.",
+    explanation:
+      "Fringe width beta = lambda * D / d. In a medium of refractive index mu, lambda' = lambda / mu. Hence beta' = beta / (4/3) = (3/4) * beta.",
     bloomLevel: 'APPLY',
   },
   {
@@ -301,7 +326,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.2,
     b: -1.8,
     c: 0.25,
-    explanation: 'By integrating back-EMF power over current ramp-up, stored inductive magnetic energy is U = 1/2 L I^2.',
+    explanation:
+      'By integrating back-EMF power over current ramp-up, stored inductive magnetic energy is U = 1/2 L I^2.',
     bloomLevel: 'REMEMBER',
   },
 
@@ -321,7 +347,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.6,
     b: -0.2,
     c: 0.25,
-    explanation: 'SN2 proceeds via backside nucleophilic attack and a pentacoordinate transition state, producing complete Walden inversion of configuration.',
+    explanation:
+      'SN2 proceeds via backside nucleophilic attack and a pentacoordinate transition state, producing complete Walden inversion of configuration.',
     bloomLevel: 'UNDERSTAND',
   },
   {
@@ -339,7 +366,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.7,
     b: 0.6,
     c: 0.25,
-    explanation: 'E = E_cell^0 - (0.0591 / n) * log10(Q). When Q increases tenfold, log10(10) = 1, so Delta E = -0.0591 / 2 = -0.02955 V.',
+    explanation:
+      'E = E_cell^0 - (0.0591 / n) * log10(Q). When Q increases tenfold, log10(10) = 1, so Delta E = -0.0591 / 2 = -0.02955 V.',
     bloomLevel: 'APPLY',
   },
   {
@@ -357,7 +385,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.3,
     b: -1.5,
     c: 0.25,
-    explanation: 'Integrated first-order rate law: ln([A]_0 / [A]) = k*t. At half-life, [A] = [A]_0 / 2, giving t_1/2 = ln(2)/k = 0.693/k, completely independent of initial concentration.',
+    explanation:
+      'Integrated first-order rate law: ln([A]_0 / [A]) = k*t. At half-life, [A] = [A]_0 / 2, giving t_1/2 = ln(2)/k = 0.693/k, completely independent of initial concentration.',
     bloomLevel: 'REMEMBER',
   },
   {
@@ -375,12 +404,13 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.9,
     b: 1.3,
     c: 0.25,
-    explanation: 'Strong-field ligands cause large Delta_o > P (pairing energy), forcing all 6 electrons to pair in lower energy t2g orbitals (t2g^6 eg^0), yielding CFSE = 6 * (-0.4 Delta_o) = -2.4 Delta_o + 2P.',
+    explanation:
+      'Strong-field ligands cause large Delta_o > P (pairing energy), forcing all 6 electrons to pair in lower energy t2g orbitals (t2g^6 eg^0), yielding CFSE = 6 * (-0.4 Delta_o) = -2.4 Delta_o + 2P.',
     bloomLevel: 'ANALYZE',
   },
   {
     id: 'cat-item-chem-05',
-    text: 'For the exothermic synthesis of ammonia N2(g) + 3 H2(g) <=> 2 NH3(g) (Delta H = -92 kJ/mol), which set of conditions maximizes equilibrium yield of NH3 by Le Chatelier\'s Principle?',
+    text: "For the exothermic synthesis of ammonia N2(g) + 3 H2(g) <=> 2 NH3(g) (Delta H = -92 kJ/mol), which set of conditions maximizes equilibrium yield of NH3 by Le Chatelier's Principle?",
     subject: 'Chemistry',
     topic: 'Chemical Equilibrium',
     options: [
@@ -393,7 +423,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.5,
     b: 0.1,
     c: 0.25,
-    explanation: 'Forward reaction decreases gas moles (4 -> 2) and is exothermic. Increasing pressure shifts equilibrium toward fewer moles (forward), and lowering temperature shifts toward heat generation (forward).',
+    explanation:
+      'Forward reaction decreases gas moles (4 -> 2) and is exothermic. Increasing pressure shifts equilibrium toward fewer moles (forward), and lowering temperature shifts toward heat generation (forward).',
     bloomLevel: 'APPLY',
   },
 
@@ -413,7 +444,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.7,
     b: 0.3,
     c: 0.25,
-    explanation: "By King's Property int_a^b f(x) dx = int_a^b f(a+b-x) dx, substituting x -> pi/2 - x switches sin and cos. Adding 2I = int_0^(pi/2) 1 dx = pi/2 => I = pi/4.",
+    explanation:
+      "By King's Property int_a^b f(x) dx = int_a^b f(a+b-x) dx, substituting x -> pi/2 - x switches sin and cos. Adding 2I = int_0^(pi/2) 1 dx = pi/2 => I = pi/4.",
     bloomLevel: 'APPLY',
   },
   {
@@ -431,7 +463,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.8,
     b: 1.0,
     c: 0.25,
-    explanation: 'Coplanarity requires the vector connecting points on each line (a2 - a1) to lie in the plane spanned by direction vectors b1 and b2, meaning the scalar triple product [a2 - a1, b1, b2] = 0.',
+    explanation:
+      'Coplanarity requires the vector connecting points on each line (a2 - a1) to lie in the plane spanned by direction vectors b1 and b2, meaning the scalar triple product [a2 - a1, b1, b2] = 0.',
     bloomLevel: 'ANALYZE',
   },
   {
@@ -449,7 +482,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.4,
     b: -0.6,
     c: 0.25,
-    explanation: 'Cayley-Hamilton states that every square matrix satisfies its own characteristic equation det(lambda * I - A) = 0.',
+    explanation:
+      'Cayley-Hamilton states that every square matrix satisfies its own characteristic equation det(lambda * I - A) = 0.',
     bloomLevel: 'REMEMBER',
   },
   {
@@ -467,7 +501,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.9,
     b: 1.4,
     c: 0.25,
-    explanation: 'P(D|+) = P(+|D)*P(D) / [P(+|D)*P(D) + P(+|~D)*P(~D)] = (0.99 * 0.001) / [(0.99 * 0.001) + (0.05 * 0.999)] = 0.00099 / (0.00099 + 0.04995) = 0.00099 / 0.05094 = ~1.94%.',
+    explanation:
+      'P(D|+) = P(+|D)*P(D) / [P(+|D)*P(D) + P(+|~D)*P(~D)] = (0.99 * 0.001) / [(0.99 * 0.001) + (0.05 * 0.999)] = 0.00099 / (0.00099 + 0.04995) = 0.00099 / 0.05094 = ~1.94%.',
     bloomLevel: 'ANALYZE',
   },
   {
@@ -485,7 +520,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.3,
     b: -1.0,
     c: 0.25,
-    explanation: 'Integrating factor I.F. = exp(int P(x) dx) = exp(int (2/x) dx) = exp(2 ln x) = exp(ln x^2) = x^2.',
+    explanation:
+      'Integrating factor I.F. = exp(int P(x) dx) = exp(int (2/x) dx) = exp(2 ln x) = exp(ln x^2) = x^2.',
     bloomLevel: 'APPLY',
   },
 
@@ -496,16 +532,23 @@ export const defaultCatItems: CatItemData[] = [
     subject: 'Biology',
     topic: 'Human Physiology',
     options: [
-      { id: 'opt-a', text: 'Maintains an increasing hyperosmolar gradient in the medullary interstitium from cortex to inner medulla' },
-      { id: 'opt-b', text: 'Pumps water actively into the collecting duct against the osmotic gradient' },
-      { id: 'opt-c', text: 'Filters proteins across podocyte slits in Bowman\'s capsule' },
+      {
+        id: 'opt-a',
+        text: 'Maintains an increasing hyperosmolar gradient in the medullary interstitium from cortex to inner medulla',
+      },
+      {
+        id: 'opt-b',
+        text: 'Pumps water actively into the collecting duct against the osmotic gradient',
+      },
+      { id: 'opt-c', text: "Filters proteins across podocyte slits in Bowman's capsule" },
       { id: 'opt-d', text: 'Synthesizes renin in juxtaglomerular cells' },
     ],
     correctOptionId: 'opt-a',
     a: 1.6,
     b: 0.4,
     c: 0.25,
-    explanation: 'Counter-current flow between the ascending (salt-pumping) and descending (water-permeable) limbs multiplies interstitial osmolarity up to ~1200 mOsm/L, driving passive water reabsorption.',
+    explanation:
+      'Counter-current flow between the ascending (salt-pumping) and descending (water-permeable) limbs multiplies interstitial osmolarity up to ~1200 mOsm/L, driving passive water reabsorption.',
     bloomLevel: 'UNDERSTAND',
   },
   {
@@ -523,7 +566,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.8,
     b: 0.9,
     c: 0.25,
-    explanation: "DNA Pol I possesses 5'->3' exonuclease activity (in its small domain) which removes downstream ribonucleotide primers while simultaneously synthesizing replacement DNA.",
+    explanation:
+      "DNA Pol I possesses 5'->3' exonuclease activity (in its small domain) which removes downstream ribonucleotide primers while simultaneously synthesizing replacement DNA.",
     bloomLevel: 'ANALYZE',
   },
   {
@@ -541,16 +585,20 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.5,
     b: -0.3,
     c: 0.25,
-    explanation: 'q^2 = 0.04 => q = 0.2. Since p + q = 1, p = 0.8. Heterozygous carrier frequency = 2 * p * q = 2 * 0.8 * 0.2 = 0.32 (32%).',
+    explanation:
+      'q^2 = 0.04 => q = 0.2. Since p + q = 1, p = 0.8. Heterozygous carrier frequency = 2 * p * q = 2 * 0.8 * 0.2 = 0.32 (32%).',
     bloomLevel: 'APPLY',
   },
   {
     id: 'cat-item-bio-04',
-    text: 'According to Peter Mitchell\'s chemiosmotic hypothesis, what immediately drives ATP synthesis by mitochondrial ATP synthase (Complex V)?',
+    text: "According to Peter Mitchell's chemiosmotic hypothesis, what immediately drives ATP synthesis by mitochondrial ATP synthase (Complex V)?",
     subject: 'Biology',
     topic: 'Cellular Respiration & Bioenergetics',
     options: [
-      { id: 'opt-a', text: 'Proton electrochemical gradient across the inner mitochondrial membrane' },
+      {
+        id: 'opt-a',
+        text: 'Proton electrochemical gradient across the inner mitochondrial membrane',
+      },
       { id: 'opt-b', text: 'Direct phosphate transfer from NADH to ADP' },
       { id: 'opt-c', text: 'Thermal fluctuation inside the mitochondrial matrix' },
       { id: 'opt-d', text: 'Hydrolysis of acetyl-CoA in the citric acid cycle' },
@@ -559,7 +607,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.7,
     b: 0.5,
     c: 0.25,
-    explanation: 'Protons pumped into the intermembrane space create a proton motive force (delta pH + delta psi). Flow of protons back through F0 rotor turns F1 to synthesize ATP.',
+    explanation:
+      'Protons pumped into the intermembrane space create a proton motive force (delta pH + delta psi). Flow of protons back through F0 rotor turns F1 to synthesize ATP.',
     bloomLevel: 'UNDERSTAND',
   },
   {
@@ -577,7 +626,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.3,
     b: -1.4,
     c: 0.25,
-    explanation: 'Producers (10,000 kJ) -> Primary consumers/herbivores (1,000 kJ) -> Secondary consumers/carnivores (100 kJ) -> Tertiary consumers (10 kJ). Only ~10% transfers to each successive trophic level.',
+    explanation:
+      'Producers (10,000 kJ) -> Primary consumers/herbivores (1,000 kJ) -> Secondary consumers/carnivores (100 kJ) -> Tertiary consumers (10 kJ). Only ~10% transfers to each successive trophic level.',
     bloomLevel: 'APPLY',
   },
 
@@ -597,7 +647,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.6,
     b: -0.4,
     c: 0.25,
-    explanation: 'The sentence structure contrasts early skepticism with later evidence that silenced critics. "Irrefutable" (impossible to deny or disprove) is the only word that logically fits this context.',
+    explanation:
+      'The sentence structure contrasts early skepticism with later evidence that silenced critics. "Irrefutable" (impossible to deny or disprove) is the only word that logically fits this context.',
     bloomLevel: 'ANALYZE',
   },
   {
@@ -615,7 +666,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.4,
     b: -0.8,
     c: 0.25,
-    explanation: 'Marked price = 1.40 * C. Discounted selling price = 1.40 * C * (1 - 0.25) = 1.40 * 0.75 * C = 1.05 * C. The net profit is (1.05 * C - C) / C = +5%.',
+    explanation:
+      'Marked price = 1.40 * C. Discounted selling price = 1.40 * C * (1 - 0.25) = 1.40 * 0.75 * C = 1.05 * C. The net profit is (1.05 * C - C) / C = +5%.',
     bloomLevel: 'APPLY',
   },
   {
@@ -633,7 +685,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.5,
     b: -0.2,
     c: 0.25,
-    explanation: 'Slope of line L = (13 - 5) / (6 - 2) = 8 / 4 = 2. Perpendicular line M has slope m = -1/2. Since line M passes through (0,0), its equation is y = -1/2 * x. For x = 4, y = -1/2 * 4 = -2.',
+    explanation:
+      'Slope of line L = (13 - 5) / (6 - 2) = 8 / 4 = 2. Perpendicular line M has slope m = -1/2. Since line M passes through (0,0), its equation is y = -1/2 * x. For x = 4, y = -1/2 * 4 = -2.',
     bloomLevel: 'APPLY',
   },
 
@@ -653,7 +706,8 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.8,
     b: 0.9,
     c: 0.25,
-    explanation: 'In heart failure with reduced ejection fraction (HFrEF), decreased renal perfusion triggers the renin-angiotensin-aldosterone system (RAAS). Angiotensin II induces potent arteriolar constriction, significantly elevating systemic vascular resistance (afterload).',
+    explanation:
+      'In heart failure with reduced ejection fraction (HFrEF), decreased renal perfusion triggers the renin-angiotensin-aldosterone system (RAAS). Angiotensin II induces potent arteriolar constriction, significantly elevating systemic vascular resistance (afterload).',
     bloomLevel: 'ANALYZE',
   },
   {
@@ -671,7 +725,105 @@ export const defaultCatItems: CatItemData[] = [
     a: 1.7,
     b: 0.1,
     c: 0.25,
-    explanation: 'A competitive inhibitor binds reversibly to the active site, competing with substrate. At infinitely high substrate concentrations, the inhibitor is outcompeted, so Vmax is unchanged. However, a higher substrate concentration is required to reach 1/2 Vmax, meaning apparent Km increases.',
+    explanation:
+      'A competitive inhibitor binds reversibly to the active site, competing with substrate. At infinitely high substrate concentrations, the inhibitor is outcompeted, so Vmax is unchanged. However, a higher substrate concentration is required to reach 1/2 Vmax, meaning apparent Km increases.',
+    bloomLevel: 'UNDERSTAND',
+  },
+
+  // --- GATE Computer Science Calibrated Items ---
+  {
+    id: 'cat-item-gate-toc-01',
+    text: 'Let L1 be a recursively enumerable (RE) language and L2 be a recursive (decidable) language. Which of the following statements is ALWAYS TRUE?',
+    subject: 'Computer Science',
+    topic: 'Theory of Computation & Formal Languages',
+    options: [
+      { id: 'opt-a', text: 'L1 ∩ L2 is recursively enumerable (RE)' },
+      { id: 'opt-b', text: 'Complement of L1 (¬L1) is recursive' },
+      { id: 'opt-c', text: 'L1 - L2 is always non-RE' },
+      { id: 'opt-d', text: 'L1 ∪ ¬L2 is always decidable' },
+    ],
+    correctOptionId: 'opt-a',
+    a: 1.85,
+    b: 0.8,
+    c: 0.25,
+    explanation:
+      'RE languages are closed under intersection with recursive languages (and with other RE languages). If M1 recognizes L1 and M2 decides L2, run M2 on w; if it accepts, run M1 on w.',
+    bloomLevel: 'ANALYZE',
+  },
+  {
+    id: 'cat-item-gate-cn-01',
+    text: 'In a TCP connection, the Current Congestion Window (cwnd) is 32 KB and the Slow Start Threshold (ssthresh) is 16 KB when a triple duplicate ACK event occurs. Under TCP Reno, what are the new values of ssthresh and cwnd immediately upon fast retransmit/recovery?',
+    subject: 'Computer Science',
+    topic: 'Computer Networks & Protocols',
+    options: [
+      { id: 'opt-a', text: 'ssthresh = 16 KB, cwnd = 16 KB + 3 MSS' },
+      { id: 'opt-b', text: 'ssthresh = 32 KB, cwnd = 1 MSS' },
+      { id: 'opt-c', text: 'ssthresh = 8 KB, cwnd = 8 KB' },
+      { id: 'opt-d', text: 'ssthresh = 16 KB, cwnd = 1 MSS' },
+    ],
+    correctOptionId: 'opt-a',
+    a: 1.9,
+    b: 1.2,
+    c: 0.25,
+    explanation:
+      'Under TCP Reno, receipt of 3 duplicate ACKs triggers Fast Recovery: ssthresh is halved to cwnd / 2 = 32 / 2 = 16 KB, and cwnd is set to ssthresh + 3 * MSS to account for packets that have left the pipe.',
+    bloomLevel: 'EVALUATE',
+  },
+  {
+    id: 'cat-item-gate-dbms-01',
+    text: 'Given a relational schema R(A, B, C, D) with functional dependencies F = {A -> B, B -> C, C -> D, D -> A}. What is the highest normal form satisfied by relation R?',
+    subject: 'Computer Science',
+    topic: 'Databases & Normalization',
+    options: [
+      { id: 'opt-a', text: 'Boyce-Codd Normal Form (BCNF)' },
+      { id: 'opt-b', text: 'Third Normal Form (3NF) but not BCNF' },
+      { id: 'opt-c', text: 'Second Normal Form (2NF) only' },
+      { id: 'opt-d', text: 'First Normal Form (1NF) only' },
+    ],
+    correctOptionId: 'opt-a',
+    a: 1.75,
+    b: 0.4,
+    c: 0.25,
+    explanation:
+      'Candidate keys are {A}, {B}, {C}, and {D} because of the circular dependency cycle. Since the left-hand side of every functional dependency is a superkey, relation R is in BCNF.',
+    bloomLevel: 'ANALYZE',
+  },
+  {
+    id: 'cat-item-gate-coa-01',
+    text: 'A 5-stage instruction pipeline has stage latencies of 150 ps, 120 ps, 200 ps, 160 ps, and 140 ps. Inter-stage pipeline registers add an overhead delay of 10 ps. What is the clock cycle time and ideal speedup over an unpipelined implementation?',
+    subject: 'Computer Science',
+    topic: 'Computer Architecture & Pipelining',
+    options: [
+      { id: 'opt-a', text: 'Clock = 210 ps, Speedup ≈ 3.67' },
+      { id: 'opt-b', text: 'Clock = 200 ps, Speedup = 5.00' },
+      { id: 'opt-c', text: 'Clock = 154 ps, Speedup ≈ 4.90' },
+      { id: 'opt-d', text: 'Clock = 770 ps, Speedup = 1.00' },
+    ],
+    correctOptionId: 'opt-a',
+    a: 1.8,
+    b: 0.6,
+    c: 0.25,
+    explanation:
+      'Clock cycle is determined by the slowest stage plus register delay: T_clk = max(150, 120, 200, 160, 140) + 10 = 200 + 10 = 210 ps. Total unpipelined latency = 770 ps. Speedup = 770 / 210 ≈ 3.67.',
+    bloomLevel: 'APPLY',
+  },
+  {
+    id: 'cat-item-gate-dm-01',
+    text: 'What is the chromatic number of a cycle graph C_n when n is an odd integer >= 3?',
+    subject: 'Computer Science',
+    topic: 'Discrete Mathematics & Graph Theory',
+    options: [
+      { id: 'opt-a', text: '3' },
+      { id: 'opt-b', text: '2' },
+      { id: 'opt-c', text: 'n' },
+      { id: 'opt-d', text: 'n - 1' },
+    ],
+    correctOptionId: 'opt-a',
+    a: 1.5,
+    b: -0.3,
+    c: 0.25,
+    explanation:
+      'Even cycles are bipartite with chromatic number 2. Odd cycles contain an odd-length cycle so they are not bipartite; 3 colors are necessary and sufficient.',
     bloomLevel: 'UNDERSTAND',
   },
 ]

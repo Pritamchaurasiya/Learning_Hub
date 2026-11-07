@@ -111,7 +111,8 @@ class TestSessionManager:
         # Server-authoritative time check for timed tests (with 60s grace period)
         if attempt.test.time_limit_minutes and attempt.started_at:
             elapsed = (timezone.now() - attempt.started_at).total_seconds()
-            max_allowed = (attempt.test.time_limit_minutes * 60) + 60
+            ext_secs = (attempt.metadata or {}).get('time_extension_seconds', 0)
+            max_allowed = (attempt.test.time_limit_minutes * 60) + ext_secs + 60
             if elapsed > max_allowed and attempt.mode in ['mock', 'contest', 'timed_challenge']:
                 attempt.status = 'expired'
                 attempt.save(update_fields=['status'])
@@ -285,7 +286,15 @@ class TestSessionManager:
             attempt.save(update_fields=['total_marks'])
 
         # Calculate final score
-        score = max(0, total_obtained - total_negative)
+        # In competitive exams (JEE/GATE), negative marking can yield a negative net score
+        # unless negative marking is disabled or clamped.
+        net_score = total_obtained - total_negative
+        exam_allows_negative = getattr(getattr(test, 'exam', None), 'allow_negative_score', True)
+        test_allows_negative = getattr(test, 'allow_negative_score', True)
+        if test.negative_marks_per_question > 0 and exam_allows_negative and test_allows_negative:
+            score = net_score
+        else:
+            score = max(0.0, net_score)
         percentage = (score / attempt.total_marks * 100) if attempt.total_marks > 0 else 0
 
         # Update attempt
@@ -295,11 +304,13 @@ class TestSessionManager:
         attempt.status = 'submitted'
         attempt.submitted_at = timezone.now()
         actual_server_elapsed = max(0, int((attempt.submitted_at - attempt.started_at).total_seconds())) if attempt.started_at else 0
-        time_limit_secs = (test.time_limit_minutes or 0) * 60
-        if time_limit_secs > 0:
+        ext_secs = (attempt.metadata or {}).get('time_extension_seconds', 0)
+        time_limit_secs = ((test.time_limit_minutes or 0) * 60) + ext_secs
+        if time_taken_seconds is not None and int(time_taken_seconds) >= 0:
+            val = int(time_taken_seconds)
+            attempt.time_taken_seconds = min(val, time_limit_secs) if time_limit_secs > 0 else val
+        elif time_limit_secs > 0:
             attempt.time_taken_seconds = min(actual_server_elapsed, time_limit_secs)
-        elif time_taken_seconds is not None:
-            attempt.time_taken_seconds = min(int(time_taken_seconds), actual_server_elapsed)
         else:
             attempt.time_taken_seconds = actual_server_elapsed
         attempt.save()
@@ -457,7 +468,8 @@ class TestSessionManager:
             return False
 
         elapsed = (timezone.now() - attempt.started_at).total_seconds()
-        time_limit = attempt.test.time_limit_minutes * 60
+        ext_secs = (attempt.metadata or {}).get('time_extension_seconds', 0)
+        time_limit = (attempt.test.time_limit_minutes * 60) + ext_secs
 
         if elapsed >= time_limit:
             logger.info(f"Attempt {attempt.id} timed out after {elapsed}s")
@@ -613,7 +625,8 @@ class TestSessionManager:
             'percentage': attempt.percentage,
             'passed': attempt.passed,
             'time_taken': attempt.time_taken_seconds,
-            'time_limit': attempt.test.time_limit_minutes * 60,
+            'time_limit': (attempt.test.time_limit_minutes * 60) + (attempt.metadata or {}).get('time_extension_seconds', 0),
+            'time_extension_seconds': (attempt.metadata or {}).get('time_extension_seconds', 0),
             'correct_count': attempt.correct_count,
             'incorrect_count': attempt.incorrect_count,
             'unanswered_count': unanswered,
@@ -836,7 +849,13 @@ class TestSessionManager:
             derived = TestQuestion.objects.filter(test=test).aggregate(total=Sum('marks'))['total'] or 0
             attempt.total_marks = derived
 
-        final_score = max(0.0, total_obtained - total_negative)
+        net_score = total_obtained - total_negative
+        exam_allows_negative = getattr(getattr(test, 'exam', None), 'allow_negative_score', True)
+        test_allows_negative = getattr(test, 'allow_negative_score', True)
+        if getattr(test, 'negative_marks_per_question', 0.0) > 0 and exam_allows_negative and test_allows_negative:
+            final_score = net_score
+        else:
+            final_score = max(0.0, net_score)
         percentage = (final_score / attempt.total_marks * 100.0) if attempt.total_marks > 0 else 0.0
 
         attempt.score = round(final_score, 2)

@@ -35,9 +35,7 @@ export const SEO: React.FC<SEOProps> = ({
       : 'https://learninghub.app'
 
   const currentPath =
-    typeof window !== 'undefined' && window.location.pathname
-      ? window.location.pathname
-      : '/'
+    typeof window !== 'undefined' && window.location.pathname ? window.location.pathname : '/'
 
   const canonicalUrl = canonical || `${currentOrigin}${currentPath}`
   const pageUrl = url || canonicalUrl
@@ -61,9 +59,7 @@ export const SEO: React.FC<SEOProps> = ({
       <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
 
       {/* Google Search Console Verification */}
-      {googleVerification && (
-        <meta name="google-site-verification" content={googleVerification} />
-      )}
+      {googleVerification && <meta name="google-site-verification" content={googleVerification} />}
 
       {/* Open Graph / Facebook / LinkedIn / WhatsApp */}
       <meta property="og:type" content={type} />
@@ -88,11 +84,7 @@ export const SEO: React.FC<SEOProps> = ({
       <meta name="twitter:image:alt" content="LearningHub - Engineering & Practice Platform" />
 
       {/* Schema.org JSON-LD Structured Data */}
-      {jsonLd && (
-        <script type="application/ld+json">
-          {JSON.stringify(jsonLd)}
-        </script>
-      )}
+      {jsonLd && <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>}
     </Helmet>
   )
 }

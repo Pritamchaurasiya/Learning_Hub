@@ -67,7 +67,11 @@ export class GroqAdapter implements IAIAgent {
     }
     this.apiKey = key
     this.defaultModel = model ?? process.env.GROQ_MODEL ?? 'deepseek-r1-distill-llama-70b'
-    this.baseUrl = (baseUrl ?? process.env.GROQ_BASE_URL ?? 'https://api.groq.com/openai/v1').replace(/\/$/, '')
+    this.baseUrl = (
+      baseUrl ??
+      process.env.GROQ_BASE_URL ??
+      'https://api.groq.com/openai/v1'
+    ).replace(/\/$/, '')
   }
 
   private async withRetry<T>(operation: () => Promise<T>, operationName: string): Promise<T> {
@@ -138,7 +142,9 @@ export class GroqAdapter implements IAIAgent {
       }
     }
 
-    throw lastError || new Error(`[GroqAdapter] ${operationName} failed after ${MAX_RETRIES} retries`)
+    throw (
+      lastError || new Error(`[GroqAdapter] ${operationName} failed after ${MAX_RETRIES} retries`)
+    )
   }
 
   private async postChat(body: Record<string, unknown>): Promise<Response> {
@@ -185,7 +191,10 @@ export class GroqAdapter implements IAIAgent {
     }, 'generateText')
   }
 
-  async generateChat(messages: AIMessage[], options?: AIProviderOptions): Promise<AIGenerationResult> {
+  async generateChat(
+    messages: AIMessage[],
+    options?: AIProviderOptions
+  ): Promise<AIGenerationResult> {
     return this.withRetry(async () => {
       const startTime = Date.now()
       const model = options?.model || this.defaultModel
@@ -216,7 +225,8 @@ export class GroqAdapter implements IAIAgent {
       const model = options?.model || this.defaultModel
       const systemInstruction: AIMessage = {
         role: 'system',
-        content: 'You are a precise JSON generator. Output only valid raw JSON. Do not include Markdown blocks, markdown fences, or conversational filler.',
+        content:
+          'You are a precise JSON generator. Output only valid raw JSON. Do not include Markdown blocks, markdown fences, or conversational filler.',
       }
 
       const res = await this.postChat({

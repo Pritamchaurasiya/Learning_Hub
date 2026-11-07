@@ -31,12 +31,15 @@ export const CountrySelectorModal: React.FC = () => {
   }
 
   const handleSelectAll = async () => {
-    await setCountry({
-      id: 'all',
-      name: 'Global / All Countries',
-      code: 'GLOBAL',
-      flagEmoji: '🌐',
-    }, 'manual')
+    await setCountry(
+      {
+        id: 'all',
+        name: 'Global / All Countries',
+        code: 'GLOBAL',
+        flagEmoji: '🌐',
+      },
+      'manual'
+    )
     closeCountrySelector()
   }
 
@@ -122,7 +125,8 @@ export const CountrySelectorModal: React.FC = () => {
             </button>
 
             {filteredCountries.map(country => {
-              const isSelected = activeCountry?.id === country.id || activeCountry?.code === country.code
+              const isSelected =
+                activeCountry?.id === country.id || activeCountry?.code === country.code
               return (
                 <button
                   key={country.id}
@@ -150,13 +154,12 @@ export const CountrySelectorModal: React.FC = () => {
                         {country.code === 'UK' && 'GCSE, A-Levels, BMAT, UCAT'}
                         {country.code === 'AU' && 'ATAR, UCAT ANZ, VCE, HSC'}
                         {country.code === 'CA' && 'OSSD, provincial diploma exams'}
-                        {!['IN', 'US', 'UK', 'AU', 'CA'].includes(country.code) && 'Standardized national exams'}
+                        {!['IN', 'US', 'UK', 'AU', 'CA'].includes(country.code) &&
+                          'Standardized national exams'}
                       </div>
                     </div>
                   </div>
-                  {isSelected && (
-                    <Check className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  )}
+                  {isSelected && <Check className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
                 </button>
               )
             })}

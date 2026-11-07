@@ -13,16 +13,30 @@ export const BottleneckAnalysisCard: React.FC<BottleneckAnalysisCardProps> = ({
   classifiedClass,
   confidenceScore,
 }) => {
-  const getLimiterLabel = (limiter: ProfilerResultPayload['bottleneckAnalysis']['primaryLimiter']) => {
+  const getLimiterLabel = (
+    limiter: ProfilerResultPayload['bottleneckAnalysis']['primaryLimiter']
+  ) => {
     switch (limiter) {
       case 'CPU_COMPUTATIONAL':
-        return { label: 'CPU Instruction Bound', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' }
+        return {
+          label: 'CPU Instruction Bound',
+          color: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
+        }
       case 'MEMORY_BANDWIDTH':
-        return { label: 'Memory Bus / Bandwidth Bound', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' }
+        return {
+          label: 'Memory Bus / Bandwidth Bound',
+          color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
+        }
       case 'ALLOCATION_OVERHEAD':
-        return { label: 'Heap GC Allocation Overhead', color: 'text-rose-400 bg-rose-500/10 border-rose-500/30' }
+        return {
+          label: 'Heap GC Allocation Overhead',
+          color: 'text-rose-400 bg-rose-500/10 border-rose-500/30',
+        }
       case 'CACHE_MISSES':
-        return { label: 'L1/L2 Cache Hierarchy Misses', color: 'text-purple-400 bg-purple-500/10 border-purple-500/30' }
+        return {
+          label: 'L1/L2 Cache Hierarchy Misses',
+          color: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
+        }
       default:
         return { label: 'Balanced Workload', color: 'text-slate-400 bg-slate-800 border-slate-700' }
     }
@@ -45,7 +59,9 @@ export const BottleneckAnalysisCard: React.FC<BottleneckAnalysisCardProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
-          <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold border ${limiterInfo.color}`}>
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-mono font-bold border ${limiterInfo.color}`}
+          >
             {limiterInfo.label}
           </span>
           <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-950 border border-slate-800">

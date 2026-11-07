@@ -1,8 +1,5 @@
 export type ZkCircuitType =
-  | 'SCORE_THRESHOLD'
-  | 'ELO_RANK_THRESHOLD'
-  | 'MASTERY_PERCENTILE'
-  | 'ANONYMOUS_MEMBERSHIP'
+  'SCORE_THRESHOLD' | 'ELO_RANK_THRESHOLD' | 'MASTERY_PERCENTILE' | 'ANONYMOUS_MEMBERSHIP'
 
 export interface ZkCircuitPreset {
   id: ZkCircuitType

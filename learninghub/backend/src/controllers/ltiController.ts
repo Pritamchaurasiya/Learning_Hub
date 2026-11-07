@@ -23,7 +23,9 @@ export class LtiController {
       const params: LtiOidcLoginParams = {
         iss: String(iss),
         login_hint: String(login_hint),
-        target_link_uri: String(target_link_uri || `${req.protocol}://${req.get('host')}/api/v1/lti/launch`),
+        target_link_uri: String(
+          target_link_uri || `${req.protocol}://${req.get('host')}/api/v1/lti/launch`
+        ),
         lti_message_hint: lti_message_hint ? String(lti_message_hint) : undefined,
         client_id: client_id ? String(client_id) : undefined,
         deployment_id: deployment_id ? String(deployment_id) : undefined,
@@ -56,7 +58,9 @@ export class LtiController {
       const { id_token, state } = req.body
 
       if (!state) {
-        res.status(400).json({ success: false, error: 'Missing mandatory state parameter in LTI launch' })
+        res
+          .status(400)
+          .json({ success: false, error: 'Missing mandatory state parameter in LTI launch' })
         return
       }
 
@@ -71,13 +75,17 @@ export class LtiController {
             claims = JSON.parse(id_token)
           }
         } catch {
-          res.status(400).json({ success: false, error: 'Invalid or undecodable id_token provided' })
+          res
+            .status(400)
+            .json({ success: false, error: 'Invalid or undecodable id_token provided' })
           return
         }
       } else if (typeof id_token === 'object' && id_token !== null) {
         claims = id_token
       } else {
-        res.status(400).json({ success: false, error: 'id_token must be a valid JWT or claim object' })
+        res
+          .status(400)
+          .json({ success: false, error: 'id_token must be a valid JWT or claim object' })
         return
       }
 
@@ -112,12 +120,20 @@ export class LtiController {
    */
   public static async passbackGrade(req: Request, res: Response): Promise<void> {
     try {
-      const { institutionId, lineItemUrl, studentLtiUserId, scoreGiven, scoreMaximum, comment } = req.body
+      const { institutionId, lineItemUrl, studentLtiUserId, scoreGiven, scoreMaximum, comment } =
+        req.body
 
-      if (!institutionId || !lineItemUrl || !studentLtiUserId || scoreGiven === undefined || scoreMaximum === undefined) {
+      if (
+        !institutionId ||
+        !lineItemUrl ||
+        !studentLtiUserId ||
+        scoreGiven === undefined ||
+        scoreMaximum === undefined
+      ) {
         res.status(400).json({
           success: false,
-          error: 'Missing required passback fields: institutionId, lineItemUrl, studentLtiUserId, scoreGiven, scoreMaximum',
+          error:
+            'Missing required passback fields: institutionId, lineItemUrl, studentLtiUserId, scoreGiven, scoreMaximum',
         })
         return
       }
@@ -208,7 +224,8 @@ export class LtiController {
       )
 
       // Step 2: Build Claims
-      const isInstructor = role.toLowerCase().includes('instructor') || role.toLowerCase().includes('admin')
+      const isInstructor =
+        role.toLowerCase().includes('instructor') || role.toLowerCase().includes('admin')
       const claims: LtiLaunchClaims = {
         iss: institution.issuer,
         sub: `usr_sim_${Date.now()}`,
@@ -219,7 +236,8 @@ export class LtiController {
         'https://purl.imsglobal.org/spec/lti/claim/message_type': 'LtiResourceLinkRequest',
         'https://purl.imsglobal.org/spec/lti/claim/version': '1.3.0',
         'https://purl.imsglobal.org/spec/lti/claim/deployment_id': institution.deploymentId,
-        'https://purl.imsglobal.org/spec/lti/claim/target_link_uri': 'https://learninghub.io/lti/launch',
+        'https://purl.imsglobal.org/spec/lti/claim/target_link_uri':
+          'https://learninghub.io/lti/launch',
         'https://purl.imsglobal.org/spec/lti/claim/resource_link': {
           id: 'res_link_sim_cbt_01',
           title: `${institution.name} Advanced CBT Diagnostic`,

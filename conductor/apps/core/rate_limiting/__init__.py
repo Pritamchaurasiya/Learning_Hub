@@ -11,6 +11,10 @@ from .distributed import (
     DistributedTokenBucketRateThrottle,
     rate_limit_token_bucket,
 )
+from .legacy import (
+    RateLimitMiddleware,
+    AdvancedRateLimitMiddleware,
+)
 
 __all__ = [
     "DistributedTokenBucketRateLimiter",
@@ -19,4 +23,6 @@ __all__ = [
     "RateLimitConfig",
     "DistributedTokenBucketRateThrottle",
     "rate_limit_token_bucket",
+    "RateLimitMiddleware",
+    "AdvancedRateLimitMiddleware",
 ]

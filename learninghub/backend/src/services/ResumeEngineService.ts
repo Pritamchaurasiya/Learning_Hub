@@ -140,7 +140,8 @@ export interface VerifiableResumePayload {
 }
 
 export class ResumeEngineService {
-  private secretKey: string = process.env.RESUME_SIGNING_SECRET || 'learninghub-verifiable-resume-hmac-salt-v1'
+  private secretKey: string =
+    process.env.RESUME_SIGNING_SECRET || 'learninghub-verifiable-resume-hmac-salt-v1'
 
   /**
    * Generates a tailored, ATS-optimized, cryptographically verifiable career resume.
@@ -160,13 +161,15 @@ export class ResumeEngineService {
       location: params.candidateProfile?.location || 'San Francisco, CA (Open to Remote)',
       githubUrl: params.candidateProfile?.githubUrl || 'https://github.com/alexmorgan-dev',
       linkedinUrl: params.candidateProfile?.linkedinUrl || 'https://linkedin.com/in/alexmorgan-dev',
-      portfolioUrl: params.candidateProfile?.portfolioUrl || 'https://learninghub.io/portfolio/alex-morgan',
+      portfolioUrl:
+        params.candidateProfile?.portfolioUrl || 'https://learninghub.io/portfolio/alex-morgan',
       didIdentifier:
         params.candidateProfile?.didIdentifier ||
         `did:polygon:0x${crypto.createHash('sha256').update(params.userId).digest('hex').substring(0, 40)}`,
     }
 
-    const telemetry: PlatformTelemetrySnapshot = params.telemetryOverride || this.getMockTelemetry(params.userId)
+    const telemetry: PlatformTelemetrySnapshot =
+      params.telemetryOverride || this.getMockTelemetry(params.userId)
     const summary = this.synthesizeExecutiveSummary(role, telemetry)
     const skillsMatrix = this.synthesizeSkillsMatrix(role, telemetry)
     const verifiedPlatformHighlights = this.synthesizePlatformHighlights(telemetry)
@@ -196,8 +199,14 @@ export class ResumeEngineService {
       generatedAt: new Date().toISOString().slice(0, 10),
     })
 
-    const canonicalDigestSha256 = crypto.createHash('sha256').update(rawContentForDigest).digest('hex')
-    const signatureHmac = crypto.createHmac('sha256', this.secretKey).update(canonicalDigestSha256).digest('hex')
+    const canonicalDigestSha256 = crypto
+      .createHash('sha256')
+      .update(rawContentForDigest)
+      .digest('hex')
+    const signatureHmac = crypto
+      .createHmac('sha256', this.secretKey)
+      .update(canonicalDigestSha256)
+      .digest('hex')
 
     const resumeId = `res-${crypto.createHash('md5').update(`${params.userId}-${role}`).digest('hex').substring(0, 12)}`
 
@@ -228,7 +237,10 @@ export class ResumeEngineService {
   /**
    * Verifies the authenticity of a resume digest and cryptographic signature.
    */
-  public verifyResumeDigest(digest: string, signature: string): {
+  public verifyResumeDigest(
+    digest: string,
+    signature: string
+  ): {
     isValid: boolean
     verifiedAt: string
     statusMessage: string
@@ -241,7 +253,10 @@ export class ResumeEngineService {
       }
     }
 
-    const expectedSignature = crypto.createHmac('sha256', this.secretKey).update(digest).digest('hex')
+    const expectedSignature = crypto
+      .createHmac('sha256', this.secretKey)
+      .update(digest)
+      .digest('hex')
     const sigBuf = Buffer.from(signature, 'hex')
     const expectedBuf = Buffer.from(expectedSignature, 'hex')
 
@@ -261,8 +276,10 @@ export class ResumeEngineService {
    * Formats resume into standardized ATS plain text parser string.
    */
   public formatATSPlainText(resume: VerifiableResumePayload): string {
-    const divider = '================================================================================'
-    const subDivider = '--------------------------------------------------------------------------------'
+    const divider =
+      '================================================================================'
+    const subDivider =
+      '--------------------------------------------------------------------------------'
 
     let text = `${resume.profile.fullName.toUpperCase()}\n`
     text += `${resume.roleTitle.toUpperCase()}\n`
@@ -420,7 +437,10 @@ export class ResumeEngineService {
     }
   }
 
-  private synthesizeExecutiveSummary(role: TargetRole, telemetry: PlatformTelemetrySnapshot): string {
+  private synthesizeExecutiveSummary(
+    role: TargetRole,
+    telemetry: PlatformTelemetrySnapshot
+  ): string {
     const elo = telemetry.duelRating?.elo || 2150
     const readiness = telemetry.bktMastery?.examReadinessScore || 94
     const percentile = telemetry.interviewSimulation?.highestPercentile || 98
@@ -440,9 +460,30 @@ export class ResumeEngineService {
 
   private synthesizeSkillsMatrix(role: TargetRole, telemetry: PlatformTelemetrySnapshot) {
     const defaultMatrix = {
-      languages: ['TypeScript', 'JavaScript (ES2024)', 'Python 3.12', 'SQL', 'Go', 'Rust / C++ (Basic)'],
-      frameworks: ['React 18 / Vite', 'Node.js / Express', 'Django / REST Framework', 'Tailwind CSS', 'Redux / Zustand', 'Prisma ORM'],
-      systemsAndCloud: ['PostgreSQL (Neon / pgvector)', 'Redis / BullMQ', 'Docker / Kubernetes', 'WebSockets (Socket.io)', 'AWS / S3', 'Nginx Reverse Proxy'],
+      languages: [
+        'TypeScript',
+        'JavaScript (ES2024)',
+        'Python 3.12',
+        'SQL',
+        'Go',
+        'Rust / C++ (Basic)',
+      ],
+      frameworks: [
+        'React 18 / Vite',
+        'Node.js / Express',
+        'Django / REST Framework',
+        'Tailwind CSS',
+        'Redux / Zustand',
+        'Prisma ORM',
+      ],
+      systemsAndCloud: [
+        'PostgreSQL (Neon / pgvector)',
+        'Redis / BullMQ',
+        'Docker / Kubernetes',
+        'WebSockets (Socket.io)',
+        'AWS / S3',
+        'Nginx Reverse Proxy',
+      ],
       algorithmicCompetencies: [
         'Bayesian Knowledge Tracing (BKT)',
         'Dynamic Programming & Bitmasking',
@@ -507,7 +548,10 @@ export class ResumeEngineService {
     return highlights
   }
 
-  private synthesizeProjects(role: TargetRole, telemetry: PlatformTelemetrySnapshot): ResumeProject[] {
+  private synthesizeProjects(
+    role: TargetRole,
+    telemetry: PlatformTelemetrySnapshot
+  ): ResumeProject[] {
     return [
       {
         id: 'proj-learning-arena',
@@ -578,7 +622,13 @@ export class ResumeEngineService {
         id: 'proj-did-credentials',
         title: 'Decentralized W3C Verifiable Credentials & Merkle Tree Proof Portal',
         role: 'Security & Core Engineer',
-        technologies: ['W3C DID', 'SHA-256 Merkle Trees', 'Polygon PoS', 'RFC 8785 Canonical JSON', 'Express'],
+        technologies: [
+          'W3C DID',
+          'SHA-256 Merkle Trees',
+          'Polygon PoS',
+          'RFC 8785 Canonical JSON',
+          'Express',
+        ],
         period: '2026 – Present',
         bulletPoints: [
           {
@@ -672,7 +722,10 @@ export class ResumeEngineService {
     ]
   }
 
-  private synthesizeCredentials(userId: string, telemetry: PlatformTelemetrySnapshot): ResumeCredentialItem[] {
+  private synthesizeCredentials(
+    userId: string,
+    telemetry: PlatformTelemetrySnapshot
+  ): ResumeCredentialItem[] {
     const creds: ResumeCredentialItem[] = [
       {
         id: 'cred-w3c-algo-mastery',
@@ -721,29 +774,68 @@ export class ResumeEngineService {
     ]
 
     const expectedKeywords: Record<TargetRole, string[]> = {
-      SYSTEMS_ARCHITECT: ['distributed systems', 'microservices', 'redis', 'kafka', 'latency', 'resilience', 'docker', 'throughput'],
-      ALGORITHM_ENGINEER: ['asymptotic', 'dynamic programming', 'complexity', 'graph algorithms', 'concurrency', 'data structures'],
-      FULL_STACK_LEAD: ['react', 'typescript', 'node.js', 'websockets', 'postgresql', 'testing', 'architecture', 'leadership'],
-      ML_DATA_ENGINEER: ['bayesian', 'inference', 'probabilistic', 'pipelines', 'python', 'analytics', 'vector'],
-      GENERAL_SOFTWARE_ENGINEER: ['apis', 'database', 'performance', 'testing', 'git', 'full stack', 'cloud'],
+      SYSTEMS_ARCHITECT: [
+        'distributed systems',
+        'microservices',
+        'redis',
+        'kafka',
+        'latency',
+        'resilience',
+        'docker',
+        'throughput',
+      ],
+      ALGORITHM_ENGINEER: [
+        'asymptotic',
+        'dynamic programming',
+        'complexity',
+        'graph algorithms',
+        'concurrency',
+        'data structures',
+      ],
+      FULL_STACK_LEAD: [
+        'react',
+        'typescript',
+        'node.js',
+        'websockets',
+        'postgresql',
+        'testing',
+        'architecture',
+        'leadership',
+      ],
+      ML_DATA_ENGINEER: [
+        'bayesian',
+        'inference',
+        'probabilistic',
+        'pipelines',
+        'python',
+        'analytics',
+        'vector',
+      ],
+      GENERAL_SOFTWARE_ENGINEER: [
+        'apis',
+        'database',
+        'performance',
+        'testing',
+        'git',
+        'full stack',
+        'cloud',
+      ],
     }
 
-    const allText = (
-      params.summary +
-      ' ' +
-      JSON.stringify(params.skillsMatrix) +
-      ' ' +
-      params.projects.flatMap(p => p.bulletPoints.map(b => b.text)).join(' ') +
-      ' ' +
-      params.experiences.flatMap(e => e.bulletPoints.map(b => b.text)).join(' ')
-    ).toLowerCase()
+    const allText = `${params.summary} ${JSON.stringify(params.skillsMatrix)} ${params.projects
+      .flatMap(p => p.bulletPoints.map(b => b.text))
+      .join(' ')} ${params.experiences
+      .flatMap(e => e.bulletPoints.map(b => b.text))
+      .join(' ')}`.toLowerCase()
 
     // 1. Quantified Metrics (target: >= 80% bullet points have numbers/metrics)
     const allBullets = [
       ...params.projects.flatMap(p => p.bulletPoints),
       ...params.experiences.flatMap(e => e.bulletPoints),
     ]
-    const quantifiedCount = allBullets.filter(b => /\d+%?|\$|ms|sub-/.test(b.text) || b.quantifiedMetric).length
+    const quantifiedCount = allBullets.filter(
+      b => /\d+%?|\$|ms|sub-/.test(b.text) || b.quantifiedMetric
+    ).length
     const quantifiedRatio = allBullets.length > 0 ? quantifiedCount / allBullets.length : 1
     const quantifiedScore = Math.min(25, Math.round(quantifiedRatio * 25))
 
@@ -766,12 +858,18 @@ export class ResumeEngineService {
         missingKeywords.push(kw)
       }
     }
-    const keywordScore = Math.min(25, Math.round((detectedKeywords.length / roleKeywords.length) * 25))
+    const keywordScore = Math.min(
+      25,
+      Math.round((detectedKeywords.length / roleKeywords.length) * 25)
+    )
 
     // 4. Formatting Compliance (clean standard sections)
     const formattingScore = 25 // standard compliant structure
 
-    const overallScore = Math.min(100, quantifiedScore + actionVerbsScore + keywordScore + formattingScore)
+    const overallScore = Math.min(
+      100,
+      quantifiedScore + actionVerbsScore + keywordScore + formattingScore
+    )
 
     let grade: 'A+' | 'A' | 'B+' | 'B' | 'C' = 'C'
     if (overallScore >= 95) grade = 'A+'
@@ -780,12 +878,22 @@ export class ResumeEngineService {
     else if (overallScore >= 70) grade = 'B'
 
     const actionableFeedback: string[] = []
-    if (quantifiedScore < 22) actionableFeedback.push('Add more percentage improvements or latency figures to bullet points.')
-    if (actionVerbsScore < 20) actionableFeedback.push('Start every experience bullet with a commanding action verb (e.g., Architected, Optimized).')
+    if (quantifiedScore < 22)
+      actionableFeedback.push(
+        'Add more percentage improvements or latency figures to bullet points.'
+      )
+    if (actionVerbsScore < 20)
+      actionableFeedback.push(
+        'Start every experience bullet with a commanding action verb (e.g., Architected, Optimized).'
+      )
     if (missingKeywords.length > 0) {
-      actionableFeedback.push(`Incorporate target role keywords: ${missingKeywords.slice(0, 3).join(', ')}.`)
+      actionableFeedback.push(
+        `Incorporate target role keywords: ${missingKeywords.slice(0, 3).join(', ')}.`
+      )
     } else {
-      actionableFeedback.push('Exceptional ATS optimization: All primary industry keywords matched.')
+      actionableFeedback.push(
+        'Exceptional ATS optimization: All primary industry keywords matched.'
+      )
     }
 
     return {
@@ -1034,7 +1142,10 @@ export class ResumeEngineService {
       if (linkedinMatch) profile.linkedinUrl = linkedinMatch[0]
 
       // Heuristic extraction for headline / skills
-      const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+      const lines = text
+        .split('\n')
+        .map(l => l.trim())
+        .filter(Boolean)
       if (lines.length > 0 && !profile.fullName) {
         profile.fullName = lines[0]
       }
@@ -1044,9 +1155,25 @@ export class ResumeEngineService {
 
       // Match common engineering skills from text
       const skillKeywords = [
-        'TypeScript', 'JavaScript', 'Python', 'Go', 'Rust', 'React', 'Node.js',
-        'Next.js', 'PostgreSQL', 'Redis', 'Docker', 'Kubernetes', 'AWS', 'GraphQL',
-        'Kafka', 'CI/CD', 'Machine Learning', 'PyTorch', 'Distributed Systems'
+        'TypeScript',
+        'JavaScript',
+        'Python',
+        'Go',
+        'Rust',
+        'React',
+        'Node.js',
+        'Next.js',
+        'PostgreSQL',
+        'Redis',
+        'Docker',
+        'Kubernetes',
+        'AWS',
+        'GraphQL',
+        'Kafka',
+        'CI/CD',
+        'Machine Learning',
+        'PyTorch',
+        'Distributed Systems',
       ]
       for (const kw of skillKeywords) {
         if (text.toLowerCase().includes(kw.toLowerCase()) && !importedSkills.includes(kw)) {
@@ -1056,7 +1183,9 @@ export class ResumeEngineService {
     }
 
     if (importedSkills.length > 0) {
-      importedHighlights.push(`Enriched with ${importedSkills.length} LinkedIn verified skill competencies`)
+      importedHighlights.push(
+        `Enriched with ${importedSkills.length} LinkedIn verified skill competencies`
+      )
     }
 
     return {
@@ -1098,4 +1227,3 @@ export class ResumeEngineService {
 }
 
 export const resumeEngineService = new ResumeEngineService()
-

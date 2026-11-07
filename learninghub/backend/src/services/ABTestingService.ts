@@ -118,7 +118,10 @@ export class ABTestingService {
       logger.info('[ABTestingService] Experiment created', { experimentId: experiment.id })
       return experiment
     } catch (error) {
-      logger.error('[ABTestingService] Create experiment failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[ABTestingService] Create experiment failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       throw new Error('Failed to create experiment')
     }
   }
@@ -136,14 +139,8 @@ export class ABTestingService {
         where: {
           status: 'running',
           trafficAllocation: { gt: 0 },
-          OR: [
-            { startDate: { lte: new Date() } },
-            { startDate: null },
-          ],
-          AND: [
-            { endDate: { gte: new Date() } },
-            { endDate: null },
-          ],
+          OR: [{ startDate: { lte: new Date() } }, { startDate: null }],
+          AND: [{ endDate: { gte: new Date() } }, { endDate: null }],
         },
         include: { variants: true },
         orderBy: { createdAt: 'desc' },
@@ -152,7 +149,7 @@ export class ABTestingService {
       // Filter by traffic allocation using consistent hashing
       const eligibleExperiments = experiments.filter((exp: any) => {
         const hash = this.getDeterministicHash(`${exp.id}:${userId}`)
-        return (hash % 100) < exp.trafficAllocation
+        return hash % 100 < exp.trafficAllocation
       })
 
       // Assign variants for eligible experiments
@@ -166,7 +163,10 @@ export class ABTestingService {
       await cacheService.set(`experiments:user:${userId}`, assignedExperiments, 300)
       return assignedExperiments as any
     } catch (error) {
-      logger.error('[ABTestingService] Get user experiments failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[ABTestingService] Get user experiments failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       throw new Error('Failed to get user experiments')
     }
   }
@@ -195,7 +195,10 @@ export class ABTestingService {
   /**
    * Get user's assigned variant for an experiment
    */
-  static async getUserVariant(userId: string, experimentId: string): Promise<ExperimentVariant | null> {
+  static async getUserVariant(
+    userId: string,
+    experimentId: string
+  ): Promise<ExperimentVariant | null> {
     const experiment = await prisma.experiment.findUnique({
       where: { id: experimentId },
       include: { variants: true },
@@ -207,7 +210,11 @@ export class ABTestingService {
     })
 
     if (assignment) {
-      return (assignment as any).variant || experiment.variants.find((v: any) => v.id === assignment.variantId) || null
+      return (
+        (assignment as any).variant ||
+        experiment.variants.find((v: any) => v.id === assignment.variantId) ||
+        null
+      )
     }
 
     // Assign new variant
@@ -247,7 +254,10 @@ export class ABTestingService {
       // Invalidate results cache
       await cacheService.delete(`experiment:results:${data.experimentId}`)
     } catch (error) {
-      logger.error('[ABTestingService] Record event failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[ABTestingService] Record event failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
     }
   }
 
@@ -272,11 +282,14 @@ export class ABTestingService {
       })
 
       // Group events by variant
-      const variantData = new Map<string, {
-        participants: Set<string>
-        conversions: number
-        totalValue: number
-      }>()
+      const variantData = new Map<
+        string,
+        {
+          participants: Set<string>
+          conversions: number
+          totalValue: number
+        }
+      >()
 
       for (const event of events) {
         const variantKey = event.variant || (event as any).variantId
@@ -293,7 +306,11 @@ export class ABTestingService {
 
       const variantResults: VariantResult[] = []
       for (const variant of experiment.variants) {
-        const data = variantData.get(variant.id) || { participants: new Set(), conversions: 0, totalValue: 0 }
+        const data = variantData.get(variant.id) || {
+          participants: new Set(),
+          conversions: 0,
+          totalValue: 0,
+        }
         const participants = data.participants.size
         const conversions = data.conversions
         const conversionRate = participants > 0 ? conversions / participants : 0
@@ -307,10 +324,16 @@ export class ABTestingService {
         let isSignificant = false
 
         if (!isControl && controlVariant) {
-          const controlData = variantData.get(controlVariant.id) || { participants: new Set(), conversions: 0, totalValue: 0 }
+          const controlData = variantData.get(controlVariant.id) || {
+            participants: new Set(),
+            conversions: 0,
+            totalValue: 0,
+          }
           isSignificant = this.isStatisticallySignificant(
-            conversions, participants,
-            controlData.conversions, controlData.participants.size
+            conversions,
+            participants,
+            controlData.conversions,
+            controlData.participants.size
           )
         }
 
@@ -327,13 +350,17 @@ export class ABTestingService {
       }
 
       // Determine overall significance and winner
-      const significantVariants = variantResults.filter((v: any) => v.isSignificant && v.variantId !== experiment.variants.find((cv: any) => cv.isControl)?.id)
+      const significantVariants = variantResults.filter(
+        (v: any) =>
+          v.isSignificant && v.variantId !== experiment.variants.find((cv: any) => cv.isControl)?.id
+      )
       let winner: string | undefined
       let significance: 'significant' | 'not_significant' | 'inconclusive' = 'inconclusive'
 
       if (significantVariants.length > 0) {
         significance = 'significant'
-        winner = significantVariants.sort((a, b) => b.conversionRate - a.conversionRate)[0].variantId
+        winner = significantVariants.sort((a, b) => b.conversionRate - a.conversionRate)[0]
+          .variantId
       } else if (variantResults.every((v: any) => v.participants > 30)) {
         significance = 'not_significant'
       }
@@ -349,7 +376,10 @@ export class ABTestingService {
       await cacheService.set(`experiment:results:${experimentId}`, results, 300)
       return results
     } catch (error) {
-      logger.error('[ABTestingService] Get experiment results failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[ABTestingService] Get experiment results failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       throw new Error('Failed to get experiment results')
     }
   }
@@ -357,25 +387,29 @@ export class ABTestingService {
   /**
    * Wilson score interval for binomial proportion confidence interval
    */
-  private static wilsonConfidenceInterval(conversions: number, participants: number): [number, number] {
+  private static wilsonConfidenceInterval(
+    conversions: number,
+    participants: number
+  ): [number, number] {
     if (participants === 0) return [0, 0]
     const p = conversions / participants
     const z = 1.96 // 95% confidence
     const denominator = 1 + 3.8416 / participants
     const center = (p + 1.9208 / participants) / (1 + 3.8416 / participants)
-    const halfWidth = (1.96 * Math.sqrt(p * (1 - p) / participants + 0.9604 / participants)) / (1 + 3.8416 / participants)
-    return [
-      Math.max(0, center - halfWidth),
-      Math.min(1, center + halfWidth)
-    ]
+    const halfWidth =
+      (1.96 * Math.sqrt((p * (1 - p)) / participants + 0.9604 / participants)) /
+      (1 + 3.8416 / participants)
+    return [Math.max(0, center - halfWidth), Math.min(1, center + halfWidth)]
   }
 
   /**
    * Chi-square test for statistical significance
    */
   private static isStatisticallySignificant(
-    conversionsA: number, participantsA: number,
-    conversionsB: number, participantsB: number
+    conversionsA: number,
+    participantsA: number,
+    conversionsB: number,
+    participantsB: number
   ): boolean {
     if (participantsA < 30 || participantsB < 30) return false
 
@@ -444,7 +478,10 @@ export class ABTestingService {
   /**
    * Update experiment
    */
-  static async updateExperiment(experimentId: string, data: Partial<Experiment>): Promise<Experiment> {
+  static async updateExperiment(
+    experimentId: string,
+    data: Partial<Experiment>
+  ): Promise<Experiment> {
     const { variants, ...updateData } = data
     const experiment = await prisma.experiment.update({
       where: { id: experimentId },
@@ -458,7 +495,12 @@ export class ABTestingService {
   /**
    * Track conversion event for user's assigned variant
    */
-  static async trackConversion(userId: string, experimentId: string, eventName: string, value?: number): Promise<void> {
+  static async trackConversion(
+    userId: string,
+    experimentId: string,
+    eventName: string,
+    value?: number
+  ): Promise<void> {
     const variant = await this.getUserVariant(userId, experimentId)
     if (variant) {
       await this.recordEvent({

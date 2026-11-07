@@ -49,15 +49,11 @@ export const TestSectionTabBar: FC<TestSectionTabBarProps> = ({
     const canNavigate = !isSecLocked || section.allow_backward_navigation !== false
 
     if (!canNavigate) {
-      onWarning?.(
-        `🔒 Section "${section.title}" is locked. Backward navigation is disabled.`
-      )
+      onWarning?.(`🔒 Section "${section.title}" is locked. Backward navigation is disabled.`)
       return
     }
 
-    const firstIndex = questions.findIndex(
-      q => (q.section_id || q.sectionId) === section.id
-    )
+    const firstIndex = questions.findIndex(q => (q.section_id || q.sectionId) === section.id)
     onSelectSection(section.id, firstIndex !== -1 ? firstIndex : undefined)
   }
 

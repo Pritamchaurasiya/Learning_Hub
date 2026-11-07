@@ -124,8 +124,13 @@ const EXAM_BLUEPRINTS: Record<
             title: 'Process Synchronization & Semaphores',
             difficulty: 'INTERMEDIATE',
             hours: 8,
-            keyConcepts: ['Peterson Solution', 'Counting Semaphores', 'Deadlock Coffman Conditions'],
-            formulaLatex: '\\text{Banker\'s Algorithm: } \\text{Need} = \\text{Max} - \\text{Allocation}',
+            keyConcepts: [
+              'Peterson Solution',
+              'Counting Semaphores',
+              'Deadlock Coffman Conditions',
+            ],
+            formulaLatex:
+              "\\text{Banker's Algorithm: } \\text{Need} = \\text{Max} - \\text{Allocation}",
           },
           {
             title: 'Virtual Memory & Page Replacement',
@@ -150,8 +155,9 @@ const EXAM_BLUEPRINTS: Record<
             title: 'Context-Free Languages & Turing Decidability',
             difficulty: 'ADVANCED',
             hours: 10,
-            keyConcepts: ['Pushdown Automata', 'Post Correspondence Problem', 'Rice\'s Theorem'],
-            formulaLatex: 'A_{TM} = \\{ \\langle M, w \\rangle \\mid M \\text{ accepts } w \\} \\text{ is undecidable}',
+            keyConcepts: ['Pushdown Automata', 'Post Correspondence Problem', "Rice's Theorem"],
+            formulaLatex:
+              'A_{TM} = \\{ \\langle M, w \\rangle \\mid M \\text{ accepts } w \\} \\text{ is undecidable}',
           },
         ],
       },
@@ -167,14 +173,19 @@ const EXAM_BLUEPRINTS: Record<
             title: 'Rotational Dynamics & Rigid Body Mechanics',
             difficulty: 'ADVANCED',
             hours: 14,
-            keyConcepts: ['Moment of Inertia Tensor', 'Rolling Without Slipping', 'Angular Momentum Conservation'],
-            formulaLatex: '\\tau_{\\text{ext}} = \\frac{d\\vec{L}}{dt}, \\quad E_k = \\frac{1}{2}mv_{cm}^2 + \\frac{1}{2}I_{cm}\\omega^2',
+            keyConcepts: [
+              'Moment of Inertia Tensor',
+              'Rolling Without Slipping',
+              'Angular Momentum Conservation',
+            ],
+            formulaLatex:
+              '\\tau_{\\text{ext}} = \\frac{d\\vec{L}}{dt}, \\quad E_k = \\frac{1}{2}mv_{cm}^2 + \\frac{1}{2}I_{cm}\\omega^2',
           },
           {
             title: 'Electromagnetic Induction & Maxwell Equations',
             difficulty: 'ADVANCED',
             hours: 12,
-            keyConcepts: ['Faraday\'s Law', 'Lenz Law', 'Displacement Current', 'Self-Inductance'],
+            keyConcepts: ["Faraday's Law", 'Lenz Law', 'Displacement Current', 'Self-Inductance'],
             formulaLatex: '\\mathcal{E} = -\\frac{d\\Phi_B}{dt} = -L \\frac{di}{dt}',
           },
         ],
@@ -186,14 +197,14 @@ const EXAM_BLUEPRINTS: Record<
             title: 'Differential Calculus & Mean Value Theorems',
             difficulty: 'INTERMEDIATE',
             hours: 10,
-            keyConcepts: ['Rolle\'s Theorem', 'Lagrange MVT', 'L\'Hopital Limits', 'Monotonicity'],
-            formulaLatex: 'f\'(c) = \\frac{f(b) - f(a)}{b - a}, \\quad c \\in (a, b)',
+            keyConcepts: ["Rolle's Theorem", 'Lagrange MVT', "L'Hopital Limits", 'Monotonicity'],
+            formulaLatex: "f'(c) = \\frac{f(b) - f(a)}{b - a}, \\quad c \\in (a, b)",
           },
           {
             title: 'Integral Calculus & Definite Integrals',
             difficulty: 'ADVANCED',
             hours: 14,
-            keyConcepts: ['King\'s Property', 'Leibniz Integral Rule', 'Areas Under Curves'],
+            keyConcepts: ["King's Property", 'Leibniz Integral Rule', 'Areas Under Curves'],
             formulaLatex: '\\int_a^b f(x)dx = \\int_a^b f(a + b - x)dx',
           },
         ],
@@ -218,14 +229,21 @@ const EXAM_BLUEPRINTS: Record<
             difficulty: 'INTERMEDIATE',
             hours: 8,
             keyConcepts: ['SQS FIFO & Standard', 'SNS Fan-out Pattern', 'EventBridge Routing'],
-            formulaLatex: '\\text{Visibility Timeout} \\ge 6 \\times \\text{Lambda Function Timeout}',
+            formulaLatex:
+              '\\text{Visibility Timeout} \\ge 6 \\times \\text{Lambda Function Timeout}',
           },
           {
             title: 'Disaster Recovery Strategies',
             difficulty: 'ADVANCED',
             hours: 8,
-            keyConcepts: ['Backup & Restore', 'Pilot Light', 'Warm Standby', 'Multi-Region Active-Active'],
-            formulaLatex: '\\text{RTO} \\text{ (Recovery Time)}, \\quad \\text{RPO} \\text{ (Recovery Point)}',
+            keyConcepts: [
+              'Backup & Restore',
+              'Pilot Light',
+              'Warm Standby',
+              'Multi-Region Active-Active',
+            ],
+            formulaLatex:
+              '\\text{RTO} \\text{ (Recovery Time)}, \\quad \\text{RPO} \\text{ (Recovery Point)}',
           },
         ],
       },
@@ -290,7 +308,8 @@ export class CurriculumService {
           estimatedHours: t.hours,
           keyConcepts: t.keyConcepts,
           formulaLatex: t.formulaLatex,
-          practiceQuestionCount: t.difficulty === 'ADVANCED' ? 25 : t.difficulty === 'INTERMEDIATE' ? 18 : 12,
+          practiceQuestionCount:
+            t.difficulty === 'ADVANCED' ? 25 : t.difficulty === 'INTERMEDIATE' ? 18 : 12,
         })
       }
     }
@@ -299,8 +318,12 @@ export class CurriculumService {
     if (params.weakAreas && params.weakAreas.length > 0) {
       const lowerWeak = params.weakAreas.map(w => w.toLowerCase())
       allTopics.sort((a, b) => {
-        const aWeak = lowerWeak.some(w => a.title.toLowerCase().includes(w) || a.subject.toLowerCase().includes(w))
-        const bWeak = lowerWeak.some(w => b.title.toLowerCase().includes(w) || b.subject.toLowerCase().includes(w))
+        const aWeak = lowerWeak.some(
+          w => a.title.toLowerCase().includes(w) || a.subject.toLowerCase().includes(w)
+        )
+        const bWeak = lowerWeak.some(
+          w => b.title.toLowerCase().includes(w) || b.subject.toLowerCase().includes(w)
+        )
         if (aWeak && !bWeak) return -1
         if (!aWeak && bWeak) return 1
         return 0
@@ -353,7 +376,11 @@ export class CurriculumService {
               subject: 'All Subjects Combined',
               difficulty: 'ADVANCED',
               estimatedHours: weeklyHours,
-              keyConcepts: ['Full-Length Simulated Timing', 'Error Log Categorization', 'Exam Strategy'],
+              keyConcepts: [
+                'Full-Length Simulated Timing',
+                'Error Log Categorization',
+                'Exam Strategy',
+              ],
               practiceQuestionCount: 50,
             },
           ],
@@ -421,7 +448,9 @@ export class CurriculumService {
     const cacheKey = cacheService.curriculumKey(userId)
     await cacheService.set(cacheKey, curriculum, 86400 * 7) // 7 days TTL
 
-    logger.info(`[CurriculumService] Synthesized curriculum for user=${userId}, exam=${examKey}, weeks=${horizonWeeks}`)
+    logger.info(
+      `[CurriculumService] Synthesized curriculum for user=${userId}, exam=${examKey}, weeks=${horizonWeeks}`
+    )
     return curriculum
   }
 
@@ -437,7 +466,11 @@ export class CurriculumService {
     }
 
     // Fallback: Synthesize a default GATE CS / Software Systems track
-    return this.synthesizeCurriculum(userId, { examTarget: 'GATE_CS', targetHorizonWeeks: 12, weeklyHours: 15 })
+    return this.synthesizeCurriculum(userId, {
+      examTarget: 'GATE_CS',
+      targetHorizonWeeks: 12,
+      weeklyHours: 15,
+    })
   }
 
   /**

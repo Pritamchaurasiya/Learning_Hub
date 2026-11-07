@@ -74,7 +74,9 @@ export const GpuHardwareMeter: React.FC<GpuHardwareMeterProps> = ({
             disabled={isBenchmarking}
             className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 transition flex items-center gap-1.5 disabled:opacity-50"
           >
-            <Activity className={`w-3.5 h-3.5 text-emerald-400 ${isBenchmarking ? 'animate-spin' : ''}`} />
+            <Activity
+              className={`w-3.5 h-3.5 text-emerald-400 ${isBenchmarking ? 'animate-spin' : ''}`}
+            />
             {isBenchmarking ? 'Benchmarking...' : 'Test Speed'}
           </button>
         </div>
@@ -87,7 +89,7 @@ export const GpuHardwareMeter: React.FC<GpuHardwareMeterProps> = ({
             <HardDrive className="w-3 h-3" /> Estimated VRAM
           </div>
           <div className="text-sm font-bold text-white mt-0.5">
-            ~{Math.round(gpuInfo.vramEstimateMB / 1024 * 10) / 10} GB
+            ~{Math.round((gpuInfo.vramEstimateMB / 1024) * 10) / 10} GB
           </div>
         </div>
 

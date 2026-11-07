@@ -56,7 +56,8 @@ export const AssessmentIntegrityScorecard: React.FC<AssessmentIntegrityScorecard
           badgeClass: 'bg-blue-500/20 text-blue-400 border-blue-500/40',
           textColor: 'text-blue-400',
           borderColor: 'border-blue-500/30',
-          description: 'Minor focus loss or window blur events noted. Within acceptable natural variance.',
+          description:
+            'Minor focus loss or window blur events noted. Within acceptable natural variance.',
         }
       case 'MODERATE_RISK':
         return {
@@ -92,19 +93,25 @@ export const AssessmentIntegrityScorecard: React.FC<AssessmentIntegrityScorecard
   }
 
   return (
-    <Card className={`p-6 sm:p-8 bg-slate-900/90 dark:bg-slate-950 border ${config.borderColor} text-white shadow-xl rounded-2xl relative overflow-hidden`}>
+    <Card
+      className={`p-6 sm:p-8 bg-slate-900/90 dark:bg-slate-950 border ${config.borderColor} text-white shadow-xl rounded-2xl relative overflow-hidden`}
+    >
       {/* Background glow accent */}
       <div className="absolute top-0 right-0 -mt-8 -mr-8 w-44 h-44 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
-          <div className={`p-3 rounded-2xl bg-slate-800/80 border ${config.borderColor} ${config.textColor}`}>
+          <div
+            className={`p-3 rounded-2xl bg-slate-800/80 border ${config.borderColor} ${config.textColor}`}
+          >
             <IconComponent className="w-6 h-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-xl font-bold text-white tracking-tight">Assessment Integrity Shield</h3>
+              <h3 className="text-xl font-bold text-white tracking-tight">
+                Assessment Integrity Shield
+              </h3>
               <Badge className={config.badgeClass}>{config.label}</Badge>
             </div>
             <p className="text-xs text-slate-400 mt-1">{config.description}</p>
@@ -132,7 +139,9 @@ export const AssessmentIntegrityScorecard: React.FC<AssessmentIntegrityScorecard
           <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider block mb-1">
             Tab Switches
           </span>
-          <span className={`text-base font-bold font-mono ${tabSwitches > 0 ? 'text-amber-400' : 'text-slate-200'}`}>
+          <span
+            className={`text-base font-bold font-mono ${tabSwitches > 0 ? 'text-amber-400' : 'text-slate-200'}`}
+          >
             {tabSwitches}
           </span>
         </div>
@@ -141,7 +150,9 @@ export const AssessmentIntegrityScorecard: React.FC<AssessmentIntegrityScorecard
           <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider block mb-1">
             Focus Losses
           </span>
-          <span className={`text-base font-bold font-mono ${windowBlurs > 0 ? 'text-amber-400' : 'text-slate-200'}`}>
+          <span
+            className={`text-base font-bold font-mono ${windowBlurs > 0 ? 'text-amber-400' : 'text-slate-200'}`}
+          >
             {windowBlurs}
           </span>
         </div>
@@ -150,7 +161,9 @@ export const AssessmentIntegrityScorecard: React.FC<AssessmentIntegrityScorecard
           <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider block mb-1">
             Clipboard
           </span>
-          <span className={`text-base font-bold font-mono ${copyPastes > 0 ? 'text-rose-400' : 'text-slate-200'}`}>
+          <span
+            className={`text-base font-bold font-mono ${copyPastes > 0 ? 'text-rose-400' : 'text-slate-200'}`}
+          >
             {copyPastes}
           </span>
         </div>
@@ -159,7 +172,9 @@ export const AssessmentIntegrityScorecard: React.FC<AssessmentIntegrityScorecard
           <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider block mb-1">
             DevTools
           </span>
-          <span className={`text-base font-bold font-mono ${devTools > 0 ? 'text-rose-400' : 'text-slate-200'}`}>
+          <span
+            className={`text-base font-bold font-mono ${devTools > 0 ? 'text-rose-400' : 'text-slate-200'}`}
+          >
             {devTools}
           </span>
         </div>
@@ -168,7 +183,9 @@ export const AssessmentIntegrityScorecard: React.FC<AssessmentIntegrityScorecard
           <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider block mb-1">
             Fullscreen Exits
           </span>
-          <span className={`text-base font-bold font-mono ${fullscreenExits > 0 ? 'text-amber-400' : 'text-slate-200'}`}>
+          <span
+            className={`text-base font-bold font-mono ${fullscreenExits > 0 ? 'text-amber-400' : 'text-slate-200'}`}
+          >
             {fullscreenExits}
           </span>
         </div>
@@ -236,7 +253,9 @@ export const AssessmentIntegrityScorecard: React.FC<AssessmentIntegrityScorecard
                     <Eye className="w-3 h-3 text-cyan-400" />
                     {type}
                   </span>
-                  <span className="text-slate-400 font-mono">{count} event{count > 1 ? 's' : ''}</span>
+                  <span className="text-slate-400 font-mono">
+                    {count} event{count > 1 ? 's' : ''}
+                  </span>
                 </div>
               ))}
             </div>

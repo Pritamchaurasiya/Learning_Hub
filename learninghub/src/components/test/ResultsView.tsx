@@ -19,6 +19,7 @@ import {
   Loader2,
   Download,
   Layers,
+  Search,
 } from 'lucide-react'
 import { Card } from '../ui/Card'
 import { Badge } from '../ui/Badge'
@@ -29,6 +30,7 @@ import { CompetitiveScoringBreakdownCard } from './CompetitiveScoringBreakdownCa
 import { HistoricalShiftBenchmarkCard } from './HistoricalShiftBenchmarkCard'
 import { PeerPercentileBellCurve } from './PeerPercentileBellCurve'
 import { SpeedAccuracyScatterChart } from './SpeedAccuracyScatterChart'
+import { PacingEfficiencyCard } from './PacingEfficiencyCard'
 import { SocraticReviewModal } from './SocraticReviewModal'
 import { MistakeRemediationModal } from './MistakeRemediationModal'
 import { analyzeMistakes } from '../../services/remediationService'
@@ -320,6 +322,56 @@ export const ResultsView = memo(
     const [isExportingScorecard, setIsExportingScorecard] = useState(false)
     const [isExportingToSrs, setIsExportingToSrs] = useState(false)
     const [srsAddedIds, setSrsAddedIds] = useState<Set<string>>(new Set())
+    const [reviewFilter, setReviewFilter] = useState<
+      'all' | 'incorrect' | 'correct' | 'unattempted' | 'bookmarked'
+    >('all')
+    const [reviewSearchQuery, setReviewSearchQuery] = useState('')
+
+    const questionResultsWithIndex = useMemo(() => {
+      return (result.question_results || []).map((q, idx) => ({ ...q, originalIndex: idx }))
+    }, [result.question_results])
+
+    const filterCounts = useMemo(() => {
+      const all = questionResultsWithIndex.length
+      const incorrect = questionResultsWithIndex.filter(q => q.is_correct === false).length
+      const correct = questionResultsWithIndex.filter(q => q.is_correct === true).length
+      const unattempted = questionResultsWithIndex.filter(
+        q =>
+          (!q.selected_options || q.selected_options.length === 0 || !q.selected_options[0]?.id) &&
+          !q.text_answer
+      ).length
+      const bookmarked = questionResultsWithIndex.filter(q =>
+        bookmarkedIds.has(q.question_id || `q-${q.originalIndex}`)
+      ).length
+      return { all, incorrect, correct, unattempted, bookmarked }
+    }, [questionResultsWithIndex, bookmarkedIds])
+
+    const filteredQuestions = useMemo(() => {
+      return questionResultsWithIndex.filter(q => {
+        if (reviewFilter === 'incorrect' && q.is_correct !== false) return false
+        if (reviewFilter === 'correct' && q.is_correct !== true) return false
+        if (reviewFilter === 'unattempted') {
+          const hasAnswer =
+            (q.selected_options && q.selected_options.length > 0 && q.selected_options[0]?.id) ||
+            q.text_answer
+          if (hasAnswer) return false
+        }
+        if (reviewFilter === 'bookmarked') {
+          const qKey = q.question_id || `q-${q.originalIndex}`
+          if (!bookmarkedIds.has(qKey)) return false
+        }
+
+        if (reviewSearchQuery.trim()) {
+          const query = reviewSearchQuery.toLowerCase()
+          const qText = (q.question_text || '').toLowerCase()
+          const topic = (q.topic || '').toLowerCase()
+          const expl = (q.explanation || '').toLowerCase()
+          return qText.includes(query) || topic.includes(query) || expl.includes(query)
+        }
+
+        return true
+      })
+    }, [questionResultsWithIndex, reviewFilter, reviewSearchQuery, bookmarkedIds])
 
     const handleExportMistakesToSrs = async () => {
       if (isExportingToSrs) return
@@ -732,6 +784,38 @@ export const ResultsView = memo(
         {/* Speed vs. Accuracy 4-Quadrant Diagnostic */}
         <SpeedAccuracyScatterChart />
 
+        {/* Pacing Efficiency & Time Trap Diagnostic */}
+        <PacingEfficiencyCard
+          questionResults={result.question_results}
+          totalTimeTaken={result.time_taken}
+          onJumpToQuestion={idx => {
+            setReviewFilter('all')
+            setTimeout(() => {
+              const el = document.getElementById(`review-question-${idx}`)
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                el.classList.add(
+                  'ring-2',
+                  'ring-amber-500',
+                  'dark:ring-amber-400',
+                  'rounded-2xl',
+                  'p-2',
+                  'transition-all'
+                )
+                setTimeout(() => {
+                  el.classList.remove(
+                    'ring-2',
+                    'ring-amber-500',
+                    'dark:ring-amber-400',
+                    'rounded-2xl',
+                    'p-2'
+                  )
+                }, 2500)
+              }
+            }, 60)
+          }}
+        />
+
         {/* Assessment Integrity Shield Card */}
         <AssessmentIntegrityScorecard result={result} />
 
@@ -833,209 +917,346 @@ export const ResultsView = memo(
         {/* Review Section */}
         {result.question_results && result.question_results.length > 0 && (
           <Card className="p-4 sm:p-6 md:p-8">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-              Detailed Review
-            </h3>
-            <div className="space-y-8">
-              {result.question_results.map((q, idx) => (
-                <div
-                  key={q.question_id || idx}
-                  className="border-b border-gray-100 dark:border-gray-800 pb-8 last:border-0"
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  Detailed Solution & Review
+                  <Badge className="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
+                    {filteredQuestions.length} of {questionResultsWithIndex.length}
+                  </Badge>
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Analyze every question with detailed solutions, KaTeX proofs & Socratic AI
+                  diagnostics.
+                </p>
+              </div>
+
+              {/* Search Filter */}
+              <div className="relative w-full md:w-64">
+                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={reviewSearchQuery}
+                  onChange={e => setReviewSearchQuery(e.target.value)}
+                  placeholder="Filter by keyword or topic..."
+                  className="w-full pl-9 pr-4 py-1.5 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Filter Buttons */}
+            <div className="flex flex-wrap items-center gap-2 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800">
+              {[
+                {
+                  id: 'all' as const,
+                  label: 'All Questions',
+                  count: filterCounts.all,
+                  color: 'border-slate-300 dark:border-slate-700',
+                },
+                {
+                  id: 'incorrect' as const,
+                  label: 'Incorrect Only',
+                  count: filterCounts.incorrect,
+                  color: 'text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800',
+                },
+                {
+                  id: 'correct' as const,
+                  label: 'Correct',
+                  count: filterCounts.correct,
+                  color:
+                    'text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800',
+                },
+                {
+                  id: 'unattempted' as const,
+                  label: 'Unattempted',
+                  count: filterCounts.unattempted,
+                  color:
+                    'text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-800',
+                },
+                {
+                  id: 'bookmarked' as const,
+                  label: 'Bookmarked',
+                  count: filterCounts.bookmarked,
+                  color:
+                    'text-purple-600 dark:text-purple-400 border-purple-300 dark:border-purple-800',
+                },
+              ].map(f => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setReviewFilter(f.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition flex items-center gap-1.5 ${
+                    reviewFilter === f.id
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                      : `bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 ${f.color} hover:bg-gray-50 dark:hover:bg-gray-700/60`
+                  }`}
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {idx + 1}
-                      </span>
-                      <MathRenderer
-                        text={q.question_text}
-                        className="text-lg font-medium text-gray-900 dark:text-white flex-1"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleBookmark(q.question_id || `q-${idx}`)}
-                        aria-label={
-                          bookmarkedIds.has(q.question_id || `q-${idx}`)
-                            ? `Remove bookmark for question ${idx + 1}`
-                            : `Bookmark question ${idx + 1} for revision`
-                        }
-                        aria-pressed={bookmarkedIds.has(q.question_id || `q-${idx}`)}
-                        className={`p-1.5 rounded-lg border transition-colors ${
-                          bookmarkedIds.has(q.question_id || `q-${idx}`)
-                            ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700'
-                            : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'
-                        }`}
-                        title={
-                          bookmarkedIds.has(q.question_id || `q-${idx}`)
-                            ? 'Remove bookmark'
-                            : 'Bookmark question for revision'
-                        }
-                      >
-                        <Bookmark className="w-4 h-4" aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAddQuestionToSrs(q, idx)}
-                        disabled={srsAddedIds.has(q.question_id || `q-${idx}`)}
-                        aria-label={`Add question ${idx + 1} to flashcard revision deck`}
-                        className={`p-1.5 rounded-lg border transition-colors ${
-                          srsAddedIds.has(q.question_id || `q-${idx}`)
-                            ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
-                            : 'text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'
-                        }`}
-                        title={
-                          srsAddedIds.has(q.question_id || `q-${idx}`)
-                            ? 'Added to Spaced Repetition Revision Deck'
-                            : 'Add to Spaced Repetition Revision Deck'
-                        }
-                      >
-                        {srsAddedIds.has(q.question_id || `q-${idx}`) ? (
-                          <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                        ) : (
-                          <Layers className="w-4 h-4" />
-                        )}
-                      </button>
-                      <Badge
-                        className={
-                          q.is_correct === null
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
-                            : q.is_correct
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                        }
-                      >
-                        {q.is_correct === null
-                          ? 'Grading...'
-                          : q.is_correct
-                            ? 'Correct'
-                            : 'Incorrect'}
-                      </Badge>
-                    </div>
-                  </div>
+                  <span>{f.label}</span>
+                  <span
+                    className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                      reviewFilter === f.id
+                        ? 'bg-blue-700 text-white'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                    }`}
+                  >
+                    {f.count}
+                  </span>
+                </button>
+              ))}
+            </div>
 
-                  <div className="pl-11 space-y-4">
-                    {/* Time Spent & Trap Question Diagnostics */}
-                    {typeof q.time_spent === 'number' && q.time_spent > 0 && (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400 bg-gray-100 dark:bg-gray-800 px-2.5 py-0.5 rounded-full border border-gray-200 dark:border-gray-700 flex items-center gap-1">
-                          <Timer className="w-3 h-3 text-blue-500" />
-                          Time: {Math.floor(q.time_spent / 60)}m {q.time_spent % 60}s
+            {/* Quick Question Jump Palette */}
+            <div className="flex flex-wrap items-center gap-1.5 mb-6 p-3 rounded-xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800">
+              <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mr-1">
+                Jump to:
+              </span>
+              {questionResultsWithIndex.map(q => {
+                const isIncorrect = q.is_correct === false
+                const isCorrect = q.is_correct === true
+                return (
+                  <button
+                    key={q.originalIndex}
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById(`review-question-${q.originalIndex}`)
+                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }}
+                    className={`w-7 h-7 rounded-md text-xs font-mono font-bold flex items-center justify-center transition border ${
+                      isIncorrect
+                        ? 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800'
+                        : isCorrect
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
+                          : 'bg-gray-200 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'
+                    }`}
+                    title={`Question ${q.originalIndex + 1}: ${isCorrect ? 'Correct' : isIncorrect ? 'Incorrect' : 'Unanswered'}`}
+                  >
+                    {q.originalIndex + 1}
+                  </button>
+                )
+              })}
+            </div>
+
+            {filteredQuestions.length === 0 ? (
+              <div className="py-12 text-center text-gray-500">
+                <p className="text-sm">No questions match the current filter or search criteria.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReviewFilter('all')
+                    setReviewSearchQuery('')
+                  }}
+                  className="mt-3 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Clear filters
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {filteredQuestions.map(q => (
+                  <div
+                    id={`review-question-${q.originalIndex}`}
+                    key={q.question_id || q.originalIndex}
+                    className="border-b border-gray-100 dark:border-gray-800 pb-8 last:border-0"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {q.originalIndex + 1}
                         </span>
-                        {!q.is_correct && q.time_spent >= 90 && (
-                          <span className="text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-800/60 flex items-center gap-1">
-                            <AlertTriangle className="w-3 h-3 text-rose-500" />
-                            Time Trap: Exceeded 90s with negative marks (-1). Recommended to skip
-                            initially.
-                          </span>
-                        )}
-                        {q.is_correct && q.time_spent <= 45 && (
-                          <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1">
-                            <Sparkles className="w-3 h-3 text-emerald-500" />
-                            Topper Pace: Solved accurately in under 45s
-                          </span>
-                        )}
+                        <MathRenderer
+                          text={q.question_text}
+                          className="text-lg font-medium text-gray-900 dark:text-white flex-1"
+                        />
                       </div>
-                    )}
-                    {/* Options */}
-                    {(() => {
-                      const isSubjective =
-                        String(q.question_type || '').toLowerCase() === 'subjective'
-                      return (
-                        <div className="space-y-2">
-                          <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 flex flex-col sm:flex-row sm:items-start gap-3">
-                            <div className="mt-0.5">
-                              <span className="text-sm font-medium text-gray-500 whitespace-nowrap">
-                                Your Answer:
-                              </span>
-                            </div>
-                            <div className="text-gray-700 dark:text-gray-300">
-                              {isSubjective ? (
-                                <MathRenderer text={q.text_answer ?? 'No answer provided'} />
-                              ) : (
-                                <MathRenderer text={q.selected_options?.[0]?.text || 'No answer'} />
-                              )}
-                            </div>
-                          </div>
-
-                          {!q.is_correct && !isSubjective && (
-                            <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/30 flex items-start gap-3">
-                              <div className="mt-0.5">
-                                <span className="text-sm font-medium text-green-600 dark:text-green-500">
-                                  Correct Answer:
-                                </span>
-                              </div>
-                              <div className="text-gray-700 dark:text-gray-300">
-                                <MathRenderer
-                                  text={q.correct_options?.[0]?.text || 'Not available'}
-                                />
-                              </div>
-                            </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleToggleBookmark(q.question_id || `q-${q.originalIndex}`)
+                          }
+                          aria-label={
+                            bookmarkedIds.has(q.question_id || `q-${q.originalIndex}`)
+                              ? `Remove bookmark for question ${q.originalIndex + 1}`
+                              : `Bookmark question ${q.originalIndex + 1} for revision`
+                          }
+                          aria-pressed={bookmarkedIds.has(q.question_id || `q-${q.originalIndex}`)}
+                          className={`p-1.5 rounded-lg border transition-colors ${
+                            bookmarkedIds.has(q.question_id || `q-${q.originalIndex}`)
+                              ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700'
+                              : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'
+                          }`}
+                          title={
+                            bookmarkedIds.has(q.question_id || `q-${q.originalIndex}`)
+                              ? 'Remove bookmark'
+                              : 'Bookmark question for revision'
+                          }
+                        >
+                          <Bookmark className="w-4 h-4" aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAddQuestionToSrs(q, q.originalIndex)}
+                          disabled={srsAddedIds.has(q.question_id || `q-${q.originalIndex}`)}
+                          aria-label={`Add question ${q.originalIndex + 1} to flashcard revision deck`}
+                          className={`p-1.5 rounded-lg border transition-colors ${
+                            srsAddedIds.has(q.question_id || `q-${q.originalIndex}`)
+                              ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
+                              : 'text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'
+                          }`}
+                          title={
+                            srsAddedIds.has(q.question_id || `q-${q.originalIndex}`)
+                              ? 'Added to Spaced Repetition Revision Deck'
+                              : 'Add to Spaced Repetition Revision Deck'
+                          }
+                        >
+                          {srsAddedIds.has(q.question_id || `q-${q.originalIndex}`) ? (
+                            <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                          ) : (
+                            <Layers className="w-4 h-4" />
                           )}
-
-                          {isSubjective && (
-                            <SubjectiveRubricScorecard
-                              rawFeedback={q.ai_feedback}
-                              marksObtained={q.marks_obtained}
-                              totalPoints={(q as { points?: number }).points ?? 10}
-                              onGrade={() => handleGradeSubjective(q.question_id, q.text_answer)}
-                              isGrading={gradingQuestionId === q.question_id}
-                            />
-                          )}
-                        </div>
-                      )
-                    })()}
-
-                    {/* Confidence */}
-                    {q.confidence && (
-                      <div className="flex items-center gap-2 text-sm mt-4">
-                        <span className="text-gray-500">Confidence level:</span>
+                        </button>
                         <Badge
                           className={
-                            q.confidence === 'HIGH'
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                              : q.confidence === 'MEDIUM'
-                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                            q.is_correct === null
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                              : q.is_correct
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                                 : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                           }
                         >
-                          {q.confidence}
+                          {q.is_correct === null
+                            ? 'Grading...'
+                            : q.is_correct
+                              ? 'Correct'
+                              : 'Incorrect'}
                         </Badge>
                       </div>
-                    )}
+                    </div>
 
-                    {/* Explanation */}
-                    {q.explanation && (
-                      <div className="mt-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 text-sm">
-                        <span className="font-semibold block mb-1">Explanation:</span>
-                        <MathRenderer text={q.explanation} />
-                      </div>
-                    )}
+                    <div className="pl-11 space-y-4">
+                      {/* Time Spent & Trap Question Diagnostics */}
+                      {typeof q.time_spent === 'number' && q.time_spent > 0 && (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400 bg-gray-100 dark:bg-gray-800 px-2.5 py-0.5 rounded-full border border-gray-200 dark:border-gray-700 flex items-center gap-1">
+                            <Timer className="w-3 h-3 text-blue-500" />
+                            Time: {Math.floor(q.time_spent / 60)}m {q.time_spent % 60}s
+                          </span>
+                          {!q.is_correct && q.time_spent >= 90 && (
+                            <span className="text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-800/60 flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3 text-rose-500" />
+                              Time Trap: Exceeded 90s with negative marks (-1). Recommended to skip
+                              initially.
+                            </span>
+                          )}
+                          {q.is_correct && q.time_spent <= 45 && (
+                            <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1">
+                              <Sparkles className="w-3 h-3 text-emerald-500" />
+                              Topper Pace: Solved accurately in under 45s
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {/* Options */}
+                      {(() => {
+                        const isSubjective =
+                          String(q.question_type || '').toLowerCase() === 'subjective'
+                        return (
+                          <div className="space-y-2">
+                            <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 flex flex-col sm:flex-row sm:items-start gap-3">
+                              <div className="mt-0.5">
+                                <span className="text-sm font-medium text-gray-500 whitespace-nowrap">
+                                  Your Answer:
+                                </span>
+                              </div>
+                              <div className="text-gray-700 dark:text-gray-300">
+                                {isSubjective ? (
+                                  <MathRenderer text={q.text_answer ?? 'No answer provided'} />
+                                ) : (
+                                  <MathRenderer
+                                    text={q.selected_options?.[0]?.text || 'No answer'}
+                                  />
+                                )}
+                              </div>
+                            </div>
 
-                    {/* Socratic AI Diagnostic Trigger */}
-                    {q.is_correct === false && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setSocraticQuestion({
-                            questionText: q.question_text,
-                            selectedOptionText:
-                              q.selected_options?.[0]?.text || 'Your selected choice',
-                            correctOptionText:
-                              q.correct_options?.[0]?.text || 'Verified correct answer',
-                          })
-                        }
-                        className="mt-3 px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
-                      >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>Diagnose Misconception with Socratic AI</span>
-                      </button>
-                    )}
+                            {!q.is_correct && !isSubjective && (
+                              <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/30 flex items-start gap-3">
+                                <div className="mt-0.5">
+                                  <span className="text-sm font-medium text-green-600 dark:text-green-500">
+                                    Correct Answer:
+                                  </span>
+                                </div>
+                                <div className="text-gray-700 dark:text-gray-300">
+                                  <MathRenderer
+                                    text={q.correct_options?.[0]?.text || 'Not available'}
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {isSubjective && (
+                              <SubjectiveRubricScorecard
+                                rawFeedback={q.ai_feedback}
+                                marksObtained={q.marks_obtained}
+                                totalPoints={(q as { points?: number }).points ?? 10}
+                                onGrade={() => handleGradeSubjective(q.question_id, q.text_answer)}
+                                isGrading={gradingQuestionId === q.question_id}
+                              />
+                            )}
+                          </div>
+                        )
+                      })()}
+
+                      {/* Confidence */}
+                      {q.confidence && (
+                        <div className="flex items-center gap-2 text-sm mt-4">
+                          <span className="text-gray-500">Confidence level:</span>
+                          <Badge
+                            className={
+                              q.confidence === 'HIGH'
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                : q.confidence === 'MEDIUM'
+                                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                  : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                            }
+                          >
+                            {q.confidence}
+                          </Badge>
+                        </div>
+                      )}
+
+                      {/* Explanation */}
+                      {q.explanation && (
+                        <div className="mt-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 text-sm">
+                          <span className="font-semibold block mb-1">Explanation:</span>
+                          <MathRenderer text={q.explanation} />
+                        </div>
+                      )}
+
+                      {/* Socratic AI Diagnostic Trigger */}
+                      {q.is_correct === false && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSocraticQuestion({
+                              questionText: q.question_text,
+                              selectedOptionText:
+                                q.selected_options?.[0]?.text || 'Your selected choice',
+                              correctOptionText:
+                                q.correct_options?.[0]?.text || 'Verified correct answer',
+                            })
+                          }
+                          className="mt-3 px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Diagnose Misconception with Socratic AI</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </Card>
         )}
 

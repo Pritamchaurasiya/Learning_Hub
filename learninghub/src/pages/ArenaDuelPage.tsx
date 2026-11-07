@@ -273,7 +273,8 @@ export default function ArenaDuelPage() {
           category: 'Array / Hash Table',
           description:
             'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.',
-          constraints: '2 <= nums.length <= 10^4\n-10^9 <= nums[i] <= 10^9\n-10^9 <= target <= 10^9',
+          constraints:
+            '2 <= nums.length <= 10^4\n-10^9 <= nums[i] <= 10^9\n-10^9 <= target <= 10^9',
           starterCode: {
             javascript:
               'function twoSum(nums, target) {\n  // Write your O(n) solution here\n  const map = new Map();\n  for (let i = 0; i < nums.length; i++) {\n    const complement = target - nums[i];\n    if (map.has(complement)) {\n      return [map.get(complement), i];\n    }\n    map.set(nums[i], i);\n  }\n  return [];\n}',
@@ -351,7 +352,9 @@ export default function ArenaDuelPage() {
         totalTests: match.problem.testCases.length,
         keystrokes: keystrokeCountRef.current,
       })
-      duelService.updateProgress(match.id, userTestsPassed, keystrokeCountRef.current).catch(() => {})
+      duelService
+        .updateProgress(match.id, userTestsPassed, keystrokeCountRef.current)
+        .catch(() => {})
     }
   }
 
@@ -672,20 +675,22 @@ export default function ArenaDuelPage() {
 
                 {/* Category Selector */}
                 <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-                  {['ANY', 'Arrays & Hash Tables', 'Stack & Strings', 'Dynamic Programming'].map(cat => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      disabled={isQueueing}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all ${
-                        selectedCategory === cat
-                          ? 'border-rose-500 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'
-                          : 'border-gray-200 dark:border-gray-800 text-gray-500 hover:border-gray-300'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
+                  {['ANY', 'Arrays & Hash Tables', 'Stack & Strings', 'Dynamic Programming'].map(
+                    cat => (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        disabled={isQueueing}
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                          selectedCategory === cat
+                            ? 'border-rose-500 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'
+                            : 'border-gray-200 dark:border-gray-800 text-gray-500 hover:border-gray-300'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    )
+                  )}
                 </div>
 
                 {/* Queue Buttons / Radar Searching Status */}
@@ -1048,7 +1053,9 @@ export default function ArenaDuelPage() {
             </div>
 
             {/* Right Column: Opponent Telemetry HUD & Emotes */}
-            <div className={`space-y-6 ${duelMobileTab === 'telemetry' ? 'block' : 'hidden lg:block'}`}>
+            <div
+              className={`space-y-6 ${duelMobileTab === 'telemetry' ? 'block' : 'hidden lg:block'}`}
+            >
               {/* Opponent Live Telemetry Card */}
               <Card className="p-6 border-none shadow-xl bg-white dark:bg-gray-900 space-y-6">
                 <div className="flex items-center justify-between">
@@ -1066,7 +1073,8 @@ export default function ArenaDuelPage() {
                     {opponentState?.username || 'Opponent'}
                   </h3>
                   <span className="inline-block px-3 py-1 rounded-full text-xs font-black bg-purple-50 dark:bg-purple-900/30 text-purple-500">
-                    Status: {opponentStatus} {opponentKeystrokes > 0 ? `(${opponentKeystrokes} keys)` : ''}
+                    Status: {opponentStatus}{' '}
+                    {opponentKeystrokes > 0 ? `(${opponentKeystrokes} keys)` : ''}
                   </span>
                 </div>
 
@@ -1315,7 +1323,9 @@ export default function ArenaDuelPage() {
                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold mb-6 shadow-inner"
               >
                 <Swords className="w-4 h-4 text-rose-400 animate-pulse" />
-                <span>Duel Challenge: {match.problem.title} ({match.problem.difficulty})</span>
+                <span>
+                  Duel Challenge: {match.problem.title} ({match.problem.difficulty})
+                </span>
               </motion.div>
 
               {/* Matchup Showcase: Player 1 VS Player 2 */}
@@ -1334,9 +1344,13 @@ export default function ArenaDuelPage() {
                     {playerProfile.username}
                   </h3>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <span className="text-xs font-semibold text-indigo-400">{playerProfile.tier}</span>
+                    <span className="text-xs font-semibold text-indigo-400">
+                      {playerProfile.tier}
+                    </span>
                     <span className="text-xs text-gray-400">•</span>
-                    <span className="text-xs font-black text-rose-400">{playerProfile.elo} Elo</span>
+                    <span className="text-xs font-black text-rose-400">
+                      {playerProfile.elo} Elo
+                    </span>
                   </div>
                   <div className="mt-3 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     Win: +26 Elo
@@ -1378,9 +1392,13 @@ export default function ArenaDuelPage() {
                     {opponentState?.username || 'Opponent'}
                   </h3>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <span className="text-xs font-semibold text-rose-400">{opponentState?.tier || 'SILVER'}</span>
+                    <span className="text-xs font-semibold text-rose-400">
+                      {opponentState?.tier || 'SILVER'}
+                    </span>
                     <span className="text-xs text-gray-400">•</span>
-                    <span className="text-xs font-black text-amber-400">{opponentState?.elo || 1250} Elo</span>
+                    <span className="text-xs font-black text-amber-400">
+                      {opponentState?.elo || 1250} Elo
+                    </span>
                   </div>
                   <div className="mt-3 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">
                     Loss: -14 Elo

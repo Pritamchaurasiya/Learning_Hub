@@ -21,8 +21,8 @@ export const WasmTestResultsView: React.FC<WasmTestResultsViewProps> = ({ result
           isAccepted
             ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
             : result.status === 'TLE'
-            ? 'bg-amber-950/30 border-amber-500/40 text-amber-300'
-            : 'bg-rose-950/30 border-rose-500/40 text-rose-300'
+              ? 'bg-amber-950/30 border-amber-500/40 text-amber-300'
+              : 'bg-rose-950/30 border-rose-500/40 text-rose-300'
         }`}
       >
         <div className="flex items-center gap-2.5">
@@ -39,10 +39,10 @@ export const WasmTestResultsView: React.FC<WasmTestResultsViewProps> = ({ result
                 {isAccepted
                   ? 'All Sample Tests Passed'
                   : result.status === 'TLE'
-                  ? 'Time Limit Exceeded (TLE)'
-                  : result.status === 'RE'
-                  ? 'Runtime Error (RE)'
-                  : 'Wrong Answer (WA)'}
+                    ? 'Time Limit Exceeded (TLE)'
+                    : result.status === 'RE'
+                      ? 'Runtime Error (RE)'
+                      : 'Wrong Answer (WA)'}
               </span>
               <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-gray-900 border border-gray-700 text-gray-300">
                 <Zap className="w-3 h-3 text-amber-400" />
@@ -55,7 +55,10 @@ export const WasmTestResultsView: React.FC<WasmTestResultsViewProps> = ({ result
 
         {/* Runtime & Memory Telemetry */}
         <div className="flex items-center gap-3 self-end sm:self-center font-mono text-[11px] bg-gray-950/60 px-3 py-1.5 rounded-md border border-gray-800">
-          <span className="flex items-center gap-1 text-gray-300" title="Sub-millisecond execution time">
+          <span
+            className="flex items-center gap-1 text-gray-300"
+            title="Sub-millisecond execution time"
+          >
             <Clock className="w-3.5 h-3.5 text-blue-400" />
             {result.totalExecutionTimeMs} ms
           </span>

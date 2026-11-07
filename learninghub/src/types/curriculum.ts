@@ -1,9 +1,5 @@
 export type TargetExam =
-  | 'JEE_ADVANCED'
-  | 'GATE_CS'
-  | 'SYSTEM_DESIGN_DSA'
-  | 'SAT_DIGITAL'
-  | 'FULL_STACK_DEV'
+  'JEE_ADVANCED' | 'GATE_CS' | 'SYSTEM_DESIGN_DSA' | 'SAT_DIGITAL' | 'FULL_STACK_DEV'
 
 export type PacingMode = 'INTENSIVE' | 'BALANCED' | 'STEADY'
 
@@ -89,7 +85,8 @@ export const EXAM_REGISTRY: Record<TargetExam, ExamMeta> = {
     key: 'SYSTEM_DESIGN_DSA',
     name: 'FAANG / Staff Engineer DSA & Systems',
     badge: 'Tech Career',
-    description: 'High-yield LeetCode patterns, Dynamic Programming, and Scalable Distributed Systems',
+    description:
+      'High-yield LeetCode patterns, Dynamic Programming, and Scalable Distributed Systems',
     recommendedHours: 20,
     color: '#10B981', // emerald
   },
@@ -105,7 +102,8 @@ export const EXAM_REGISTRY: Record<TargetExam, ExamMeta> = {
     key: 'SAT_DIGITAL',
     name: 'Digital SAT 1500+ Track',
     badge: 'Undergrad Admissions',
-    description: 'Advanced algebra, coordinate geometry, data analysis & critical reading inference',
+    description:
+      'Advanced algebra, coordinate geometry, data analysis & critical reading inference',
     recommendedHours: 10,
     color: '#EC4899', // pink
   },

@@ -26,14 +26,19 @@ export interface DailyMomentumQuestWidgetProps {
 
 const getTodayKey = () => `lh_daily_quests_${new Date().toISOString().slice(0, 10)}`
 
-export function DailyMomentumQuestWidget({ weakTopic, onActionClick }: DailyMomentumQuestWidgetProps = {}) {
+export function DailyMomentumQuestWidget({
+  weakTopic,
+  onActionClick,
+}: DailyMomentumQuestWidgetProps = {}) {
   const navigate = useNavigate()
   const addToast = useStore(state => state.addToast)
 
   const defaultQuests: QuestItem[] = [
     {
       id: 'q-1',
-      title: weakTopic ? `Run 1 Adaptive Diagnostic Test (${weakTopic})` : 'Run 1 Adaptive Diagnostic Test',
+      title: weakTopic
+        ? `Run 1 Adaptive Diagnostic Test (${weakTopic})`
+        : 'Run 1 Adaptive Diagnostic Test',
       category: weakTopic ? 'Targeted AI Boost' : 'Assessment',
       xp: 75,
       completed: false,

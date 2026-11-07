@@ -1,9 +1,14 @@
-import type { BKTParameters, BKTUpdateResult, ExamReadinessBreakdown, ReadinessLevel } from '../types/bkt'
+import type {
+  BKTParameters,
+  BKTUpdateResult,
+  ExamReadinessBreakdown,
+  ReadinessLevel,
+} from '../types/bkt'
 
 export const DEFAULT_BKT_PARAMS: BKTParameters = {
   pL0: 0.15,
-  pT: 0.20,
-  pG: 0.20,
+  pT: 0.2,
+  pG: 0.2,
   pS: 0.08,
 }
 
@@ -64,7 +69,7 @@ export const bktService = {
     const rRate = Math.max(0, Math.min(100, retentionRate))
 
     const compositeScore = Math.round(
-      0.35 * sMastery + 0.30 * mScore + 0.20 * sAccuracy + 0.15 * rRate
+      0.35 * sMastery + 0.3 * mScore + 0.2 * sAccuracy + 0.15 * rRate
     )
 
     let readinessLevel: ReadinessLevel
@@ -91,16 +96,20 @@ export const bktService = {
     let recommendation: string
     switch (readinessLevel) {
       case 'ELITE':
-        recommendation = 'Ready for peak competition. Focus on timed high-difficulty edge cases and full mock stamina.'
+        recommendation =
+          'Ready for peak competition. Focus on timed high-difficulty edge cases and full mock stamina.'
         break
       case 'COMPETITIVE':
-        recommendation = 'Solid competitive foundation. Shore up speed-accuracy tradeoffs and schedule spaced reviews for older topics.'
+        recommendation =
+          'Solid competitive foundation. Shore up speed-accuracy tradeoffs and schedule spaced reviews for older topics.'
         break
       case 'DEVELOPING':
-        recommendation = 'Progressing well. Prioritize unlocking locked prerequisite nodes on your knowledge graph.'
+        recommendation =
+          'Progressing well. Prioritize unlocking locked prerequisite nodes on your knowledge graph.'
         break
       case 'NEEDS_REINFORCEMENT':
-        recommendation = 'Strengthen fundamentals through guided problem workspaces and daily spaced revision cards.'
+        recommendation =
+          'Strengthen fundamentals through guided problem workspaces and daily spaced revision cards.'
         break
     }
 

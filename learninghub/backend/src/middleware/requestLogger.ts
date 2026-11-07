@@ -40,7 +40,8 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction): 
 }
 
 // Request body size limiter middleware
-export const bodySizeLimiter = (maxSize: number = 10 * 1024 * 1024) => { // 10MB default
+export const bodySizeLimiter = (maxSize: number = 10 * 1024 * 1024) => {
+  // 10MB default
   return (req: Request, res: Response, next: NextFunction): void => {
     const contentLength = parseInt(req.headers['content-length'] || '0', 10)
     if (contentLength > maxSize) {
@@ -71,7 +72,14 @@ export const responseCompression = (req: Request, res: Response, next: NextFunct
   // Skip for already compressed content types
   const contentType = res.getHeader('Content-Type')
   if (contentType && typeof contentType === 'string') {
-    const compressedTypes = ['image/', 'video/', 'audio/', 'application/zip', 'application/gzip', 'application/x-gzip']
+    const compressedTypes = [
+      'image/',
+      'video/',
+      'audio/',
+      'application/zip',
+      'application/gzip',
+      'application/x-gzip',
+    ]
     if (compressedTypes.some(type => contentType.startsWith(type))) {
       return next()
     }

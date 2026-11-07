@@ -1,6 +1,6 @@
 """Serializers for exam taxonomy API."""
 from rest_framework import serializers
-from .models import Country, Exam, Subject, Topic
+from .models import Country, Exam, Subject, Topic, PYQ
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -150,4 +150,23 @@ class TopicListSerializer(serializers.ModelSerializer):
             'id', 'name', 'full_path', 'subject_name',
             'exam_code', 'exam_name', 'question_count',
             'avg_difficulty', 'is_active',
+        ]
+
+
+class PYQSerializer(serializers.ModelSerializer):
+    """Previous Year Question serializer for national/global competitive exams."""
+    exam_code = serializers.CharField(source='exam.code', read_only=True)
+    exam_name = serializers.CharField(source='exam.name', read_only=True)
+    subject_name = serializers.CharField(source='subject.name', read_only=True)
+    topic_name = serializers.CharField(source='topic.name', read_only=True, default='')
+
+    class Meta:
+        model = PYQ
+        fields = [
+            'id', 'exam', 'exam_code', 'exam_name',
+            'subject', 'subject_name', 'topic', 'topic_name',
+            'year', 'shift', 'paper_number', 'paper_code',
+            'exam_date', 'question_text', 'solution_text', 'difficulty',
+            'marks', 'source_metadata', 'is_verified',
+            'created_at', 'updated_at',
         ]

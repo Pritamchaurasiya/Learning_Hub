@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
   Calendar,
@@ -17,48 +17,48 @@ import {
   CheckCircle2,
   Share2,
   BarChart2,
-} from 'lucide-react';
-import { updatesService } from '../services/updatesService';
-import { UpdateCrossFeaturesWidget } from '../components/updates/UpdateCrossFeaturesWidget';
-import { UpdateReminderModal } from '../components/updates/UpdateReminderModal';
-import type { StudentUpdate, UpdateAnalyticsData } from '../types/updates';
+} from 'lucide-react'
+import { updatesService } from '../services/updatesService'
+import { UpdateCrossFeaturesWidget } from '../components/updates/UpdateCrossFeaturesWidget'
+import { UpdateReminderModal } from '../components/updates/UpdateReminderModal'
+import type { StudentUpdate, UpdateAnalyticsData } from '../types/updates'
 
 export const UpdateDetailsPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
 
-  const [update, setUpdate] = useState<StudentUpdate | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isBookmarked, setIsBookmarked] = useState(false);
-  const [reminderModalOpen, setReminderModalOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [now, setNow] = useState(Date.now());
-  const [analytics, setAnalytics] = useState<UpdateAnalyticsData | null>(null);
+  const [update, setUpdate] = useState<StudentUpdate | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [isBookmarked, setIsBookmarked] = useState(false)
+  const [reminderModalOpen, setReminderModalOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [now, setNow] = useState(Date.now())
+  const [analytics, setAnalytics] = useState<UpdateAnalyticsData | null>(null)
 
   // Dynamic real-time timer for live countdown updating
   useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 10000);
-    return () => clearInterval(timer);
-  }, []);
+    const timer = setInterval(() => setNow(Date.now()), 10000)
+    return () => clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     const fetchDetail = async () => {
-      if (!id) return;
+      if (!id) return
       try {
-        setLoading(true);
+        setLoading(true)
         if (typeof updatesService?.logEngagement === 'function') {
-          updatesService.logEngagement(id, 'CLICK_DETAIL').catch(() => {});
+          updatesService.logEngagement(id, 'CLICK_DETAIL').catch(() => {})
         }
-        const data = await updatesService.getUpdateById(id);
+        const data = await updatesService.getUpdateById(id)
         if (data) {
-          setUpdate(data);
-          setIsBookmarked(!!data.is_bookmarked);
+          setUpdate(data)
+          setIsBookmarked(!!data.is_bookmarked)
         }
         if (typeof updatesService?.getUpdateAnalytics === 'function') {
           try {
-            const analyticsData = await updatesService.getUpdateAnalytics(id);
+            const analyticsData = await updatesService.getUpdateAnalytics(id)
             if (analyticsData) {
-              setAnalytics(analyticsData);
+              setAnalytics(analyticsData)
             }
           } catch {
             // Analytics optional
@@ -67,46 +67,46 @@ export const UpdateDetailsPage: React.FC = () => {
       } catch {
         // Handled by service fallbacks
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchDetail();
-  }, [id]);
+    fetchDetail()
+  }, [id])
 
   const handleBookmarkToggle = async () => {
-    if (!update) return;
+    if (!update) return
     if (isBookmarked) {
-      await updatesService.removeBookmark(update.id);
-      setIsBookmarked(false);
+      await updatesService.removeBookmark(update.id)
+      setIsBookmarked(false)
     } else {
-      await updatesService.saveBookmark(update.id);
-      setIsBookmarked(true);
+      await updatesService.saveBookmark(update.id)
+      setIsBookmarked(true)
     }
-  };
+  }
 
   const handleShare = async () => {
-    const shareUrl = window.location.href;
+    const shareUrl = window.location.href
     if (navigator.share) {
       try {
         await navigator.share({
           title: update?.title || 'Student Update',
           text: update?.summary || '',
           url: shareUrl,
-        });
-        return;
+        })
+        return
       } catch {
         // Fallback to clipboard
       }
     }
-    navigator.clipboard?.writeText(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+    navigator.clipboard?.writeText(shareUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   const handleScheduleReminder = async (updateId: string, reminderType: string) => {
-    await updatesService.createReminder(updateId, reminderType);
-  };
+    await updatesService.createReminder(updateId, reminderType)
+  }
 
   if (loading) {
     return (
@@ -118,7 +118,7 @@ export const UpdateDetailsPage: React.FC = () => {
           <div className="h-96 bg-muted/40 rounded-2xl" />
         </div>
       </div>
-    );
+    )
   }
 
   if (!update) {
@@ -137,37 +137,38 @@ export const UpdateDetailsPage: React.FC = () => {
           Return to Updates Hub
         </button>
       </div>
-    );
+    )
   }
 
   // Dynamic real-time deadline calculation
-  const deadlineTime = update.deadline ? new Date(update.deadline).getTime() : null;
-  const diffMs = deadlineTime !== null ? deadlineTime - now : null;
-  const daysLeft = diffMs !== null ? Math.ceil(diffMs / (1000 * 60 * 60 * 24)) : null;
-  const hoursLeft = diffMs !== null ? Math.floor(diffMs / (1000 * 60 * 60)) : null;
-  const minutesRemainder = diffMs !== null ? Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60)) : null;
+  const deadlineTime = update.deadline ? new Date(update.deadline).getTime() : null
+  const diffMs = deadlineTime !== null ? deadlineTime - now : null
+  const daysLeft = diffMs !== null ? Math.ceil(diffMs / (1000 * 60 * 60 * 24)) : null
+  const hoursLeft = diffMs !== null ? Math.floor(diffMs / (1000 * 60 * 60)) : null
+  const minutesRemainder =
+    diffMs !== null ? Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60)) : null
 
-  let countdownBadge = '';
+  let countdownBadge = ''
   if (diffMs !== null) {
     if (diffMs <= 0) {
-      countdownBadge = 'Closed';
+      countdownBadge = 'Closed'
     } else if (daysLeft === 0) {
-      countdownBadge = `Due Today: ${hoursLeft}h ${minutesRemainder}m left`;
+      countdownBadge = `Due Today: ${hoursLeft}h ${minutesRemainder}m left`
     } else if (daysLeft === 1) {
-      countdownBadge = `1 day ${hoursLeft !== null ? hoursLeft % 24 : 0}h left`;
+      countdownBadge = `1 day ${hoursLeft !== null ? hoursLeft % 24 : 0}h left`
     } else {
-      countdownBadge = `${daysLeft} days remaining`;
+      countdownBadge = `${daysLeft} days remaining`
     }
   }
 
   // Verification and direct link flags
-  const isOfficiallyVerified = update.verification_status === 'VERIFIED';
+  const isOfficiallyVerified = update.verification_status === 'VERIFIED'
   const hasDirectPortalLink = Boolean(
     update.source_url &&
     (update.sub_category === 'EXAM_FORM' ||
       update.sub_category === 'RESULTS' ||
       (update.related_links && update.related_links.length > 0))
-  );
+  )
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
@@ -272,7 +273,8 @@ export const UpdateDetailsPage: React.FC = () => {
                 )}
                 {update.issuer_name && (
                   <span className="text-muted-foreground text-xs">
-                    Issued by: <strong className="text-foreground">{update.issuer_name}</strong> {update.issuer_role ? `(${update.issuer_role.replace(/_/g, ' ')})` : ''}
+                    Issued by: <strong className="text-foreground">{update.issuer_name}</strong>{' '}
+                    {update.issuer_role ? `(${update.issuer_role.replace(/_/g, ' ')})` : ''}
                   </span>
                 )}
                 {update.published_at && (
@@ -296,24 +298,42 @@ export const UpdateDetailsPage: React.FC = () => {
               <div className="rounded-2xl border border-border/60 bg-card/60 p-4 sm:p-5">
                 <div className="flex items-center gap-2 mb-3">
                   <BarChart2 className="w-4 h-4 text-indigo-500" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Notice Engagement & Read Telemetry</h3>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Notice Engagement & Read Telemetry
+                  </h3>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                   <div className="p-2.5 rounded-xl bg-muted/40 border border-border/40">
-                    <div className="text-[10px] text-muted-foreground uppercase font-semibold">Total Views</div>
-                    <div className="text-lg font-bold text-foreground mt-0.5">{analytics.impressions}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase font-semibold">
+                      Total Views
+                    </div>
+                    <div className="text-lg font-bold text-foreground mt-0.5">
+                      {analytics.impressions}
+                    </div>
                   </div>
                   <div className="p-2.5 rounded-xl bg-muted/40 border border-border/40">
-                    <div className="text-[10px] text-muted-foreground uppercase font-semibold">Full Reads</div>
-                    <div className="text-lg font-bold text-foreground mt-0.5">{analytics.detail_clicks}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase font-semibold">
+                      Full Reads
+                    </div>
+                    <div className="text-lg font-bold text-foreground mt-0.5">
+                      {analytics.detail_clicks}
+                    </div>
                   </div>
                   <div className="p-2.5 rounded-xl bg-muted/40 border border-border/40">
-                    <div className="text-[10px] text-muted-foreground uppercase font-semibold">Calendar Syncs</div>
-                    <div className="text-lg font-bold text-foreground mt-0.5">{analytics.calendar_exports}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase font-semibold">
+                      Calendar Syncs
+                    </div>
+                    <div className="text-lg font-bold text-foreground mt-0.5">
+                      {analytics.calendar_exports}
+                    </div>
                   </div>
                   <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase font-semibold">Read CTR</div>
-                    <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{analytics.click_through_rate}%</div>
+                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase font-semibold">
+                      Read CTR
+                    </div>
+                    <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                      {analytics.click_through_rate}%
+                    </div>
                   </div>
                 </div>
               </div>
@@ -351,8 +371,8 @@ export const UpdateDetailsPage: React.FC = () => {
                     {isOfficiallyVerified
                       ? 'Verified against official college circulars'
                       : update.verification_status === 'PENDING_REVIEW'
-                      ? 'Verification in progress by academic desk'
-                      : 'Unverified community report'}
+                        ? 'Verification in progress by academic desk'
+                        : 'Unverified community report'}
                   </span>
                 </div>
 
@@ -559,8 +579,7 @@ export const UpdateDetailsPage: React.FC = () => {
                   <div className="flex items-center justify-between pt-0.5">
                     <span className="text-muted-foreground">Issued by:</span>
                     <span className="text-foreground font-medium">
-                      {update.issuer_name}{' '}
-                      {update.issuer_role ? `(${update.issuer_role})` : ''}
+                      {update.issuer_name} {update.issuer_role ? `(${update.issuer_role})` : ''}
                     </span>
                   </div>
                 )}
@@ -578,5 +597,5 @@ export const UpdateDetailsPage: React.FC = () => {
         onConfirm={handleScheduleReminder}
       />
     </div>
-  );
-};
+  )
+}

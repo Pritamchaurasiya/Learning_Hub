@@ -118,5 +118,36 @@ describe('DuelEngine Elo & Arena Logic', () => {
         expect(leaderboard[i].elo).toBeGreaterThanOrEqual(leaderboard[i + 1].elo)
       }
     })
+    it('updates player heartbeat and preserves active match lease', () => {
+      const match = DuelEngine.spawnGhostMatch('hb-user', 'HeartbeatUser')
+      const touched = DuelEngine.touchPlayerHeartbeat(match.id, 'hb-user')
+
+      expect(touched).toBe(true)
+      expect(match.player1.lastHeartbeat).toBeDefined()
+      expect(match.player1.lastHeartbeat).toBeGreaterThan(0)
+    })
+
+    it('hydrates active match state asynchronously from cache upon cluster node recovery', async () => {
+      const match = DuelEngine.spawnGhostMatch('hydrated-user', 'HydratedUser')
+      const matchId = match.id
+
+      // Simulate state loss on local instance (e.g. process restart)
+      DuelEngine.resetArenaStateForTesting()
+      expect(DuelEngine.getActiveMatchForUser('hydrated-user')).toBeNull()
+
+      // Mock cacheService returns the cached match
+      const { cacheService } = require('../../services/CacheService')
+      jest.spyOn(cacheService, 'get').mockImplementation(async (key: string) => {
+        if (key === 'duel:user:hydrated-user') return matchId
+        if (key === `duel:match:${matchId}`) return match
+        return null
+      })
+
+      const restoredMatch = await DuelEngine.getActiveMatchForUserAsync('hydrated-user')
+      expect(restoredMatch).not.toBeNull()
+      expect(restoredMatch?.id).toBe(matchId)
+      expect(restoredMatch?.player1.userId).toBe('hydrated-user')
+    })
   })
 })
+

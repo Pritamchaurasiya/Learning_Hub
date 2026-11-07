@@ -33,7 +33,8 @@ export const CANVAS_PRESET_TEMPLATES: CanvasPresetTemplate[] = [
     id: 'eigenvalue-equation',
     title: 'Eigenvalue Characteristic Equation',
     domain: 'LINEAR_ALGEBRA',
-    description: 'Fundamental relationship between linear transformation matrix A and eigenvector x.',
+    description:
+      'Fundamental relationship between linear transformation matrix A and eigenvector x.',
     initialLatex: 'A \\mathbf{x} = \\lambda \\mathbf{x}',
     initialStrokes: [
       {
@@ -53,7 +54,8 @@ export const CANVAS_PRESET_TEMPLATES: CanvasPresetTemplate[] = [
     id: 'master-theorem',
     title: 'Divide & Conquer Recurrence Relation',
     domain: 'DATA_STRUCTURES',
-    description: 'Recurrence relation analyzing runtime of MergeSort and divide-and-conquer paradigms.',
+    description:
+      'Recurrence relation analyzing runtime of MergeSort and divide-and-conquer paradigms.',
     initialLatex: 'T(n) = 2T\\left(\\frac{n}{2}\\right) + \\mathcal{O}(n)',
     initialStrokes: [
       {
@@ -104,8 +106,8 @@ class MultiModalService {
       (contextDomain === 'LINEAR_ALGEBRA'
         ? 'A \\mathbf{x} = \\lambda \\mathbf{x}'
         : contextDomain === 'DATA_STRUCTURES'
-        ? 'T(n) = 2T\\left(\\frac{n}{2}\\right) + \\mathcal{O}(n)'
-        : '\\int_{0}^{\\infty} e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}')
+          ? 'T(n) = 2T\\left(\\frac{n}{2}\\right) + \\mathcal{O}(n)'
+          : '\\int_{0}^{\\infty} e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}')
 
     return {
       sessionId,
@@ -170,14 +172,14 @@ class MultiModalService {
         Math.abs(gazeX) < 0.35 && Math.abs(gazeY) < 0.35
           ? 'FOCUSED_CENTER'
           : gazeX < 0
-          ? 'LOOKING_LEFT'
-          : 'LOOKING_RIGHT',
+            ? 'LOOKING_LEFT'
+            : 'LOOKING_RIGHT',
       faceState:
         faceCount === 0
           ? 'NO_FACE_DETECTED'
           : faceCount > 1
-          ? 'MULTIPLE_FACES_FLAGGED'
-          : 'SINGLE_FACE_FOCUSED',
+            ? 'MULTIPLE_FACES_FLAGGED'
+            : 'SINGLE_FACE_FOCUSED',
       attentivenessScore,
       isAttentionFlagged: isFlagged,
       warningAlert: isFlagged ? 'Attention deviation or face anomaly detected' : undefined,
@@ -212,8 +214,10 @@ class MultiModalService {
     }
 
     const lower = transcriptText.toLowerCase()
-    const isUncertain = lower.includes('maybe') || lower.includes('guess') || lower.includes('stuck')
-    const isBreakthrough = lower.includes('aha') || lower.includes('solved') || lower.includes('see')
+    const isUncertain =
+      lower.includes('maybe') || lower.includes('guess') || lower.includes('stuck')
+    const isBreakthrough =
+      lower.includes('aha') || lower.includes('solved') || lower.includes('see')
 
     return {
       sessionId,
@@ -224,8 +228,8 @@ class MultiModalService {
       synthesizedResponseText: isBreakthrough
         ? 'Superb insight! How does that change the auxiliary space bound?'
         : isUncertain
-        ? 'Let us examine the base cases: what happens when N equals 1?'
-        : 'Good formulation. Can you state the loop invariant for the inductive step?',
+          ? 'Let us examine the base cases: what happens when N equals 1?'
+          : 'Good formulation. Can you state the loop invariant for the inductive step?',
       audioCue: isBreakthrough ? 'AHA_MOMENT' : isUncertain ? 'NUDGE_INVARIANT' : 'PROMPT_CONTINUE',
       followUpQuestions: [
         'How does this invariant prevent infinite recursion?',

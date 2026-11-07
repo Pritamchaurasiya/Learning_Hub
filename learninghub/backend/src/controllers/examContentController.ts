@@ -115,7 +115,11 @@ export const examContentController = {
     }
 
     if (!detectedCountry) {
-      detectedCountry = countries.find(c => c.code === 'IN') || countries.find(c => c.code === 'US') || countries[0] || null
+      detectedCountry =
+        countries.find(c => c.code === 'IN') ||
+        countries.find(c => c.code === 'US') ||
+        countries[0] ||
+        null
       method = 'fallback'
     }
 

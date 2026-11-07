@@ -15,13 +15,17 @@ export class RealtimeEventBridge {
     this.initialized = true
 
     // 1. Contest Registrations -> update room contest-{contestId}
-    domainEvents.on('CONTEST_REGISTERED', async (data) => {
+    domainEvents.on('CONTEST_REGISTERED', async data => {
       try {
-        webSocketService.broadcastToRoom(`contest-${data.contestId}`, 'contest-participant-joined', {
-          contestId: data.contestId,
-          userId: data.userId,
-          timestamp: data.registeredAt,
-        })
+        webSocketService.broadcastToRoom(
+          `contest-${data.contestId}`,
+          'contest-participant-joined',
+          {
+            contestId: data.contestId,
+            userId: data.userId,
+            timestamp: data.registeredAt,
+          }
+        )
       } catch (err) {
         logger.warn('[RealtimeEventBridge] Failed to broadcast CONTEST_REGISTERED:', {
           error: String(err),
@@ -30,7 +34,7 @@ export class RealtimeEventBridge {
     })
 
     // 2. Proctor Alerts -> send to admin_dashboard and contest room
-    domainEvents.on('PROCTOR_ALERT_TRIGGERED', async (data) => {
+    domainEvents.on('PROCTOR_ALERT_TRIGGERED', async data => {
       try {
         webSocketService.broadcastAdmin('proctor-alert', data)
         webSocketService.broadcastToRoom(`contest-${data.contestId}`, 'proctor-violation-logged', {
@@ -47,7 +51,7 @@ export class RealtimeEventBridge {
     })
 
     // 3. CAT Diagnostic Scorecard Ready -> notify user
-    domainEvents.on('CAT_SESSION_COMPLETED', async (data) => {
+    domainEvents.on('CAT_SESSION_COMPLETED', async data => {
       try {
         webSocketService.notifyUser(data.userId, 'cat-scorecard-ready', {
           sessionId: data.sessionId,
@@ -64,7 +68,7 @@ export class RealtimeEventBridge {
     })
 
     // 4. Achievement Unlocked -> live gamification celebratory popup
-    domainEvents.on('ACHIEVEMENT_UNLOCKED', async (data) => {
+    domainEvents.on('ACHIEVEMENT_UNLOCKED', async data => {
       try {
         webSocketService.notifyUser(data.userId, 'achievement-unlocked', {
           achievementId: data.achievementId,
@@ -79,7 +83,7 @@ export class RealtimeEventBridge {
     })
 
     // 5. Level Up -> real-time celebratory XP burst
-    domainEvents.on('LEVEL_UP', async (data) => {
+    domainEvents.on('LEVEL_UP', async data => {
       try {
         webSocketService.notifyUser(data.userId, 'user-level-up', {
           previousLevel: data.previousLevel,
@@ -102,4 +106,3 @@ export class RealtimeEventBridge {
 }
 
 export const realtimeEventBridge = new RealtimeEventBridge()
-

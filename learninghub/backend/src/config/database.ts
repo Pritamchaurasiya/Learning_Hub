@@ -116,43 +116,43 @@ const softDeleteExtension = Prisma.defineExtension({
     $allModels: {
       async findUnique({ model, operation, args, query }) {
         if (shouldApplySoftDelete(model, operation)) {
-          (args as any).where = injectDeletedAt((args as any).where)
+          ;(args as any).where = injectDeletedAt((args as any).where)
         }
         return query(args)
       },
       async findFirst({ model, operation, args, query }) {
         if (shouldApplySoftDelete(model, operation)) {
-          (args as any).where = injectDeletedAt((args as any).where)
+          ;(args as any).where = injectDeletedAt((args as any).where)
         }
         return query(args)
       },
       async findMany({ model, operation, args, query }) {
         if (shouldApplySoftDelete(model, operation)) {
-          (args as any).where = injectDeletedAt((args as any).where)
+          ;(args as any).where = injectDeletedAt((args as any).where)
         }
         return query(args)
       },
       async count({ model, operation, args, query }) {
         if (shouldApplySoftDelete(model, operation)) {
-          (args as any).where = injectDeletedAt((args as any).where)
+          ;(args as any).where = injectDeletedAt((args as any).where)
         }
         return query(args)
       },
       async aggregate({ model, operation, args, query }) {
         if (shouldApplySoftDelete(model, operation)) {
-          (args as any).where = injectDeletedAt((args as any).where)
+          ;(args as any).where = injectDeletedAt((args as any).where)
         }
         return query(args)
       },
       async groupBy({ model, operation, args, query }) {
         if (shouldApplySoftDelete(model, operation)) {
-          (args as any).where = injectDeletedAt((args as any).where)
+          ;(args as any).where = injectDeletedAt((args as any).where)
         }
         return query(args)
       },
       async updateMany({ model, operation, args, query }) {
         if (shouldApplySoftDelete(model, operation)) {
-          (args as any).where = injectDeletedAt((args as any).where)
+          ;(args as any).where = injectDeletedAt((args as any).where)
         }
         return query(args)
       },
@@ -196,9 +196,7 @@ function shouldApplySoftDelete(model: string | undefined, operation: string): bo
   return model !== undefined && modelsWithSoftDelete.has(model)
 }
 
-function injectDeletedAt(
-  where: Record<string, unknown> | undefined
-): Record<string, unknown> {
+function injectDeletedAt(where: Record<string, unknown> | undefined): Record<string, unknown> {
   if (!where) return { deletedAt: null }
   if (where.deletedAt !== undefined) return where
 
@@ -367,7 +365,8 @@ export class ExtendedPrismaClient extends PrismaClient {
 }
 
 // Create base singleton instance with soft delete extension
-const basePrisma = globalForPrisma.prisma || new ExtendedPrismaClient(prismaOptions).$extends(softDeleteExtension)
+const basePrisma =
+  globalForPrisma.prisma || new ExtendedPrismaClient(prismaOptions).$extends(softDeleteExtension)
 
 const replicaUrl = process.env.DATABASE_URL_REPLICA
 let replicaClient: PrismaClient | undefined
@@ -386,7 +385,9 @@ export const prisma: ExtendedPrismaClient = replicaClient
   ? (basePrisma.$extends(
       readReplicas({
         replicas: [
-          replicaClient as unknown as NonNullable<Parameters<typeof readReplicas>[0]['replicas']>[number],
+          replicaClient as unknown as NonNullable<
+            Parameters<typeof readReplicas>[0]['replicas']
+          >[number],
         ],
       })
     ) as unknown as ExtendedPrismaClient)

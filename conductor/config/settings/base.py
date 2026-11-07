@@ -135,7 +135,11 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     "django_prometheus.middleware.PrometheusBeforeMiddleware",
     # Distributed Tracing & W3C TraceContext
-    "apps.core.observability.DistributedTracingMiddleware",
+    "apps.core.middleware.distributed_tracing.DistributedTracingMiddleware",
+    # Database Resilience - Retry on transient connection failures
+    "apps.core.middleware.db_retry.DatabaseRetryMiddleware",
+    # Database Health - Proactive connection validation
+    "apps.core.middleware.db_retry.DatabaseConnectionHealthMiddleware",
     # CORS must be first to handle preflight OPTIONS requests
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -496,14 +500,20 @@ CELERY_TASK_QUEUES = {
     "ai_computation": {"exchange": "ai_computation", "routing_key": "ai_computation"},
     "payment_queue": {"exchange": "payment_queue", "routing_key": "payment_queue"},
     "notifications_queue": {"exchange": "notifications_queue", "routing_key": "notifications_queue"},
+    "test_engine": {"exchange": "test_engine", "routing_key": "test_engine"},
+    "courses": {"exchange": "courses", "routing_key": "courses"},
+    "analytics": {"exchange": "analytics", "routing_key": "analytics"},
 }
 
 CELERY_TASK_ROUTES = {
     "apps.ai_engine.tasks.*": {"queue": "ai_queue"},
     "apps.ai_engine.*": {"queue": "ai_queue"},
     "apps.payments.tasks.*": {"queue": "payment_queue"},  # Separate queue for critical payments
-    "apps.core.background_tasks.*": {"queue": "default"},
     "apps.notifications.tasks.*": {"queue": "notifications_queue"},
+    "apps.test_engine.tasks.*": {"queue": "test_engine"},
+    "apps.courses.tasks.*": {"queue": "courses"},
+    "apps.analytics_v2.tasks.*": {"queue": "analytics"},
+    "apps.core.background_tasks.*": {"queue": "default"},
     "*": {"queue": "default"},
 }
 
@@ -676,6 +686,20 @@ SENTRY_PROFILES_SAMPLE_RATE = float(os.getenv("SENTRY_PROFILES_SAMPLE_RATE", "0.
 SENTRY_SEND_PII = os.getenv("SENTRY_SEND_PII", "false").lower() in ("true", "1", "yes")
 SENTRY_DEBUG = os.getenv("SENTRY_DEBUG", "false").lower() in ("true", "1", "yes")
 SENTRY_ENABLE_TRACING = os.getenv("SENTRY_ENABLE_TRACING", "true").lower() in ("true", "1", "yes")
+
+# ==============================================================================
+# DATABASE RESILIENCE SETTINGS 🛡️
+# ==============================================================================
+
+# Database Retry Middleware Configuration
+DB_RETRY_MAX_ATTEMPTS = int(os.getenv("DB_RETRY_MAX_ATTEMPTS", "3"))
+DB_RETRY_BASE_DELAY = float(os.getenv("DB_RETRY_BASE_DELAY", "0.5"))
+DB_RETRY_MAX_DELAY = float(os.getenv("DB_RETRY_MAX_DELAY", "5.0"))
+DB_RETRY_EXPONENTIAL_BASE = int(os.getenv("DB_RETRY_EXPONENTIAL_BASE", "2"))
+
+# Database Connection Health Check
+DB_HEALTH_CHECK_INTERVAL = int(os.getenv("DB_HEALTH_CHECK_INTERVAL", "300"))  # 5 minutes
+CONN_HEALTH_CHECKS_ENABLED = True  # Enabled via DATABASES.conn_health_checks
 
 # ==============================================================================
 # FEATURE FLAGS 🚀

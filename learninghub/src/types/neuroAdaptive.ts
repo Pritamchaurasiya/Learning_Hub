@@ -1,8 +1,5 @@
 export type CognitiveState =
-  | 'OPTIMAL_FLOW'
-  | 'PRODUCTIVE_EFFORT'
-  | 'COGNITIVE_STRAIN'
-  | 'FATIGUE_OVERLOAD'
+  'OPTIMAL_FLOW' | 'PRODUCTIVE_EFFORT' | 'COGNITIVE_STRAIN' | 'FATIGUE_OVERLOAD'
 
 export type ThrottlingAction =
   | 'MAINTAIN_CURRENT_PACE'

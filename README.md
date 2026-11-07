@@ -79,6 +79,14 @@ Access at `http://localhost`. Admin at `http://localhost/admin/`.
 
 ---
 
+## 🏗️ Architecture & Component Blueprints
+
+The repository is organized into three primary operational subsystems:
+
+- [**Conductor Backend**](file:///C:/Users/shiva/Desktop/windows_app/conductor/README.md) (\conductor/\): Django 5.0+ REST Framework & Channels ASGI backend (:8000) orchestrating 45 modular apps, including [\conductor/apps/test_engine\](file:///C:/Users/shiva/Desktop/windows_app/conductor/apps/test_engine/README.md) and [\conductor/apps/exams\](file:///C:/Users/shiva/Desktop/windows_app/conductor/apps/exams/README.md).
+- [**LearningHub Web & Assessment Platform**](file:///C:/Users/shiva/Desktop/windows_app/learninghub/README.md) (\learninghub/\): React 18 / TypeScript SPA (:5173) and Node.js Express 4 API (:5000) housing the [Assessment Engine UI Components](file:///C:/Users/shiva/Desktop/windows_app/learninghub/src/components/test/README.md) and Unified PYQ Vault.
+- [**Windows Desktop App**](file:///C:/Users/shiva/Desktop/windows_app/windows_app) (\windows_app/\): Flutter 3.24+ desktop client providing offline-first learning, native window controls, and CBT kiosk exam station.
+
 ## 🏗️ Architecture
 
 ```

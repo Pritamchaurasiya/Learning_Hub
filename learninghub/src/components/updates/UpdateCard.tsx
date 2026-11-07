@@ -210,17 +210,21 @@ export const UpdateCard: React.FC<UpdateCardProps> = ({
           {onFollowUniversity && update.institution && (
             <button
               type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onFollowUniversity(update.institution);
+              onClick={e => {
+                e.preventDefault()
+                e.stopPropagation()
+                onFollowUniversity(update.institution)
               }}
               className={`rounded-md px-1.5 py-0.5 text-[10px] font-medium transition ${
                 isFollowingUniversity
                   ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
               }`}
-              title={isFollowingUniversity ? `Following ${update.institution}` : `Follow ${update.institution}`}
+              title={
+                isFollowingUniversity
+                  ? `Following ${update.institution}`
+                  : `Follow ${update.institution}`
+              }
             >
               {isFollowingUniversity ? '✓ Following' : '+ Follow'}
             </button>
@@ -244,8 +248,14 @@ export const UpdateCard: React.FC<UpdateCardProps> = ({
               </span>
             )}
 
-            {Boolean((update.attachments && update.attachments.length > 0) || (update.attachments_count && update.attachments_count > 0)) && (
-              <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300" title="PDF Attachment Available">
+            {Boolean(
+              (update.attachments && update.attachments.length > 0) ||
+              (update.attachments_count && update.attachments_count > 0)
+            ) && (
+              <span
+                className="flex items-center gap-1 text-slate-600 dark:text-slate-300"
+                title="PDF Attachment Available"
+              >
                 <FileText className="h-3.5 w-3.5 text-indigo-500" />
                 PDF Notice
               </span>
@@ -309,7 +319,7 @@ export const UpdateCard: React.FC<UpdateCardProps> = ({
               type="button"
               onClick={handleShare}
               className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-              title={copied ? "Link Copied!" : "Share Notice"}
+              title={copied ? 'Link Copied!' : 'Share Notice'}
               aria-label="Share Notice"
             >
               <Share2 className="h-4 w-4" />

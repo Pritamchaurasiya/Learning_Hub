@@ -16,9 +16,12 @@ export class SearchController {
         return
       }
 
-      const typesParam = typeof req.query.types === 'string'
-        ? (req.query.types.split(',') as ('question' | 'problem' | 'course' | 'canonical_question')[])
-        : undefined
+      const typesParam =
+        typeof req.query.types === 'string'
+          ? (req.query.types.split(',') as (
+              'question' | 'problem' | 'course' | 'canonical_question'
+            )[])
+          : undefined
       const limit = Math.min(parseInt(String(req.query.limit || '20'), 10) || 20, 100)
       const offset = parseInt(String(req.query.offset || '0'), 10) || 0
       const mode = typeof req.query.mode === 'string' ? req.query.mode : 'hybrid'
@@ -73,9 +76,12 @@ export class SearchController {
         return
       }
 
-      const typesParam = typeof req.query.types === 'string'
-        ? (req.query.types.split(',') as ('question' | 'problem' | 'course' | 'canonical_question')[])
-        : undefined
+      const typesParam =
+        typeof req.query.types === 'string'
+          ? (req.query.types.split(',') as (
+              'question' | 'problem' | 'course' | 'canonical_question'
+            )[])
+          : undefined
       const limit = Math.min(parseInt(String(req.query.limit || '20'), 10) || 20, 100)
 
       const result = await SearchService.personalizedSearch({

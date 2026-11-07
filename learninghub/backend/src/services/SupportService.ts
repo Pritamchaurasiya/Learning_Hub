@@ -127,7 +127,11 @@ export class SupportService {
     return newTicket
   }
 
-  async replyToTicket(ticketId: string, message: string, senderName = 'You'): Promise<SupportTicket> {
+  async replyToTicket(
+    ticketId: string,
+    message: string,
+    senderName = 'You'
+  ): Promise<SupportTicket> {
     const ticket = this.tickets.find(t => t.id === ticketId || t.ticketNumber === ticketId)
     if (!ticket) throw new Error('Ticket not found')
 

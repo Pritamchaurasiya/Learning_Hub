@@ -11,8 +11,8 @@ import { prisma } from '../../prismaClient'
 
 // ── Mocks ──────────────────────────────────────────────────────────────────────
 
-jest.mock('../../prismaClient', () => ({
-  prisma: {
+jest.mock('../../prismaClient', () => {
+  const mockPrisma = {
     test: { findUnique: jest.fn() },
     testResult: {
       findFirst: jest.fn(),
@@ -21,10 +21,15 @@ jest.mock('../../prismaClient', () => ({
       update: jest.fn(),
       count: jest.fn(),
     },
-    testAttemptAnswer: { upsert: jest.fn() },
-    $transaction: jest.fn(),
-  },
-}))
+    testAttemptAnswer: { upsert: jest.fn(), deleteMany: jest.fn() },
+  }
+  return {
+    prisma: {
+      ...mockPrisma,
+      $transaction: jest.fn((cb: any) => cb(mockPrisma)),
+    },
+  }
+})
 
 jest.mock('../../services/TopicPerformanceService', () => ({
   topicPerformanceService: {

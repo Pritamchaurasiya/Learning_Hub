@@ -93,9 +93,7 @@ export const FlowStateGauge = memo(function FlowStateGauge({
         </svg>
 
         <div className="absolute flex flex-col items-center">
-          <span className="text-3xl font-extrabold text-gray-900 dark:text-white">
-            {flowScore}
-          </span>
+          <span className="text-3xl font-extrabold text-gray-900 dark:text-white">{flowScore}</span>
           <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
             Flow Score
           </span>
@@ -112,9 +110,7 @@ export const FlowStateGauge = memo(function FlowStateGauge({
           </span>
         </div>
         <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/60">
-          <span className="text-[11px] text-gray-500 dark:text-gray-400 block">
-            Mental Fatigue
-          </span>
+          <span className="text-[11px] text-gray-500 dark:text-gray-400 block">Mental Fatigue</span>
           <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
             {fatigueScore} / 100
           </span>

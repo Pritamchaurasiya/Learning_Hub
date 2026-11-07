@@ -73,7 +73,9 @@ export const W3CVerificationAuditCard: React.FC<Props> = ({ result, rawCredentia
         <div className="flex items-center gap-3">
           <div
             className={`p-2.5 rounded-xl ${
-              result.valid ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300' : 'bg-rose-500/20 text-rose-600'
+              result.valid
+                ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300'
+                : 'bg-rose-500/20 text-rose-600'
             }`}
           >
             {result.valid ? <ShieldCheck className="w-6 h-6" /> : <XCircle className="w-6 h-6" />}
@@ -84,9 +86,7 @@ export const W3CVerificationAuditCard: React.FC<Props> = ({ result, rawCredentia
                 ? 'W3C Cryptographically Verified Credential'
                 : 'Cryptographic Verification Failure'}
             </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {result.auditReport.summary}
-            </p>
+            <p className="text-xs sm:text-sm text-muted-foreground">{result.auditReport.summary}</p>
           </div>
         </div>
 
@@ -96,7 +96,11 @@ export const W3CVerificationAuditCard: React.FC<Props> = ({ result, rawCredentia
             onClick={handleCopyLink}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-background hover:bg-muted text-foreground border border-border transition-colors shadow-xs"
           >
-            {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Share2 className="w-3.5 h-3.5" />}
+            {copiedLink ? (
+              <Check className="w-3.5 h-3.5 text-emerald-500" />
+            ) : (
+              <Share2 className="w-3.5 h-3.5" />
+            )}
             {copiedLink ? 'Copied' : 'Share'}
           </button>
         </div>
@@ -113,7 +117,8 @@ export const W3CVerificationAuditCard: React.FC<Props> = ({ result, rawCredentia
               {result.subject.achievementTitle}
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Awarded to <span className="font-semibold text-foreground">{result.subject.studentName}</span>
+              Awarded to{' '}
+              <span className="font-semibold text-foreground">{result.subject.studentName}</span>
             </p>
           </div>
 
@@ -245,13 +250,19 @@ export const W3CVerificationAuditCard: React.FC<Props> = ({ result, rawCredentia
         {showRawJson && (
           <div className="mt-4 rounded-xl border border-border/80 bg-slate-950 p-4 relative overflow-hidden">
             <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
-              <span className="text-xs font-bold text-slate-400">Canonical W3C JSON-LD Document</span>
+              <span className="text-xs font-bold text-slate-400">
+                Canonical W3C JSON-LD Document
+              </span>
               <button
                 type="button"
                 onClick={handleCopyJson}
                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono transition-colors"
               >
-                {copiedJson ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                {copiedJson ? (
+                  <Check className="w-3 h-3 text-emerald-400" />
+                ) : (
+                  <Copy className="w-3 h-3" />
+                )}
                 {copiedJson ? 'Copied' : 'Copy JSON'}
               </button>
             </div>

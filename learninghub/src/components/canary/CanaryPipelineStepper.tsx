@@ -91,8 +91,8 @@ export const CanaryPipelineStepper: React.FC<CanaryPipelineStepperProps> = ({
                   isPassed
                     ? 'bg-emerald-600 text-white border-2 border-emerald-400 ring-4 ring-emerald-950'
                     : isCurrent
-                    ? 'bg-indigo-600 text-white border-2 border-indigo-400 ring-4 ring-indigo-950 animate-pulse'
-                    : 'bg-slate-800 text-slate-400 border border-slate-700'
+                      ? 'bg-indigo-600 text-white border-2 border-indigo-400 ring-4 ring-indigo-950 animate-pulse'
+                      : 'bg-slate-800 text-slate-400 border border-slate-700'
                 }`}
               >
                 {isPassed ? <Check className="w-4 h-4 text-white" /> : step.percent}
@@ -102,8 +102,8 @@ export const CanaryPipelineStepper: React.FC<CanaryPipelineStepperProps> = ({
                   isCurrent
                     ? 'text-indigo-300 font-bold'
                     : isPassed
-                    ? 'text-emerald-400'
-                    : 'text-slate-400'
+                      ? 'text-emerald-400'
+                      : 'text-slate-400'
                 }`}
               >
                 {step.label}
@@ -131,19 +131,30 @@ export const CanaryPipelineStepper: React.FC<CanaryPipelineStepperProps> = ({
       <div className="pt-4 border-t border-slate-800 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
         <div className="flex items-center gap-1.5 text-slate-400">
           <GitCommit className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-          <span className="truncate">Commit: <strong className="text-slate-300 font-mono">{deployment.gitCommitHash}</strong></span>
+          <span className="truncate">
+            Commit: <strong className="text-slate-300 font-mono">{deployment.gitCommitHash}</strong>
+          </span>
         </div>
         <div className="flex items-center gap-1.5 text-slate-400">
           <GitPullRequest className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
-          <span className="truncate">Version: <strong className="text-slate-300 font-mono">{deployment.version}</strong></span>
+          <span className="truncate">
+            Version: <strong className="text-slate-300 font-mono">{deployment.version}</strong>
+          </span>
         </div>
         <div className="flex items-center gap-1.5 text-slate-400">
           <Globe2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-          <span className="truncate">Region: <strong className="text-slate-300 font-mono">{deployment.region}</strong></span>
+          <span className="truncate">
+            Region: <strong className="text-slate-300 font-mono">{deployment.region}</strong>
+          </span>
         </div>
         <div className="flex items-center gap-1.5 text-slate-400">
           <ShieldCheck className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-          <span className="truncate">Signed: <strong className="text-slate-300 font-mono">{deployment.provenanceAttestation.signedDigest.substring(0, 10)}...</strong></span>
+          <span className="truncate">
+            Signed:{' '}
+            <strong className="text-slate-300 font-mono">
+              {deployment.provenanceAttestation.signedDigest.substring(0, 10)}...
+            </strong>
+          </span>
         </div>
       </div>
     </div>

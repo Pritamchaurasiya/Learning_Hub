@@ -1,8 +1,5 @@
 import { fetchApi } from '../utils/api'
-import type {
-  CurriculumPlan,
-  GenerateCurriculumInput,
-} from '../types/curriculum'
+import type { CurriculumPlan, GenerateCurriculumInput } from '../types/curriculum'
 
 export const FALLBACK_DEMO_PLAN: CurriculumPlan = {
   id: 'curr-demo-default',
@@ -24,7 +21,8 @@ export const FALLBACK_DEMO_PLAN: CurriculumPlan = {
       id: 'mod-w1',
       weekNumber: 1,
       title: 'Week 1: Asymptotic Complexity & Divide and Conquer',
-      description: 'Master Master Theorem, recursive tree expansions, and optimal sorting partitions.',
+      description:
+        'Master Master Theorem, recursive tree expansions, and optimal sorting partitions.',
       domain: 'Data Structures & Algorithms',
       targetHours: 15,
       actualHoursSpent: 12,
@@ -101,7 +99,8 @@ export const FALLBACK_DEMO_PLAN: CurriculumPlan = {
       id: 'mod-w3',
       weekNumber: 3,
       title: 'Week 3: Operating Systems: Concurrency & Virtual Memory',
-      description: 'CPU scheduling algorithms, semaphores, deadlock avoidance, and TLB page translation.',
+      description:
+        'CPU scheduling algorithms, semaphores, deadlock avoidance, and TLB page translation.',
       domain: 'Computer Systems',
       targetHours: 15,
       actualHoursSpent: 0,
@@ -118,7 +117,8 @@ export const FALLBACK_DEMO_PLAN: CurriculumPlan = {
           domain: 'Operating Systems',
           targetMastery: 85,
           estimatedMinutes: 80,
-          formulaLatex: '\\text{TAT} = \\text{Completion} - \\text{Arrival}, \\quad \\text{WT} = \\text{TAT} - \\text{Burst}',
+          formulaLatex:
+            '\\text{TAT} = \\text{Completion} - \\text{Arrival}, \\quad \\text{WT} = \\text{TAT} - \\text{Burst}',
           isCompleted: false,
         },
         {
@@ -127,7 +127,8 @@ export const FALLBACK_DEMO_PLAN: CurriculumPlan = {
           domain: 'Operating Systems',
           targetMastery: 90,
           estimatedMinutes: 85,
-          formulaLatex: '\\text{Need}[i][j] = \\text{Max}[i][j] - \\text{Allocation}[i][j] \\le \\text{Available}[j]',
+          formulaLatex:
+            '\\text{Need}[i][j] = \\text{Max}[i][j] - \\text{Allocation}[i][j] \\le \\text{Available}[j]',
           isCompleted: false,
         },
       ],
@@ -159,7 +160,12 @@ export const curriculumService = {
         targetExam: input.targetExam,
         targetDate: input.targetDate,
         weeklyStudyHours: input.weeklyStudyHours,
-        pacingMode: input.weeklyStudyHours >= 22 ? 'INTENSIVE' : input.weeklyStudyHours >= 12 ? 'BALANCED' : 'STEADY',
+        pacingMode:
+          input.weeklyStudyHours >= 22
+            ? 'INTENSIVE'
+            : input.weeklyStudyHours >= 12
+              ? 'BALANCED'
+              : 'STEADY',
         overallProgress: 0,
       }
       return { status: 'success', data: { plan: generated } }

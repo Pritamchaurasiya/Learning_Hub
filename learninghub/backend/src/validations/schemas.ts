@@ -176,35 +176,99 @@ export const gradeSubjectiveAnswerSchema = z.object({
 
 export const createTestSchema = z.object({
   body: z.object({
-    title: z.string().min(3, 'Title must be at least 3 characters').max(200, 'Title must not exceed 200 characters'),
-    description: z.string().max(2000, 'Description must not exceed 2000 characters').optional().nullable(),
+    title: z
+      .string()
+      .min(3, 'Title must be at least 3 characters')
+      .max(200, 'Title must not exceed 200 characters'),
+    description: z
+      .string()
+      .max(2000, 'Description must not exceed 2000 characters')
+      .optional()
+      .nullable(),
     examId: z.string().max(100).optional().nullable(),
-    timeLimit: z.number().int().min(0, 'Time limit must be non-negative').max(480, 'Time limit cannot exceed 480 minutes').default(30),
+    timeLimit: z
+      .number()
+      .int()
+      .min(0, 'Time limit must be non-negative')
+      .max(480, 'Time limit cannot exceed 480 minutes')
+      .default(30),
     passingScore: z.number().min(0).max(100).default(60),
     maxAttempts: z.number().int().min(1).max(100).default(5),
-    mode: z.enum(['PRACTICE', 'MOCK', 'TIMED_CHALLENGE', 'ADAPTIVE', 'CONTEST', 'practice', 'mock', 'timed_challenge', 'adaptive', 'contest']).default('PRACTICE'),
-    difficulty: z.enum(['EASY', 'MEDIUM', 'HARD', 'MIXED', 'ADAPTIVE', 'easy', 'medium', 'hard', 'mixed', 'adaptive']).default('MIXED'),
+    mode: z
+      .enum([
+        'PRACTICE',
+        'MOCK',
+        'TIMED_CHALLENGE',
+        'ADAPTIVE',
+        'CONTEST',
+        'practice',
+        'mock',
+        'timed_challenge',
+        'adaptive',
+        'contest',
+      ])
+      .default('PRACTICE'),
+    difficulty: z
+      .enum([
+        'EASY',
+        'MEDIUM',
+        'HARD',
+        'MIXED',
+        'ADAPTIVE',
+        'easy',
+        'medium',
+        'hard',
+        'mixed',
+        'adaptive',
+      ])
+      .default('MIXED'),
     totalMarks: z.number().nonnegative().optional(),
     negativeMarks: z.number().nonnegative().default(0),
     isPublished: z.boolean().default(true),
     shuffleQuestions: z.boolean().default(false),
     shuffleOptions: z.boolean().default(false),
-    questions: z.array(z.object({
-      text: z.string().min(3, 'Question text must be at least 3 characters'),
-      type: z.enum(['MCQ', 'MSQ', 'TRUE_FALSE', 'NUMERICAL', 'SHORT_ANSWER', 'SUBJECTIVE', 'mcq', 'multiple_select', 'true_false', 'numerical', 'subjective']).default('MCQ'),
-      difficulty: z.number().min(0).max(5).default(0.5),
-      bloomLevel: z.enum(['REMEMBER', 'UNDERSTAND', 'APPLY', 'ANALYZE', 'EVALUATE', 'CREATE']).default('UNDERSTAND'),
-      points: z.number().int().positive().default(4),
-      explanation: z.string().max(2000).optional().nullable(),
-      topic: z.string().max(100).optional().nullable(),
-      tags: z.array(z.string().max(50)).default([]),
-      options: z.array(z.object({
-        text: z.string().min(1, 'Option text cannot be empty'),
-        isCorrect: z.boolean().default(false),
-        explanation: z.string().max(1000).optional().nullable(),
-        order: z.number().int().nonnegative().optional(),
-      })).default([]),
-    })).max(200, 'Maximum 200 questions allowed per test').optional().default([]),
+    questions: z
+      .array(
+        z.object({
+          text: z.string().min(3, 'Question text must be at least 3 characters'),
+          type: z
+            .enum([
+              'MCQ',
+              'MSQ',
+              'TRUE_FALSE',
+              'NUMERICAL',
+              'SHORT_ANSWER',
+              'SUBJECTIVE',
+              'mcq',
+              'multiple_select',
+              'true_false',
+              'numerical',
+              'subjective',
+            ])
+            .default('MCQ'),
+          difficulty: z.number().min(0).max(5).default(0.5),
+          bloomLevel: z
+            .enum(['REMEMBER', 'UNDERSTAND', 'APPLY', 'ANALYZE', 'EVALUATE', 'CREATE'])
+            .default('UNDERSTAND'),
+          points: z.number().int().positive().default(4),
+          explanation: z.string().max(2000).optional().nullable(),
+          topic: z.string().max(100).optional().nullable(),
+          tags: z.array(z.string().max(50)).default([]),
+          options: z
+            .array(
+              z.object({
+                text: z.string().min(1, 'Option text cannot be empty'),
+                isCorrect: z.boolean().default(false),
+                explanation: z.string().max(1000).optional().nullable(),
+                order: z.number().int().nonnegative().optional(),
+              })
+            )
+            .default([]),
+        })
+      )
+      .max(200, 'Maximum 200 questions allowed per test')
+      .optional()
+      .default([]),
   }),
 })
 
@@ -600,7 +664,6 @@ export const searchSchema = z.object({
   }),
 })
 
-
 // ==================== NOTIFICATIONS SCHEMAS ====================
 export const markNotificationReadSchema = z.object({
   params: z.object({
@@ -873,14 +936,8 @@ export const removeCartItemSchema = z.object({
 export const applyCouponSchema = z.object({
   body: z
     .object({
-      code: z
-        .string()
-        .max(50, 'Coupon code must not exceed 50 characters')
-        .optional(),
-      coupon_code: z
-        .string()
-        .max(50, 'Coupon code must not exceed 50 characters')
-        .optional(),
+      code: z.string().max(50, 'Coupon code must not exceed 50 characters').optional(),
+      coupon_code: z.string().max(50, 'Coupon code must not exceed 50 characters').optional(),
     })
     .refine(data => data.code || data.coupon_code, {
       message: 'Coupon code is required (provide code or coupon_code)',

@@ -296,7 +296,11 @@ export class QuestionBankService {
               explanation: normalized.explanation,
               tags: (() => {
                 const baseTags =
-                  normalized.tags.length > 0 ? [...normalized.tags] : defaultTopic ? [defaultTopic] : []
+                  normalized.tags.length > 0
+                    ? [...normalized.tags]
+                    : defaultTopic
+                      ? [defaultTopic]
+                      : []
                 if (!baseTags.some(t => t.toLowerCase().startsWith('status:'))) {
                   baseTags.unshift('status:PENDING_REVIEW')
                 }
@@ -670,7 +674,9 @@ export class QuestionBankService {
 
     const tags = [...normalized.tags]
     if (!tags.some((t: string) => t.toLowerCase().startsWith('status:'))) {
-      const existingStatusTag = existing.tags.find((t: string) => t.toLowerCase().startsWith('status:'))
+      const existingStatusTag = existing.tags.find((t: string) =>
+        t.toLowerCase().startsWith('status:')
+      )
       if (existingStatusTag) {
         tags.push(existingStatusTag)
       } else {

@@ -1,5 +1,9 @@
 import { Request, Response } from 'express'
-import { careerOrchestratorService, CareerTrack, RecruiterPersonaRole } from '../services/CareerOrchestratorService'
+import {
+  careerOrchestratorService,
+  CareerTrack,
+  RecruiterPersonaRole,
+} from '../services/CareerOrchestratorService'
 import { sendSuccess, sendError } from '../utils/responseHelper'
 import logger from '../utils/logger'
 
@@ -11,7 +15,9 @@ export class CareerOrchestratorController {
   public getMatchedJobs = async (req: Request, res: Response): Promise<void> => {
     try {
       const candidateSkills = req.query.skills
-        ? String(req.query.skills).split(',').map(s => s.trim())
+        ? String(req.query.skills)
+            .split(',')
+            .map(s => s.trim())
         : [
             'Distributed Consensus (Raft/Paxos)',
             'Go / Rust',
@@ -23,7 +29,9 @@ export class CareerOrchestratorController {
           ]
 
       const candidateElo = req.query.elo ? Number(req.query.elo) : 1950
-      const interviewPercentile = req.query.interviewPercentile ? Number(req.query.interviewPercentile) : 92
+      const interviewPercentile = req.query.interviewPercentile
+        ? Number(req.query.interviewPercentile)
+        : 92
       const track = req.query.track as CareerTrack | undefined
       const minSalary = req.query.minSalary ? Number(req.query.minSalary) : undefined
       const remoteOnly = req.query.remoteOnly === 'true'

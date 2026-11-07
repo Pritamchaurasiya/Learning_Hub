@@ -29,16 +29,26 @@ function resolveBenchmarkKey(result: TestResult): string | null {
   const tId = (result.test_id || '').toLowerCase()
   const title = (result.test_title || '').toLowerCase()
 
-  if (tId.includes('jan27-s1') || (title.includes('27') && title.includes('jan') && title.includes('shift 1'))) {
+  if (
+    tId.includes('jan27-s1') ||
+    (title.includes('27') && title.includes('jan') && title.includes('shift 1'))
+  ) {
     return 'jee-main-2024-jan-27-s1'
   }
-  if (tId.includes('apr05-s1') || (title.includes('05') && title.includes('apr') && title.includes('shift 1'))) {
+  if (
+    tId.includes('apr05-s1') ||
+    (title.includes('05') && title.includes('apr') && title.includes('shift 1'))
+  ) {
     return 'jee-main-2024-apr-05-s1'
   }
-  if (tId.includes('neet-ug-2024') || title.includes('neet ug 2024') || title.includes('neet 2024')) {
+  if (
+    tId.includes('neet-ug-2024') ||
+    title.includes('neet ug 2024') ||
+    title.includes('neet 2024')
+  ) {
     return 'neet-ug-2024-code-q'
   }
-  if (tId.includes('gate-cs-2024') || title.includes('gate') && title.includes('2024')) {
+  if (tId.includes('gate-cs-2024') || (title.includes('gate') && title.includes('2024'))) {
     return 'gate-cs-2024-official'
   }
   if (tId.includes('upsc-prelims-2023') || (title.includes('upsc') && title.includes('2023'))) {
@@ -79,7 +89,7 @@ export const HistoricalShiftBenchmarkCard = memo(function HistoricalShiftBenchma
 }: HistoricalShiftBenchmarkCardProps) {
   const benchmarkKey = useMemo(() => resolveBenchmarkKey(result), [result])
   const benchmark: ShiftBenchmark | null = benchmarkKey
-    ? OFFICIAL_HISTORICAL_BENCHMARKS[benchmarkKey] ?? null
+    ? (OFFICIAL_HISTORICAL_BENCHMARKS[benchmarkKey] ?? null)
     : null
 
   const prediction = useMemo(() => {
@@ -123,7 +133,8 @@ export const HistoricalShiftBenchmarkCard = memo(function HistoricalShiftBenchma
               </Badge>
             </div>
             <p className="text-xs text-slate-300 mt-0.5">
-              Calibrated against official historical NTA / Examination Board shift results: <strong>{benchmark.shift}</strong>
+              Calibrated against official historical NTA / Examination Board shift results:{' '}
+              <strong>{benchmark.shift}</strong>
             </p>
           </div>
         </div>
@@ -180,9 +191,11 @@ export const HistoricalShiftBenchmarkCard = memo(function HistoricalShiftBenchma
             <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">
               General Cutoff
             </span>
-            <div className={`text-xl sm:text-2xl font-black flex items-center justify-center gap-1.5 ${
-              prediction.clearedCutoff ? 'text-emerald-400' : 'text-rose-400'
-            }`}>
+            <div
+              className={`text-xl sm:text-2xl font-black flex items-center justify-center gap-1.5 ${
+                prediction.clearedCutoff ? 'text-emerald-400' : 'text-rose-400'
+              }`}
+            >
               {prediction.clearedCutoff ? (
                 <>
                   <CheckCircle2 className="w-5 h-5 shrink-0" />
@@ -243,7 +256,8 @@ export const HistoricalShiftBenchmarkCard = memo(function HistoricalShiftBenchma
                     </span>
                   ) : (
                     <span className="text-rose-400 flex items-center gap-0.5">
-                      <AlertCircle className="w-3 h-3" /> Short by {(cat.score - rawScore).toFixed(1)}
+                      <AlertCircle className="w-3 h-3" /> Short by{' '}
+                      {(cat.score - rawScore).toFixed(1)}
                     </span>
                   )}
                 </div>
@@ -271,7 +285,7 @@ export const HistoricalShiftBenchmarkCard = memo(function HistoricalShiftBenchma
             </div>
           </div>
         )}
-              {onReattemptMistakes && (
+        {onReattemptMistakes && (
           <div className="pt-2 flex justify-end">
             <button
               type="button"

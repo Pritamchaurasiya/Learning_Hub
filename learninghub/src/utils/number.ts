@@ -76,35 +76,55 @@ export const LEVEL_TIERS: LevelTierConfig[] = [
     title: 'Algorithmic Specialist',
     badgeIcon: '⚡',
     color: 'from-amber-500 to-orange-600',
-    perks: ['Combat Arena Gladiator Mode', 'Pyodide WASM In-Browser Sandbox', 'Custom Avatar Badges'],
+    perks: [
+      'Combat Arena Gladiator Mode',
+      'Pyodide WASM In-Browser Sandbox',
+      'Custom Avatar Badges',
+    ],
   },
   {
     minLevel: 4,
     title: 'Systems Craftsman',
     badgeIcon: '🛠️',
     color: 'from-purple-500 to-violet-600',
-    perks: ['Distributed Chaos Engineering Lab', 'Live Audio/Video Pair Coding', '2x Daily Streak Multiplier'],
+    perks: [
+      'Distributed Chaos Engineering Lab',
+      'Live Audio/Video Pair Coding',
+      '2x Daily Streak Multiplier',
+    ],
   },
   {
     minLevel: 5,
     title: 'Architecture Maestro',
     badgeIcon: '🏛️',
     color: 'from-fuchsia-500 to-pink-600',
-    perks: ['Autonomous SWE Studio Access', 'W3C Verifiable DID Credentials', 'Priority AI Router Tokens'],
+    perks: [
+      'Autonomous SWE Studio Access',
+      'W3C Verifiable DID Credentials',
+      'Priority AI Router Tokens',
+    ],
   },
   {
     minLevel: 6,
     title: 'Distinguished Fellow',
     badgeIcon: '🎖️',
     color: 'from-rose-500 to-red-600',
-    perks: ['ZK-Attestation Proof Issuance', 'Staff Reviewer AI Council Consultations', 'Exclusive Tournament Invites'],
+    perks: [
+      'ZK-Attestation Proof Issuance',
+      'Staff Reviewer AI Council Consultations',
+      'Exclusive Tournament Invites',
+    ],
   },
   {
     minLevel: 7,
     title: 'Grandmaster Polymath',
     badgeIcon: '👑',
     color: 'from-amber-400 via-rose-500 to-purple-600',
-    perks: ['All Strategic Platform Capabilities Unlocked', 'Mentor Studio Direct Booking', 'Eternal Hall of Fame Anchor'],
+    perks: [
+      'All Strategic Platform Capabilities Unlocked',
+      'Mentor Studio Direct Booking',
+      'Eternal Hall of Fame Anchor',
+    ],
   },
 ]
 
@@ -165,7 +185,8 @@ export function calculateLevelProgress(xp: number): LevelProgressDetails {
   )
 
   const currentTier = [...LEVEL_TIERS].reverse().find(t => level >= t.minLevel) ?? LEVEL_TIERS[0]
-  const nextTier = LEVEL_TIERS.find(t => t.minLevel === level + 1) ?? LEVEL_TIERS[LEVEL_TIERS.length - 1]
+  const nextTier =
+    LEVEL_TIERS.find(t => t.minLevel === level + 1) ?? LEVEL_TIERS[LEVEL_TIERS.length - 1]
 
   return {
     level,

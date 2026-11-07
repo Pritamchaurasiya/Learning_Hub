@@ -607,11 +607,7 @@ export class CacheService {
    * High-performance cache-aside wrapper:
    * Returns cached value if available, otherwise executes fetcher, caches result, and returns it.
    */
-  async cacheOrFetch<T>(
-    key: string,
-    ttlSeconds: number,
-    fetcher: () => Promise<T>
-  ): Promise<T> {
+  async cacheOrFetch<T>(key: string, ttlSeconds: number, fetcher: () => Promise<T>): Promise<T> {
     const cached = await this.get<T>(key)
     if (cached !== null && cached !== undefined) {
       return cached
@@ -650,10 +646,9 @@ export class CacheService {
     try {
       return await this.client.xAdd(streamKey, id, fields)
     } catch (err) {
-      logger.warn(
-        `[CacheService] Failed to xAdd to stream "${streamKey}":`,
-        { error: err instanceof Error ? err.message : String(err) }
-      )
+      logger.warn(`[CacheService] Failed to xAdd to stream "${streamKey}":`, {
+        error: err instanceof Error ? err.message : String(err),
+      })
       return null
     }
   }
@@ -668,17 +663,13 @@ export class CacheService {
   ): Promise<Array<{ id: string; message: Record<string, string> }> | null> {
     if (!this.client || !this.client.isReady) return null
     try {
-      const response = await this.client.xRead(
-        [{ key: streamKey, id: lastId }],
-        { COUNT: count }
-      )
+      const response = await this.client.xRead([{ key: streamKey, id: lastId }], { COUNT: count })
       if (!response || response.length === 0) return []
       return response[0].messages
     } catch (err) {
-      logger.warn(
-        `[CacheService] Failed to xRead from stream "${streamKey}":`,
-        { error: err instanceof Error ? err.message : String(err) }
-      )
+      logger.warn(`[CacheService] Failed to xRead from stream "${streamKey}":`, {
+        error: err instanceof Error ? err.message : String(err),
+      })
       return null
     }
   }

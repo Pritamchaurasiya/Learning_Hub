@@ -282,7 +282,8 @@ export const QuestionBankImportModal: React.FC<QuestionBankImportModalProps> = (
                 )}
               </h3>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Import multiple questions at once from CSV or JSON with instant schema & KaTeX validation.
+                Import multiple questions at once from CSV or JSON with instant schema & KaTeX
+                validation.
               </p>
             </div>
           </div>
@@ -445,8 +446,8 @@ export const QuestionBankImportModal: React.FC<QuestionBankImportModalProps> = (
                     </h4>
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Includes columns for Question text, Question Type, Bloom's Taxonomy, Options A-D,
-                    Answer Key, Math equations, and Tags.
+                    Includes columns for Question text, Question Type, Bloom's Taxonomy, Options
+                    A-D, Answer Key, Math equations, and Tags.
                   </p>
                   <Button
                     variant="outline"
@@ -466,8 +467,8 @@ export const QuestionBankImportModal: React.FC<QuestionBankImportModalProps> = (
                     </h4>
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Full JSON specification supporting multi-choice (MSQ), numerical ranges, code blocks,
-                    and detailed solutions.
+                    Full JSON specification supporting multi-choice (MSQ), numerical ranges, code
+                    blocks, and detailed solutions.
                   </p>
                   <Button
                     variant="outline"
@@ -485,10 +486,20 @@ export const QuestionBankImportModal: React.FC<QuestionBankImportModalProps> = (
                   <HelpCircle className="w-4 h-4" /> Best Practices for Math & Equations
                 </h5>
                 <ul className="text-xs text-blue-800 dark:text-blue-300/90 list-disc list-inside space-y-1">
-                  <li>Use single dollar signs for inline math: <code>$O(N \log N)$</code></li>
-                  <li>Use double dollar signs for centered display equations: <code>$$\sum_{'{i=1}'}^n i$$</code></li>
-                  <li>CorrectOption in CSV can be specified as letters (A, B, C) or 1-based indices (1, 2, 3).</li>
-                  <li>For Multi-Select (MSQ), separate keys with commas: <code>A,C,D</code></li>
+                  <li>
+                    Use single dollar signs for inline math: <code>$O(N \log N)$</code>
+                  </li>
+                  <li>
+                    Use double dollar signs for centered display equations:{' '}
+                    <code>$$\sum_{'{i=1}'}^n i$$</code>
+                  </li>
+                  <li>
+                    CorrectOption in CSV can be specified as letters (A, B, C) or 1-based indices
+                    (1, 2, 3).
+                  </li>
+                  <li>
+                    For Multi-Select (MSQ), separate keys with commas: <code>A,C,D</code>
+                  </li>
                 </ul>
               </div>
             </div>

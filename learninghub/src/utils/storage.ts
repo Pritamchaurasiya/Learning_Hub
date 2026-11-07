@@ -2,6 +2,7 @@ import { logger } from './logger'
 
 const DB_NAME = 'learninghub-db'
 const DB_VERSION = 1
+const FALLBACK_PREFIX = 'lh_idb_'
 
 interface StorageItem {
   key: string
@@ -11,6 +12,18 @@ interface StorageItem {
 
 let db: IDBDatabase | null = null
 
+function isIndexedDBSupported(): boolean {
+  try {
+    return (
+      typeof window !== 'undefined' &&
+      typeof window.indexedDB !== 'undefined' &&
+      window.indexedDB !== null
+    )
+  } catch {
+    return false
+  }
+}
+
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     if (db) {
@@ -18,74 +31,121 @@ function openDatabase(): Promise<IDBDatabase> {
       return
     }
 
-    const request = indexedDB.open(DB_NAME, DB_VERSION)
-
-    request.onerror = () => {
-      logger.error('Failed to open IndexedDB', request.error)
-      reject(request.error)
+    if (!isIndexedDBSupported()) {
+      reject(new Error('IndexedDB not supported in this runtime environment'))
+      return
     }
 
-    request.onsuccess = () => {
-      db = request.result
-      resolve(db)
-    }
+    try {
+      const idb = typeof window !== 'undefined' && window.indexedDB ? window.indexedDB : indexedDB
+      const request = idb.open(DB_NAME, DB_VERSION)
 
-    request.onupgradeneeded = event => {
-      const database = (event.target as IDBOpenDBRequest).result
-      if (!database.objectStoreNames.contains('data')) {
-        database.createObjectStore('data', { keyPath: 'key' })
+      request.onerror = () => {
+        logger.warn('Failed to open IndexedDB, falling back to localStorage', request.error)
+        reject(request.error)
       }
+
+      request.onsuccess = () => {
+        db = request.result
+        resolve(db)
+      }
+
+      request.onupgradeneeded = event => {
+        const database = (event.target as IDBOpenDBRequest).result
+        if (!database.objectStoreNames.contains('data')) {
+          database.createObjectStore('data', { keyPath: 'key' })
+        }
+      }
+    } catch (err) {
+      reject(err)
     }
   })
 }
 
 export async function setItem<T>(key: string, value: T): Promise<void> {
-  try {
-    const database = await openDatabase()
-    const transaction = database.transaction(['data'], 'readwrite')
-    const store = transaction.objectStore('data')
+  if (isIndexedDBSupported()) {
+    try {
+      const database = await openDatabase()
+      const transaction = database.transaction(['data'], 'readwrite')
+      const store = transaction.objectStore('data')
 
-    const item: StorageItem = {
-      key,
-      value,
-      timestamp: Date.now(),
+      const item: StorageItem = {
+        key,
+        value,
+        timestamp: Date.now(),
+      }
+
+      store.put(item)
+      logger.debug(`Storage set (IndexedDB): ${key}`)
+      return
+    } catch {
+      // Fall through to localStorage fallback
     }
+  }
 
-    store.put(item)
-    logger.debug(`Storage set: ${key}`)
+  // Web Storage Fallback
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(`${FALLBACK_PREFIX}${key}`, JSON.stringify(value))
+      logger.debug(`Storage set (localStorage): ${key}`)
+    }
   } catch (error) {
-    logger.error(`Failed to set item: ${key}`, error)
+    logger.error(`Failed to set item in fallback storage: ${key}`, error)
     throw error
   }
 }
 
 export async function getItem<T>(key: string): Promise<T | null> {
-  try {
-    const database = await openDatabase()
-    const transaction = database.transaction(['data'], 'readonly')
-    const store = transaction.objectStore('data')
-    const request = store.get(key)
+  if (isIndexedDBSupported()) {
+    try {
+      const database = await openDatabase()
+      const transaction = database.transaction(['data'], 'readonly')
+      const store = transaction.objectStore('data')
+      const request = store.get(key)
 
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => {
-        const item = request.result as StorageItem | undefined
-        resolve(item ? (item.value as T) : null)
-      }
-      request.onerror = () => reject(request.error)
-    })
-  } catch (error) {
-    logger.error(`Failed to get item: ${key}`, error)
-    return null
+      return await new Promise((resolve, reject) => {
+        request.onsuccess = () => {
+          const item = request.result as StorageItem | undefined
+          resolve(item ? (item.value as T) : null)
+        }
+        request.onerror = () => reject(request.error)
+      })
+    } catch {
+      // Fall through to localStorage fallback
+    }
   }
+
+  // Web Storage Fallback
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem(`${FALLBACK_PREFIX}${key}`)
+      return raw ? (JSON.parse(raw) as T) : null
+    }
+  } catch (error) {
+    logger.warn(`Failed to get item from fallback storage: ${key}`, error)
+  }
+  return null
 }
 
 export async function removeItem(key: string): Promise<void> {
+  if (isIndexedDBSupported()) {
+    try {
+      const database = await openDatabase()
+      const transaction = database.transaction(['data'], 'readwrite')
+      const store = transaction.objectStore('data')
+      store.delete(key)
+      logger.debug(`Storage removed (IndexedDB): ${key}`)
+      return
+    } catch {
+      // Fall through to localStorage fallback
+    }
+  }
+
   try {
-    const database = await openDatabase()
-    const transaction = database.transaction(['data'], 'readwrite')
-    const store = transaction.objectStore('data')
-    store.delete(key)
-    logger.debug(`Storage removed: ${key}`)
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(`${FALLBACK_PREFIX}${key}`)
+      logger.debug(`Storage removed (localStorage): ${key}`)
+    }
   } catch (error) {
     logger.error(`Failed to remove item: ${key}`, error)
     throw error
@@ -93,12 +153,32 @@ export async function removeItem(key: string): Promise<void> {
 }
 
 export async function clear(): Promise<void> {
+  if (isIndexedDBSupported()) {
+    try {
+      const database = await openDatabase()
+      const transaction = database.transaction(['data'], 'readwrite')
+      const store = transaction.objectStore('data')
+      store.clear()
+      logger.debug('Storage cleared (IndexedDB)')
+      return
+    } catch {
+      // Fall through to localStorage fallback
+    }
+  }
+
   try {
-    const database = await openDatabase()
-    const transaction = database.transaction(['data'], 'readwrite')
-    const store = transaction.objectStore('data')
-    store.clear()
-    logger.debug('Storage cleared')
+    if (typeof localStorage !== 'undefined') {
+      const keysToRemove: string[] = []
+      const len = localStorage.length ?? 0
+      for (let i = 0; i < len; i++) {
+        const k = localStorage.key(i)
+        if (k && k.startsWith(FALLBACK_PREFIX)) {
+          keysToRemove.push(k)
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k))
+      logger.debug('Storage cleared (localStorage)')
+    }
   } catch (error) {
     logger.error('Failed to clear storage', error)
     throw error
@@ -106,20 +186,37 @@ export async function clear(): Promise<void> {
 }
 
 export async function keys(): Promise<string[]> {
-  try {
-    const database = await openDatabase()
-    const transaction = database.transaction(['data'], 'readonly')
-    const store = transaction.objectStore('data')
-    const request = store.getAllKeys()
+  if (isIndexedDBSupported()) {
+    try {
+      const database = await openDatabase()
+      const transaction = database.transaction(['data'], 'readonly')
+      const store = transaction.objectStore('data')
+      const request = store.getAllKeys()
 
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => {
-        resolve(request.result as string[])
-      }
-      request.onerror = () => reject(request.error)
-    })
-  } catch (error) {
-    logger.error('Failed to get keys', error)
-    return []
+      return await new Promise((resolve, reject) => {
+        request.onsuccess = () => {
+          resolve(request.result as string[])
+        }
+        request.onerror = () => reject(request.error)
+      })
+    } catch {
+      // Fall through to localStorage fallback
+    }
   }
+
+  const resultKeys: string[] = []
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const len = localStorage.length ?? 0
+      for (let i = 0; i < len; i++) {
+        const k = localStorage.key(i)
+        if (k && k.startsWith(FALLBACK_PREFIX)) {
+          resultKeys.push(k.slice(FALLBACK_PREFIX.length))
+        }
+      }
+    }
+  } catch {
+    // Ignore scan errors
+  }
+  return resultKeys
 }

@@ -295,6 +295,45 @@ describe('ProblemWorkspacePage Component', () => {
       expect(screen.getByText(/Try using a hash map/i)).toBeInTheDocument()
     })
   })
+
+  it('allows switching to mobile Console tab', async () => {
+    renderWorkspace()
+
+    await waitFor(() => {
+      expect(screen.getByText(/Two Sum/i)).toBeInTheDocument()
+    })
+
+    const consoleTabBtn = screen.getByTestId('mobile-tab-console')
+    fireEvent.click(consoleTabBtn)
+
+    await waitFor(() => {
+      expect(screen.getByText(/WebAssembly Native Sandbox/i)).toBeInTheDocument()
+    })
+  })
+
+  it('persists draft to desktop vault and localStorage on Ctrl+S shortcut', async () => {
+    const saveOfflineDataSpy = vi.fn().mockResolvedValue({ success: true, key: 'test' })
+    ;(window as any).desktopAPI = {
+      isElectron: true,
+      saveOfflineData: saveOfflineDataSpy,
+      loadOfflineData: vi.fn().mockResolvedValue(null),
+    }
+
+    renderWorkspace()
+
+    await waitFor(() => {
+      expect(screen.getByText(/Two Sum/i)).toBeInTheDocument()
+    })
+
+    fireEvent.keyDown(window, { key: 's', ctrlKey: true })
+
+    expect(saveOfflineDataSpy).toHaveBeenCalledWith(
+      expect.stringContaining('two-sum'),
+      expect.objectContaining({ code: expect.any(String) })
+    )
+
+    delete (window as any).desktopAPI
+  })
 })
 
 

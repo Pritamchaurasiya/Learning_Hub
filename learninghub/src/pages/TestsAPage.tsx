@@ -363,6 +363,13 @@ const TestsAPage = memo(() => {
     staleTime: 5 * 60 * 1000,
   })
 
+  const { data: userAttemptsResponse, isLoading: isAttemptsLoading } = useQuery({
+    queryKey: ['tests-user-attempts'],
+    queryFn: () => testsAService.getAttempts(),
+    enabled: isCatalogMode,
+    staleTime: 60 * 1000,
+  })
+
   useEffect(() => {
     if (isCatalogMode) {
       if (catalogResponse?.status === 'success' && Array.isArray(catalogResponse.data)) {
@@ -1390,6 +1397,9 @@ const TestsAPage = memo(() => {
               if (incorrectQuestions.length > 0) {
                 const drillId = `drill-${test.testInfo?.testId || 'pyq'}-${Date.now()}`
                 const drillTitle = `Mistake Re-attempt Drill: ${test.testInfo?.testTitle || 'Test'}`
+                resetTestState()
+                setAdaptiveDiagnostics(null)
+                submitAttempted.current = false
                 startTest(
                   'tests-a',
                   drillId,
@@ -1407,7 +1417,6 @@ const TestsAPage = memo(() => {
                   },
                   `attempt-${Date.now()}`
                 )
-                resetTestState()
                 addToast({
                   message: `🎯 Launched focused drill with ${incorrectQuestions.length} mistake questions!`,
                   type: 'success',
@@ -1493,7 +1502,10 @@ const TestsAPage = memo(() => {
         />
 
         {/* Full Performance Dashboard: Radar Chart, Score Trend, 70% Benchmarks, 12-Week Study Heatmap */}
-        <TestPerformanceSection />
+        <TestPerformanceSection
+          attempts={userAttemptsResponse?.data}
+          isLoading={isAttemptsLoading}
+        />
 
         {/* Offline Assessment Station Bar */}
         <OfflineStationBanner

@@ -343,7 +343,10 @@ export const courseService = {
     return fetchApi(`/lessons/${lessonId}/progress`, {
       method: 'POST',
       body: JSON.stringify({ completed }),
-    }) as Promise<{ status: string; data: { lessonId: string; completed: boolean; courseProgress: number } }>
+    }) as Promise<{
+      status: string
+      data: { lessonId: string; completed: boolean; courseProgress: number }
+    }>
   },
 }
 

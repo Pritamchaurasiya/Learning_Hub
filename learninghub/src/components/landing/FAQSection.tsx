@@ -58,7 +58,10 @@ export function FAQSection() {
             Transparent Answers
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight mb-4">
-            Frequently Asked <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Questions</span>
+            Frequently Asked{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
+              Questions
+            </span>
           </h2>
           <p className="text-base sm:text-lg text-slate-400">
             Clear, honest details about our curriculum, technology, and academic standards.

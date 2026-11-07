@@ -92,7 +92,8 @@ export const EdgeModelSelectorPanel: React.FC<EdgeModelSelectorPanelProps> = ({
                       )}
                     </h4>
                     <span className="text-[11px] text-slate-400 block font-mono">
-                      {model.sizeFormatted} • {model.quantization.toUpperCase()} • VRAM ~{model.vramRequiredMB}MB
+                      {model.sizeFormatted} • {model.quantization.toUpperCase()} • VRAM ~
+                      {model.vramRequiredMB}MB
                     </span>
                   </div>
 

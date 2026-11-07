@@ -51,22 +51,16 @@ export const CanaryTrafficGauge: React.FC<CanaryTrafficGaugeProps> = ({ deployme
           style={{ width: `${baselinePercent}%` }}
           className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-500 flex items-center px-3 justify-start font-mono text-xs font-bold text-white shadow-sm"
         >
-          {baselinePercent > 12 && (
-            <span className="truncate">Baseline: {baselinePercent}%</span>
-          )}
+          {baselinePercent > 12 && <span className="truncate">Baseline: {baselinePercent}%</span>}
         </div>
         <div
           data-testid="traffic-canary-bar"
           style={{ width: `${canaryPercent}%` }}
           className={`h-full transition-all duration-500 flex items-center px-3 justify-end font-mono text-xs font-bold text-white ${
-            isRolledBack
-              ? 'bg-rose-600'
-              : 'bg-gradient-to-r from-amber-500 to-emerald-500'
+            isRolledBack ? 'bg-rose-600' : 'bg-gradient-to-r from-amber-500 to-emerald-500'
           }`}
         >
-          {canaryPercent > 12 && (
-            <span className="truncate">Canary: {canaryPercent}%</span>
-          )}
+          {canaryPercent > 12 && <span className="truncate">Canary: {canaryPercent}%</span>}
         </div>
       </div>
 
@@ -78,14 +72,17 @@ export const CanaryTrafficGauge: React.FC<CanaryTrafficGaugeProps> = ({ deployme
               <Server className="w-3.5 h-3.5" />
               Baseline ({deployment.previousVersion})
             </span>
-            <span className="font-mono text-slate-300">{deployment.baselineMetrics.requestsPerSecond} req/s</span>
+            <span className="font-mono text-slate-300">
+              {deployment.baselineMetrics.requestsPerSecond} req/s
+            </span>
           </div>
           <div className="flex items-baseline justify-between">
-            <span className="text-xl font-bold font-mono text-white">
-              {baselinePercent}%
-            </span>
+            <span className="text-xl font-bold font-mono text-white">{baselinePercent}%</span>
             <span className="text-xs text-slate-400">
-              P99: <strong className="text-slate-200">{deployment.baselineMetrics.p99LatencyMs}ms</strong>
+              P99:{' '}
+              <strong className="text-slate-200">
+                {deployment.baselineMetrics.p99LatencyMs}ms
+              </strong>
             </span>
           </div>
         </div>
@@ -96,14 +93,15 @@ export const CanaryTrafficGauge: React.FC<CanaryTrafficGaugeProps> = ({ deployme
               <Zap className="w-3.5 h-3.5" />
               Canary ({deployment.version})
             </span>
-            <span className="font-mono text-slate-300">{deployment.canaryMetrics.requestsPerSecond} req/s</span>
+            <span className="font-mono text-slate-300">
+              {deployment.canaryMetrics.requestsPerSecond} req/s
+            </span>
           </div>
           <div className="flex items-baseline justify-between">
-            <span className="text-xl font-bold font-mono text-amber-400">
-              {canaryPercent}%
-            </span>
+            <span className="text-xl font-bold font-mono text-amber-400">{canaryPercent}%</span>
             <span className="text-xs text-slate-400">
-              P99: <strong className="text-amber-300">{deployment.canaryMetrics.p99LatencyMs}ms</strong>
+              P99:{' '}
+              <strong className="text-amber-300">{deployment.canaryMetrics.p99LatencyMs}ms</strong>
             </span>
           </div>
         </div>

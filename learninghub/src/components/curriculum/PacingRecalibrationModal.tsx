@@ -38,7 +38,9 @@ export const PacingRecalibrationModal: React.FC<PacingRecalibrationModalProps> =
         <div className="bg-amber-50 dark:bg-amber-950/30 p-3.5 rounded-xl border border-amber-200 dark:border-amber-900/50 flex items-start gap-3">
           <Activity className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
           <p className="text-xs text-amber-900 dark:text-amber-300">
-            Feed your recent mock test accuracy into the Bayesian Pacing Engine. If your accuracy is high (&gt;85%), review timelines will be accelerated; if lower (&lt;60%), consolidation drills will be scheduled into buffer weeks.
+            Feed your recent mock test accuracy into the Bayesian Pacing Engine. If your accuracy is
+            high (&gt;85%), review timelines will be accelerated; if lower (&lt;60%), consolidation
+            drills will be scheduled into buffer weeks.
           </p>
         </div>
 

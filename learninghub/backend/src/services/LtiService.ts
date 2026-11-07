@@ -150,8 +150,9 @@ export interface InstitutionAnalytics {
 // ─── Service Implementation ─────────────────────────────────────────────────
 
 export class LtiService {
-  private static readonly HMAC_SECRET = process.env.LTI_HMAC_SECRET || 'learninghub-lti-v13-secure-secret-key-2026'
-  
+  private static readonly HMAC_SECRET =
+    process.env.LTI_HMAC_SECRET || 'learninghub-lti-v13-secure-secret-key-2026'
+
   // In-memory tenant registry (seeded with enterprise institutions)
   private static institutions: Map<string, Institution> = new Map([
     [
@@ -170,7 +171,8 @@ export class LtiService {
         status: 'ACTIVE',
         branding: {
           primaryColor: '#8C1515', // Stanford Cardinal
-          logoUrl: 'https://identity.stanford.edu/wp-content/uploads/sites/3/2020/06/block-s-right.png',
+          logoUrl:
+            'https://identity.stanford.edu/wp-content/uploads/sites/3/2020/06/block-s-right.png',
           portalTitle: 'Stanford Engineering LearningHub Portal',
         },
         createdAt: '2026-01-15T08:00:00Z',
@@ -267,7 +269,10 @@ export class LtiService {
    * 1. OIDC Third-Party Login Initiation
    * Validates issuer / client_id and generates state + nonce with redirect URL.
    */
-  public static initiateOidcLogin(params: LtiOidcLoginParams, redirectUri: string): LtiOidcAuthResponse {
+  public static initiateOidcLogin(
+    params: LtiOidcLoginParams,
+    redirectUri: string
+  ): LtiOidcAuthResponse {
     const institution = this.findInstitutionByIssuer(params.iss, params.client_id)
     if (!institution) {
       throw new Error(`Unauthorized or unregistered LTI issuer: ${params.iss}`)
@@ -280,7 +285,7 @@ export class LtiService {
     // Generate cryptographic state & nonce
     const rawNonce = crypto.randomBytes(16).toString('hex')
     const rawState = crypto.randomBytes(16).toString('hex')
-    
+
     // HMAC-signed state payload { state, instId, timestamp }
     const statePayload = {
       s: rawState,
@@ -288,7 +293,7 @@ export class LtiService {
       t: Date.now(),
     }
     const state = Buffer.from(JSON.stringify(statePayload)).toString('base64url')
-    
+
     // Cache nonce with 10-minute expiry
     this.nonceCache.set(rawNonce, Date.now() + 600000)
 
@@ -321,7 +326,9 @@ export class LtiService {
    */
   public static handleLtiLaunch(claims: LtiLaunchClaims, stateString: string): LtiLaunchSession {
     // 1. Verify Message Type & Version
-    if (claims['https://purl.imsglobal.org/spec/lti/claim/message_type'] !== 'LtiResourceLinkRequest') {
+    if (
+      claims['https://purl.imsglobal.org/spec/lti/claim/message_type'] !== 'LtiResourceLinkRequest'
+    ) {
       throw new Error('Invalid LTI message_type: Expected LtiResourceLinkRequest')
     }
     if (claims['https://purl.imsglobal.org/spec/lti/claim/version'] !== '1.3.0') {
@@ -355,11 +362,12 @@ export class LtiService {
 
     // 5. Evaluate Roles
     const roles = claims['https://purl.imsglobal.org/spec/lti/claim/roles'] || []
-    const isInstructor = roles.some(r => 
-      r.includes('http://purl.imsglobal.org/vocab/lis/v2/membership#Instructor') ||
-      r.includes('http://purl.imsglobal.org/vocab/lis/v2/institution/person#Administrator') ||
-      r.toLowerCase().includes('instructor') ||
-      r.toLowerCase().includes('admin')
+    const isInstructor = roles.some(
+      r =>
+        r.includes('http://purl.imsglobal.org/vocab/lis/v2/membership#Instructor') ||
+        r.includes('http://purl.imsglobal.org/vocab/lis/v2/institution/person#Administrator') ||
+        r.toLowerCase().includes('instructor') ||
+        r.toLowerCase().includes('admin')
     )
 
     // 6. Extract AGS LineItem Endpoint if available
@@ -383,9 +391,12 @@ export class LtiService {
       roles,
       isInstructor,
       contextId: claims['https://purl.imsglobal.org/spec/lti/claim/context']?.id || 'ctx_default',
-      contextTitle: claims['https://purl.imsglobal.org/spec/lti/claim/context']?.title || 'Course Assessment',
+      contextTitle:
+        claims['https://purl.imsglobal.org/spec/lti/claim/context']?.title || 'Course Assessment',
       resourceLinkId: claims['https://purl.imsglobal.org/spec/lti/claim/resource_link'].id,
-      resourceLinkTitle: claims['https://purl.imsglobal.org/spec/lti/claim/resource_link'].title || 'Standard CBT Evaluation',
+      resourceLinkTitle:
+        claims['https://purl.imsglobal.org/spec/lti/claim/resource_link'].title ||
+        'Standard CBT Evaluation',
       targetLinkUri: claims['https://purl.imsglobal.org/spec/lti/claim/target_link_uri'],
       lineItemUrl,
       launchTimestamp: Date.now(),
@@ -393,7 +404,9 @@ export class LtiService {
     }
 
     this.sessions.set(sessionId, session)
-    logger.info(`LTI 1.3 Session Provisioned: User ${session.email} (${isInstructor ? 'Instructor' : 'Learner'}) at ${institution.name}`)
+    logger.info(
+      `LTI 1.3 Session Provisioned: User ${session.email} (${isInstructor ? 'Instructor' : 'Learner'}) at ${institution.name}`
+    )
 
     return session
   }
@@ -419,7 +432,9 @@ export class LtiService {
     // Cryptographic audit digest sealing the passback event
     const proofDigest = crypto
       .createHmac('sha256', this.HMAC_SECRET)
-      .update(`${transactionId}:${institution.id}:${params.studentLtiUserId}:${normalizedScore}:${timestamp}`)
+      .update(
+        `${transactionId}:${institution.id}:${params.studentLtiUserId}:${normalizedScore}:${timestamp}`
+      )
       .digest('hex')
 
     const result: GradePassbackResult = {
@@ -441,7 +456,9 @@ export class LtiService {
       this.passbackHistory.pop()
     }
 
-    logger.info(`AGS Grade Passback Success: Student ${params.studentLtiUserId} -> ${params.scoreGiven}/${params.scoreMaximum} (${(normalizedScore * 100).toFixed(1)}%) to ${params.lineItemUrl}`)
+    logger.info(
+      `AGS Grade Passback Success: Student ${params.studentLtiUserId} -> ${params.scoreGiven}/${params.scoreMaximum} (${(normalizedScore * 100).toFixed(1)}%) to ${params.lineItemUrl}`
+    )
 
     return result
   }
@@ -462,7 +479,9 @@ export class LtiService {
     )
   }
 
-  public static registerInstitution(data: Omit<Institution, 'id' | 'createdAt' | 'updatedAt'>): Institution {
+  public static registerInstitution(
+    data: Omit<Institution, 'id' | 'createdAt' | 'updatedAt'>
+  ): Institution {
     const id = `inst_${data.subdomain.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${crypto.randomBytes(3).toString('hex')}`
     const now = new Date().toISOString()
 
@@ -474,12 +493,17 @@ export class LtiService {
     }
 
     this.institutions.set(id, institution)
-    logger.info(`New Institution Registered: ${institution.name} [id=${id}, domain=${institution.domain}]`)
+    logger.info(
+      `New Institution Registered: ${institution.name} [id=${id}, domain=${institution.domain}]`
+    )
 
     return institution
   }
 
-  public static updateInstitution(id: string, updates: Partial<Omit<Institution, 'id' | 'createdAt'>>): Institution {
+  public static updateInstitution(
+    id: string,
+    updates: Partial<Omit<Institution, 'id' | 'createdAt'>>
+  ): Institution {
     const existing = this.institutions.get(id)
     if (!existing) {
       throw new Error(`Institution with ID ${id} not found`)
@@ -505,14 +529,28 @@ export class LtiService {
     }
 
     const recentPassbacks = this.passbackHistory.slice(0, 10)
-    
+
     // Aggregated metrics calculation
-    const baseLearners = institutionId === 'inst_stanford_eng' ? 1420 : institutionId === 'inst_mit_eecs' ? 1890 : 2350
-    const baseInstructors = institutionId === 'inst_stanford_eng' ? 48 : institutionId === 'inst_mit_eecs' ? 62 : 75
-    const baseLaunches = institutionId === 'inst_stanford_eng' ? 8420 : institutionId === 'inst_mit_eecs' ? 12340 : 15890
-    const baseCompleted = institutionId === 'inst_stanford_eng' ? 7910 : institutionId === 'inst_mit_eecs' ? 11850 : 14920
-    const avgScore = institutionId === 'inst_stanford_eng' ? 88.4 : institutionId === 'inst_mit_eecs' ? 91.2 : 86.7
-    const passRate = institutionId === 'inst_stanford_eng' ? 94.6 : institutionId === 'inst_mit_eecs' ? 96.8 : 92.4
+    const baseLearners =
+      institutionId === 'inst_stanford_eng' ? 1420 : institutionId === 'inst_mit_eecs' ? 1890 : 2350
+    const baseInstructors =
+      institutionId === 'inst_stanford_eng' ? 48 : institutionId === 'inst_mit_eecs' ? 62 : 75
+    const baseLaunches =
+      institutionId === 'inst_stanford_eng'
+        ? 8420
+        : institutionId === 'inst_mit_eecs'
+          ? 12340
+          : 15890
+    const baseCompleted =
+      institutionId === 'inst_stanford_eng'
+        ? 7910
+        : institutionId === 'inst_mit_eecs'
+          ? 11850
+          : 14920
+    const avgScore =
+      institutionId === 'inst_stanford_eng' ? 88.4 : institutionId === 'inst_mit_eecs' ? 91.2 : 86.7
+    const passRate =
+      institutionId === 'inst_stanford_eng' ? 94.6 : institutionId === 'inst_mit_eecs' ? 96.8 : 92.4
 
     return {
       institutionId: institution.id,
@@ -526,10 +564,30 @@ export class LtiService {
       passRatePercent: passRate,
       activeCohortsCount: 14,
       topExams: [
-        { examId: 'gate_cs_mock_01', examTitle: 'Advanced Data Structures & Graph Theory', attempts: 680, avgScore: 89.2 },
-        { examId: 'sys_arch_staff_04', examTitle: 'Distributed Systems & Raft Consensus', attempts: 540, avgScore: 92.1 },
-        { examId: 'bkt_psychometrics_02', examTitle: 'Bayesian Knowledge Tracing & Psychometrics', attempts: 430, avgScore: 86.4 },
-        { examId: 'crypto_verifiable_03', examTitle: 'Decentralized W3C Verifiable Credentials', attempts: 390, avgScore: 94.0 },
+        {
+          examId: 'gate_cs_mock_01',
+          examTitle: 'Advanced Data Structures & Graph Theory',
+          attempts: 680,
+          avgScore: 89.2,
+        },
+        {
+          examId: 'sys_arch_staff_04',
+          examTitle: 'Distributed Systems & Raft Consensus',
+          attempts: 540,
+          avgScore: 92.1,
+        },
+        {
+          examId: 'bkt_psychometrics_02',
+          examTitle: 'Bayesian Knowledge Tracing & Psychometrics',
+          attempts: 430,
+          avgScore: 86.4,
+        },
+        {
+          examId: 'crypto_verifiable_03',
+          examTitle: 'Decentralized W3C Verifiable Credentials',
+          attempts: 390,
+          avgScore: 94.0,
+        },
       ],
       recentPassbacks,
     }
@@ -556,7 +614,10 @@ export class LtiService {
 
   // ─── Internal Helpers ───────────────────────────────────────────────────────
 
-  private static findInstitutionByIssuer(issuer: string, clientId?: string): Institution | undefined {
+  private static findInstitutionByIssuer(
+    issuer: string,
+    clientId?: string
+  ): Institution | undefined {
     return Array.from(this.institutions.values()).find(inst => {
       const issuerMatch = inst.issuer.replace(/\/$/, '') === issuer.replace(/\/$/, '')
       if (!clientId) return issuerMatch

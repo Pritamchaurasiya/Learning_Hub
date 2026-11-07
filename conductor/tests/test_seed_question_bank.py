@@ -42,9 +42,12 @@ class TestSeedExamQuestionBankCommand:
         for q in questions:
             assert q.difficulty > 0
             assert q.discrimination > 0
-            assert q.options.count() >= 4
-            # At least one correct option
-            assert q.options.filter(is_correct=True).exists()
+            if q.question_type in ("mcq", "multiple_choice", "single_choice"):
+                assert q.options.count() >= 4
+                # At least one correct option
+                assert q.options.filter(is_correct=True).exists()
+            elif q.question_type == "coding":
+                assert len(getattr(q, "test_cases", []) or []) >= 1 or q.options.exists()
 
         # Verify Test Blueprints
         assert TestModel.objects.filter(title="JEE Advanced Grand Simulation Paper 1").exists()

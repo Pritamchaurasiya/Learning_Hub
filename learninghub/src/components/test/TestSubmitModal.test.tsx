@@ -101,4 +101,29 @@ describe('TestSubmitModal Component', () => {
     expect(screen.getByText('Submitting...')).toBeDisabled()
     expect(screen.getByText('Return to Test')).toBeDisabled()
   })
+
+  it('displays offline resilience banner and updates button text when isOnline is false', () => {
+    const onSubmit = vi.fn()
+    render(
+      <TestSubmitModal
+        isOpen={true}
+        onClose={vi.fn()}
+        onSubmit={onSubmit}
+        isSubmitting={false}
+        attemptedCount={8}
+        unansweredCount={2}
+        flaggedCount={3}
+        timeRemaining={450}
+        isOnline={false}
+      />
+    )
+
+    expect(screen.getByText('Offline Resilience Protected')).toBeInTheDocument()
+    expect(screen.getByText(/safely buffer your test encrypted locally/i)).toBeInTheDocument()
+    const submitBtn = screen.getByText('Submit & Buffer Offline')
+    expect(submitBtn).toBeInTheDocument()
+
+    fireEvent.click(submitBtn)
+    expect(onSubmit).toHaveBeenCalledTimes(1)
+  })
 })

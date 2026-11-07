@@ -48,9 +48,7 @@ export const SwePatchDiffViewer: React.FC<SwePatchDiffViewerProps> = ({ patches 
           key={idx}
           className={`px-3 py-0.5 font-mono text-xs flex items-center gap-2 ${lineBg}`}
         >
-          <span className="w-6 text-[10px] text-slate-600 select-none text-right">
-            {idx + 1}
-          </span>
+          <span className="w-6 text-[10px] text-slate-600 select-none text-right">{idx + 1}</span>
           <span className={bg}>{line}</span>
         </div>
       )
@@ -71,7 +69,11 @@ export const SwePatchDiffViewer: React.FC<SwePatchDiffViewerProps> = ({ patches 
           onClick={handleCopyDiff}
           className="flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg transition-colors border border-slate-700"
         >
-          {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+          {copied ? (
+            <Check className="w-3.5 h-3.5 text-emerald-400" />
+          ) : (
+            <Copy className="w-3.5 h-3.5" />
+          )}
           {copied ? 'Copied to Clipboard' : 'Copy Unified Diff'}
         </button>
       </div>

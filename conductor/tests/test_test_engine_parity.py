@@ -7,13 +7,15 @@ import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
-from apps.exams.models import Country, Exam, Subject, Topic
+from apps.exams.models import Country, Exam, Subject, Topic, PYQ
 from apps.test_engine.models import (
     Test,
     Question,
     Option,
     TestQuestion,
+    TestSection,
     TestAttempt,
+    QuestionBookmark,
 )
 
 User = get_user_model()
@@ -383,3 +385,148 @@ class TestTestEngineParity:
         assert generated["difficulty"] == "medium"
         assert generated["time_limit_minutes"] == 20
         assert "questions" in generated
+
+    def test_sections_and_test_cases_sanitization(self, auth_client, published_test):
+        """Test that sections are serialized and hidden test cases are sanitized during testing."""
+        test = published_test["test"]
+        section1 = TestSection.objects.create(
+            test=test,
+            name="Section A: Core Physics",
+            order=1,
+            duration_minutes=45,
+            is_timed=True,
+            section_type="MANDATORY"
+        )
+        tq1 = test.test_questions.first()
+        tq1.section = section1
+        tq1.save()
+
+        # Add coding question with a hidden test case
+        coding_q = Question.objects.create(
+            text="Implement an efficient bounded priority queue.",
+            topic=published_test["q1"].topic,
+            question_type="coding",
+            difficulty=2.5,
+            test_cases=[
+                {"input": "pq.insert(5)", "output": "5", "is_hidden": False},
+                {"input": "pq.insert(10); pq.pop()", "output": "10", "is_hidden": True, "explanation": "Secret edge case"},
+            ]
+        )
+        TestQuestion.objects.create(test=test, question=coding_q, order=99, marks=5, section=section1)
+
+        res = auth_client.get(f"/api/v1/tests/{test.id}/")
+        assert res.status_code == status.HTTP_200_OK
+        data = res.json()["data"]
+
+        # 1. Sections array
+        assert "sections" in data
+        assert len(data["sections"]) >= 1
+        assert data["sections"][0]["name"] == "Section A: Core Physics"
+        assert data["sections"][0]["duration_minutes"] == 45
+
+        # 2. Section mapping on questions
+        matching_q = next(q for q in data["questions"] if q["id"] == str(tq1.question_id))
+        assert matching_q["section_id"] == str(section1.id)
+        assert matching_q["section_name"] == "Section A: Core Physics"
+
+        # 3. Sanitized test cases
+        matching_coding = next(q for q in data["questions"] if q["id"] == str(coding_q.id))
+        cases = matching_coding["test_cases"]
+        assert len(cases) == 2
+        # Public sample case keeps output
+        assert cases[0]["output"] == "5"
+        # Hidden test case MUST NOT expose secret output
+        assert "output" not in cases[1]
+        assert cases[1]["is_hidden"] is True
+
+    def test_proctor_time_extension_and_negative_scoring(self, auth_client, published_test):
+        """Test proctor time extension is added to time_remaining_seconds and negative marking works."""
+        test = published_test["test"]
+        test.negative_marks_per_question = 2.0
+        test.save()
+
+        start_res = auth_client.post(f"/api/v1/tests/{test.id}/start", {}, format="json")
+        attempt_id = start_res.json()["data"]["attempt_id"]
+
+        attempt = TestAttempt.objects.get(id=attempt_id)
+        # Grant 10 minutes (600s) extension via proctor metadata
+        attempt.metadata = {"time_extension_seconds": 600}
+        attempt.save()
+
+        # time_remaining_seconds must reflect the 600s extension
+        expected_min = (test.time_limit_minutes * 60) + 550
+        assert attempt.time_remaining_seconds >= expected_min
+
+        # Submit attempt with wrong answers to test negative scoring unclamping
+        wrong_opt1 = published_test["q1"].options.filter(is_correct=False).first()
+        wrong_opt2 = published_test["q2"].options.filter(is_correct=False).first()
+        submit_payload = {
+            "attempt_id": attempt_id,
+            "answers": {
+                str(published_test["q1"].id): str(wrong_opt1.id),
+                str(published_test["q2"].id): str(wrong_opt2.id),
+            },
+            "timeTaken": 120,
+        }
+        res_submit = auth_client.post(f"/api/v1/tests/{test.id}/submit", submit_payload, format="json")
+        assert res_submit.status_code == status.HTTP_200_OK
+        result = res_submit.json()["data"]
+
+        # Net score should be negative: 0 obtained - (2 * 2.0 negative marks) = -4.0
+        assert result["score"] == -4.0
+        assert result["passed"] is False
+
+    def test_question_bookmarks_crud(self, auth_client, published_test, student_user):
+        """Test GET, POST, and DELETE on /api/v1/tests/bookmarks/."""
+        q1 = published_test["q1"]
+
+        # 1. Create Bookmark via POST
+        create_res = auth_client.post("/api/v1/tests/bookmarks/", {
+            "question_id": str(q1.id),
+            "notes": "Review Carnot cycle formula before exam",
+        }, format="json")
+        assert create_res.status_code == status.HTTP_200_OK
+        assert create_res.json()["data"]["bookmarked"] is True
+        assert QuestionBookmark.objects.filter(user=student_user, question=q1).exists()
+
+        # 2. List Bookmarks via GET
+        list_res = auth_client.get("/api/v1/tests/bookmarks/")
+        assert list_res.status_code == status.HTTP_200_OK
+        bookmarks_data = list_res.json()["data"]
+        assert len(bookmarks_data) >= 1
+        bm_item = next(b for b in bookmarks_data if str(b["question"]) == str(q1.id))
+        assert bm_item["notes"] == "Review Carnot cycle formula before exam"
+        assert "question_text" in bm_item
+
+        # 3. Remove Bookmark via DELETE
+        del_res = auth_client.delete(f"/api/v1/tests/bookmarks/?question_id={q1.id}")
+        assert del_res.status_code == status.HTTP_200_OK
+        assert del_res.json()["data"]["bookmarked"] is False
+        assert not QuestionBookmark.objects.filter(user=student_user, question=q1).exists()
+
+    def test_pyq_viewset_endpoints_and_filtering(self, auth_client, exam_setup):
+        """Test GET /api/v1/exams/pyqs/ with exam, year, shift filtering."""
+        pyq = PYQ.objects.create(
+            exam=exam_setup["exam"],
+            subject=exam_setup["subject"],
+            topic=exam_setup["topic"],
+            year=2024,
+            shift="Morning Shift 1",
+            paper_code="JEE_ADV_P1",
+            question_text="Evaluate the adiabatic expansion work integral for van der Waals gas.",
+            solution_text="W = R*T*ln((V2-b)/(V1-b)) + a*(1/V2 - 1/V1)",
+            difficulty="HARD",
+            marks=4,
+            is_verified=True,
+            source_metadata={"conducting_body": "IIT Madras", "verified_key": True}
+        )
+
+        res = auth_client.get(f"/api/v1/exams/pyqs/?exam={exam_setup['exam'].code}&year=2024&shift=Morning")
+        assert res.status_code == status.HTTP_200_OK
+        pyqs = res.json()["results"] if "results" in res.json() else res.json()
+        assert len(pyqs) >= 1
+        item = next(p for p in pyqs if p["id"] == str(pyq.id))
+        assert item["shift"] == "Morning Shift 1"
+        assert item["paper_code"] == "JEE_ADV_P1"
+        assert item["is_verified"] is True
+        assert item["exam_code"] == exam_setup["exam"].code

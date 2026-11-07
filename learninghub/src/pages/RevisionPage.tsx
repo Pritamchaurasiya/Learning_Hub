@@ -14,7 +14,13 @@ import {
   X,
 } from 'lucide-react'
 import { revisionService } from '../services/revisionService'
-import type { SpacedCard, DeckStats, RetentionStats, ReviewGrade, CardType } from '../types/revision'
+import type {
+  SpacedCard,
+  DeckStats,
+  RetentionStats,
+  ReviewGrade,
+  CardType,
+} from '../types/revision'
 import { SpacedRepetitionCard } from '../components/revision/SpacedRepetitionCard'
 import { RetentionAnalyticsCard } from '../components/revision/RetentionAnalyticsCard'
 import { Card } from '../components/ui/Card'
@@ -37,10 +43,17 @@ export const RevisionPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [selectedFilter, setSelectedFilter] = useState<'ALL' | 'DUE' | 'MISTAKE' | 'FORMULA' | 'CONCEPT' | 'QUESTION'>('DUE')
+  const [selectedFilter, setSelectedFilter] = useState<
+    'ALL' | 'DUE' | 'MISTAKE' | 'FORMULA' | 'CONCEPT' | 'QUESTION'
+  >('DUE')
   const [sessionCompleted, setSessionCompleted] = useState(false)
   const [sessionReviewedCount, setSessionReviewedCount] = useState(0)
-  const [gradeCounts, setGradeCounts] = useState<{ [grade: number]: number }>({ 1: 0, 2: 0, 4: 0, 5: 0 })
+  const [gradeCounts, setGradeCounts] = useState<{ [grade: number]: number }>({
+    1: 0,
+    2: 0,
+    4: 0,
+    5: 0,
+  })
 
   // Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -67,7 +80,9 @@ export const RevisionPage: React.FC = () => {
       let filteredCards = deckData.cards
       if (selectedFilter === 'DUE') {
         const now = new Date()
-        filteredCards = deckData.cards.filter(c => !c.next_review_at || new Date(c.next_review_at) <= now)
+        filteredCards = deckData.cards.filter(
+          c => !c.next_review_at || new Date(c.next_review_at) <= now
+        )
         if (filteredCards.length === 0) {
           // If no cards are strictly due, provide all available cards
           filteredCards = deckData.cards
@@ -198,7 +213,8 @@ export const RevisionPage: React.FC = () => {
               </h1>
             </div>
             <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
-              SuperMemo SM-2+ psychometric review deck calibrated to counter the Ebbinghaus forgetting curve
+              SuperMemo SM-2+ psychometric review deck calibrated to counter the Ebbinghaus
+              forgetting curve
             </p>
           </div>
 
@@ -225,18 +241,26 @@ export const RevisionPage: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-3.5 flex items-center justify-between shadow-sm">
               <span className="text-gray-500 dark:text-gray-400 font-medium">Total Deck</span>
-              <span className="font-black text-gray-900 dark:text-white text-base">{deckStats.total_cards}</span>
+              <span className="font-black text-gray-900 dark:text-white text-base">
+                {deckStats.total_cards}
+              </span>
             </div>
             <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-3.5 flex items-center justify-between shadow-sm">
               <span className="text-amber-600 dark:text-amber-400 font-medium">Due Today</span>
-              <span className="font-black text-amber-600 dark:text-amber-400 text-base">{deckStats.total_due}</span>
+              <span className="font-black text-amber-600 dark:text-amber-400 text-base">
+                {deckStats.total_due}
+              </span>
             </div>
             <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-3.5 flex items-center justify-between shadow-sm">
               <span className="text-emerald-600 dark:text-emerald-400 font-medium">Mastered</span>
-              <span className="font-black text-emerald-600 dark:text-emerald-400 text-base">{deckStats.mastered_count}</span>
+              <span className="font-black text-emerald-600 dark:text-emerald-400 text-base">
+                {deckStats.mastered_count}
+              </span>
             </div>
             <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-3.5 flex items-center justify-between shadow-sm">
-              <span className="text-indigo-600 dark:text-indigo-400 font-medium">Avg Retention</span>
+              <span className="text-indigo-600 dark:text-indigo-400 font-medium">
+                Avg Retention
+              </span>
               <span className="font-black text-indigo-600 dark:text-indigo-400 text-base">
                 {Math.round(deckStats.average_retention * 100)}%
               </span>
@@ -291,7 +315,8 @@ export const RevisionPage: React.FC = () => {
                 Session Completed!
               </h2>
               <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
-                You reviewed {sessionReviewedCount} cards today. Memory traces successfully reinforced.
+                You reviewed {sessionReviewedCount} cards today. Memory traces successfully
+                reinforced.
               </p>
             </div>
 
@@ -344,11 +369,10 @@ export const RevisionPage: React.FC = () => {
               <CheckCircle2 className="w-8 h-8" />
             </div>
             <div>
-              <h3 className="text-lg font-black text-gray-900 dark:text-white">
-                All Caught Up!
-              </h3>
+              <h3 className="text-lg font-black text-gray-900 dark:text-white">All Caught Up!</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                No cards are currently due in this category. You can add custom cards or review other subjects.
+                No cards are currently due in this category. You can add custom cards or review
+                other subjects.
               </p>
             </div>
             <button
@@ -364,7 +388,9 @@ export const RevisionPage: React.FC = () => {
             {/* Session Progress Header */}
             <div className="flex items-center justify-between text-xs font-bold text-gray-500 dark:text-gray-400 max-w-2xl mx-auto px-2">
               <div className="flex items-center gap-2">
-                <span>Card {currentIndex + 1} of {cards.length}</span>
+                <span>
+                  Card {currentIndex + 1} of {cards.length}
+                </span>
                 <span className="text-gray-300 dark:text-gray-700">·</span>
                 <span className="text-indigo-500">Streak: {sessionReviewedCount}</span>
               </div>

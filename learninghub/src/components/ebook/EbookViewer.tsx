@@ -87,20 +87,11 @@ function renderFormattedInline(
       )
     }
 
-    return isBionic ? (
-      <span key={k}>{applyBionicReading(part)}</span>
-    ) : (
-      <span key={k}>{part}</span>
-    )
+    return isBionic ? <span key={k}>{applyBionicReading(part)}</span> : <span key={k}>{part}</span>
   })
 }
 
-export function EbookViewer({
-  contentMarkdown,
-  settings,
-  highlights = [],
-  onTextSelected,
-}: Props) {
+export function EbookViewer({ contentMarkdown, settings, highlights = [], onTextSelected }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   const themeClasses = useMemo(() => {

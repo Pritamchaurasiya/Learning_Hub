@@ -82,7 +82,8 @@ export const ResumePreviewCard: React.FC<ResumePreviewCardProps> = ({ resume }) 
             <span className="truncate max-w-xs">{resume.profile.didIdentifier}</span>
           </div>
           <span className="text-slate-400 font-sans">
-            ATS Compatibility: {resume.atsScoring.overallScore}/100 (Grade {resume.atsScoring.grade})
+            ATS Compatibility: {resume.atsScoring.overallScore}/100 (Grade {resume.atsScoring.grade}
+            )
           </span>
         </div>
       </header>
@@ -137,11 +138,15 @@ export const ResumePreviewCard: React.FC<ResumePreviewCardProps> = ({ resume }) 
           </div>
           <div>
             <span className="font-bold text-slate-950">Distributed Systems & Cloud: </span>
-            <span className="text-slate-700">{resume.skillsMatrix.systemsAndCloud.join(' • ')}</span>
+            <span className="text-slate-700">
+              {resume.skillsMatrix.systemsAndCloud.join(' • ')}
+            </span>
           </div>
           <div>
             <span className="font-bold text-slate-950">Algorithmic Competencies: </span>
-            <span className="text-slate-700">{resume.skillsMatrix.algorithmicCompetencies.join(' • ')}</span>
+            <span className="text-slate-700">
+              {resume.skillsMatrix.algorithmicCompetencies.join(' • ')}
+            </span>
           </div>
         </div>
       </section>

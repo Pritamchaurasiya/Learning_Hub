@@ -9,18 +9,10 @@ import { TestResult } from './testsAService'
 import { api } from '../utils/api'
 
 export type CognitiveMistakeType =
-  | 'CONCEPT_GAP'
-  | 'CALCULATION_SLIP'
-  | 'TIME_CRUNCH'
-  | 'UNANSWERED'
-  | 'CONFIDENCE_MISMATCH'
+  'CONCEPT_GAP' | 'CALCULATION_SLIP' | 'TIME_CRUNCH' | 'UNANSWERED' | 'CONFIDENCE_MISMATCH'
 
-export type MistakeEtiology = 
-  | 'KNOWLEDGE_DEFICIT'
-  | 'CARELESS_SLIP'
-  | 'LUCKY_GUESS'
-  | 'FATIGUE_FLAG'
-  | 'CONCEPT_CONFUSION'
+export type MistakeEtiology =
+  'KNOWLEDGE_DEFICIT' | 'CARELESS_SLIP' | 'LUCKY_GUESS' | 'FATIGUE_FLAG' | 'CONCEPT_CONFUSION'
 
 export interface QuestionTelemetry {
   questionId: string
@@ -166,19 +158,23 @@ export function classifyMistake(
     mistakeLabel = 'Skipped / Unattempted'
     severity = 'HIGH'
     diagnosis = 'Question skipped. Indicates lack of confidence or severe time pressure.'
-    recommendedAction = 'Practice rapid elimination of obviously false choices to attempt educated guesses.'
+    recommendedAction =
+      'Practice rapid elimination of obviously false choices to attempt educated guesses.'
   } else if (userConfidence === 'high') {
     mistakeType = 'CONFIDENCE_MISMATCH'
     mistakeLabel = 'Overconfidence Trap'
     severity = 'HIGH'
-    diagnosis = 'High confidence indicated, but answer was incorrect. Highlights illusion of competence.'
-    recommendedAction = 'Calibrate confidence against empirical accuracy; practice self-questioning.'
+    diagnosis =
+      'High confidence indicated, but answer was incorrect. Highlights illusion of competence.'
+    recommendedAction =
+      'Calibrate confidence against empirical accuracy; practice self-questioning.'
   } else if (timeSpent > averageTimePerQuestion * 1.6) {
     mistakeType = 'CONCEPT_GAP'
     mistakeLabel = 'Conceptual Hurdle'
     severity = 'CRITICAL'
     diagnosis = 'Substantial time invested (>1.6x average) but resulted in incorrect response.'
-    recommendedAction = 'Revisit foundational theory in the core syllabus and work on step-by-step derivation.'
+    recommendedAction =
+      'Revisit foundational theory in the core syllabus and work on step-by-step derivation.'
   } else if (timeSpent < 15 || (totalRemainingTimePercent < 20 && timeSpent < 25)) {
     mistakeType = 'TIME_CRUNCH'
     mistakeLabel = 'Time Crunch Guess'
@@ -190,7 +186,8 @@ export function classifyMistake(
     mistakeLabel = 'Speed-Induced Trap'
     severity = 'MEDIUM'
     diagnosis = 'Answered very rapidly without thorough verification of question constraints.'
-    recommendedAction = 'Slow down on deceptively simple problems; verify edge conditions before submitting.'
+    recommendedAction =
+      'Slow down on deceptively simple problems; verify edge conditions before submitting.'
   }
 
   return {
@@ -214,16 +211,15 @@ export function classifyMistake(
  * Aggregate all question-level mistakes into a cohesive RemediationSummary.
  */
 export function analyzeMistakes(result: TestResult): RemediationSummary {
-  const totalQuestions = result.total_questions || (result.question_results ? result.question_results.length : 0)
+  const totalQuestions =
+    result.total_questions || (result.question_results ? result.question_results.length : 0)
   const questionResults = result.question_results || []
   const incorrectOrSkipped = questionResults.filter(q => !q.is_correct)
 
   const totalTime = questionResults.reduce((acc, q) => acc + (q.time_spent ?? 0), 0)
   const averageTime = totalQuestions > 0 ? totalTime / totalQuestions : 60
 
-  const items: MistakeAnalysisItem[] = incorrectOrSkipped.map(q =>
-    classifyMistake(q, averageTime)
-  )
+  const items: MistakeAnalysisItem[] = incorrectOrSkipped.map(q => classifyMistake(q, averageTime))
 
   const counts: Record<CognitiveMistakeType, number> = {
     CONCEPT_GAP: 0,
@@ -243,7 +239,10 @@ export function analyzeMistakes(result: TestResult): RemediationSummary {
   const totalMistakes = items.length
   const denom = totalMistakes > 0 ? totalMistakes : 1
 
-  const categoryMeta: Record<CognitiveMistakeType, { label: string; color: string; description: string; iconName: string }> = {
+  const categoryMeta: Record<
+    CognitiveMistakeType,
+    { label: string; color: string; description: string; iconName: string }
+  > = {
     CONCEPT_GAP: {
       label: 'Conceptual Hurdle',
       color: '#EF4444',
@@ -276,9 +275,7 @@ export function analyzeMistakes(result: TestResult): RemediationSummary {
     },
   }
 
-  const categories: RemediationCategoryStats[] = (
-    Object.keys(counts) as CognitiveMistakeType[]
-  )
+  const categories: RemediationCategoryStats[] = (Object.keys(counts) as CognitiveMistakeType[])
     .filter(type => counts[type] > 0)
     .map(type => ({
       type,
@@ -320,7 +317,9 @@ export function analyzeMistakes(result: TestResult): RemediationSummary {
     )
   }
   if (actionableInsights.length === 0) {
-    actionableInsights.push('Excellent performance! Review minor solutions to reinforce long-term mastery.')
+    actionableInsights.push(
+      'Excellent performance! Review minor solutions to reinforce long-term mastery.'
+    )
   }
 
   const drillTitle =
@@ -334,7 +333,8 @@ export function analyzeMistakes(result: TestResult): RemediationSummary {
     testTitle: result.test_title,
     totalQuestions,
     totalMistakes,
-    accuracyPercentage: result.percentage ?? Math.round((result.correct_count / totalQuestions) * 100),
+    accuracyPercentage:
+      result.percentage ?? Math.round((result.correct_count / totalQuestions) * 100),
     categories,
     items,
     primaryWeakness,
@@ -360,7 +360,8 @@ export function createRemediationDrillConfig(
     examName,
     mode: 'practice',
     difficulty: summary.primaryWeakness === 'CONCEPT_GAP' ? 'medium' : 'mixed',
-    topics: summary.targetTopics.length > 0 ? summary.targetTopics.slice(0, 3) : ['General Aptitude'],
+    topics:
+      summary.targetTopics.length > 0 ? summary.targetTopics.slice(0, 3) : ['General Aptitude'],
     questionCount: Math.min(Math.max(summary.totalMistakes, 5), 10),
     timeLimitMinutes: 10,
     mistakeTypesTargeted: targetedMistakes,
@@ -372,7 +373,10 @@ export function createRemediationDrillConfig(
  */
 export async function diagnose(telemetry: QuestionTelemetry): Promise<DiagnosticAssessment> {
   try {
-    const res = await api.post<{ data: DiagnosticAssessment }>('/api/v1/remediation/diagnose', telemetry)
+    const res = await api.post<{ data: DiagnosticAssessment }>(
+      '/api/v1/remediation/diagnose',
+      telemetry
+    )
     if (res?.data) {
       return res.data
     }
@@ -398,12 +402,16 @@ export async function diagnose(telemetry: QuestionTelemetry): Promise<Diagnostic
       prerequisiteName: `Foundational Principles of ${telemetry.conceptName}`,
       targetDifficulty: -0.5,
       drillStepCount: isCareless ? 1 : 3,
-      estimatedRecoveryTimeMinutes: isCareless ? 2 : 6
-    }
+      estimatedRecoveryTimeMinutes: isCareless ? 2 : 6,
+    },
   }
 }
 
-export async function getDrill(conceptId: string, conceptName: string, etiology: MistakeEtiology): Promise<RemediationDrillPayload> {
+export async function getDrill(
+  conceptId: string,
+  conceptName: string,
+  etiology: MistakeEtiology
+): Promise<RemediationDrillPayload> {
   try {
     const res = await api.get<{ data: RemediationDrillPayload }>(
       `/api/v1/remediation/drill/${conceptId}?conceptName=${encodeURIComponent(conceptName)}&etiology=${etiology}`
@@ -428,12 +436,12 @@ export async function getDrill(conceptId: string, conceptName: string, etiology:
           `Invariant conservation of bounded state properties`,
           `Arbitrary divergent iteration without termination guarantee`,
           `Unchecked heuristic memory mutation`,
-          `Inverse traversal omitting base bounds`
+          `Inverse traversal omitting base bounds`,
         ],
         correctIndex: 0,
         hint: `Think of deterministic guarantees and conservation rules.`,
         explanation: `System soundness begins by confirming state invariants.`,
-        difficulty: -0.5
+        difficulty: -0.5,
       },
       {
         stepNumber: 2,
@@ -443,12 +451,12 @@ export async function getDrill(conceptId: string, conceptName: string, etiology:
           `Apply monotonic bounds clamp and proportional dampening`,
           `Bypass boundary validation to maximize loop frequency`,
           `Reset all internal registers to arbitrary offsets`,
-          `Drop exceptions without recording system telemetry`
+          `Drop exceptions without recording system telemetry`,
         ],
         correctIndex: 0,
         hint: `Consider stability constraints and monotonicity.`,
         explanation: `Monotonic bounds prevent uncontrolled oscillation.`,
-        difficulty: 0.2
+        difficulty: 0.2,
       },
       {
         stepNumber: 3,
@@ -458,15 +466,15 @@ export async function getDrill(conceptId: string, conceptName: string, etiology:
           `Idempotent transaction semantics and atomic state transitions`,
           `Non-locking asynchronous writes without consistency checks`,
           `Unsynchronized global state mutations`,
-          `Ephemeral cache reads without replica verification`
+          `Ephemeral cache reads without replica verification`,
         ],
         correctIndex: 0,
         hint: `Prioritize atomicity and idempotency.`,
         explanation: `Atomic transitions preserve systemic integrity under concurrent stress.`,
-        difficulty: 0.8
-      }
+        difficulty: 0.8,
+      },
     ],
-    potentialMasteryDelta: 0.18
+    potentialMasteryDelta: 0.18,
   }
 }
 
@@ -506,7 +514,7 @@ export async function submitDrill(
     feedback: passed
       ? 'Well done! All remediation drill steps verified.'
       : 'Prerequisite gap detected. Review the concept lesson.',
-    recoveredStatus: passed ? 'FULLY_RECOVERED' : 'NEEDS_PREREQUISITE_COURSE'
+    recoveredStatus: passed ? 'FULLY_RECOVERED' : 'NEEDS_PREREQUISITE_COURSE',
   }
 }
 

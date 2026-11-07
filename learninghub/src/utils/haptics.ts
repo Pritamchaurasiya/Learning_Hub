@@ -6,13 +6,7 @@
  */
 
 export type HapticFeedbackType =
-  | 'selection'
-  | 'light'
-  | 'medium'
-  | 'heavy'
-  | 'success'
-  | 'warning'
-  | 'error'
+  'selection' | 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error'
 
 const HAPTIC_PATTERNS: Record<HapticFeedbackType, number | number[]> = {
   selection: 12,

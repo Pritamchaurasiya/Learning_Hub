@@ -1,6 +1,14 @@
 import React from 'react'
 import { SimulatedJobListing } from '../../types/career'
-import { Building2, MapPin, Sparkles, CheckCircle, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react'
+import {
+  Building2,
+  MapPin,
+  Sparkles,
+  CheckCircle,
+  AlertCircle,
+  ArrowRight,
+  ShieldCheck,
+} from 'lucide-react'
 
 interface JobMatchingGridCardProps {
   job: SimulatedJobListing
@@ -43,7 +51,9 @@ export const JobMatchingGridCard: React.FC<JobMatchingGridCardProps> = ({
           </h3>
         </div>
 
-        <div className={`px-2.5 py-1 rounded-xl text-xs font-bold border flex items-center gap-1.5 ${getAffinityColor(job.matchAffinityScore)}`}>
+        <div
+          className={`px-2.5 py-1 rounded-xl text-xs font-bold border flex items-center gap-1.5 ${getAffinityColor(job.matchAffinityScore)}`}
+        >
           <Sparkles className="w-3.5 h-3.5" />
           <span>{job.matchAffinityScore}% Match</span>
         </div>
@@ -61,14 +71,13 @@ export const JobMatchingGridCard: React.FC<JobMatchingGridCardProps> = ({
         </span>
         <span className="text-slate-600">•</span>
         <span className="text-emerald-400 font-semibold font-mono">
-          ${(job.baseSalaryMin / 1000).toFixed(0)}k - ${(job.baseSalaryMax / 1000).toFixed(0)}k Base + ${(job.equityAnnualUsd / 1000).toFixed(0)}k RSU
+          ${(job.baseSalaryMin / 1000).toFixed(0)}k - ${(job.baseSalaryMax / 1000).toFixed(0)}k Base
+          + ${(job.equityAnnualUsd / 1000).toFixed(0)}k RSU
         </span>
       </div>
 
       {/* Description */}
-      <p className="text-xs text-slate-400 line-clamp-2 mb-4 leading-relaxed">
-        {job.description}
-      </p>
+      <p className="text-xs text-slate-400 line-clamp-2 mb-4 leading-relaxed">{job.description}</p>
 
       {/* Matched vs Missing Skills */}
       <div className="space-y-2 mb-4">

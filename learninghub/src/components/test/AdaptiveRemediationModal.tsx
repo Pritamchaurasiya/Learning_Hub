@@ -1,6 +1,6 @@
 /**
  * AdaptiveRemediationModal.tsx
- * 
+ *
  * Milestone 32: AI-Powered Computerized Adaptive Remediation (CAR) Modal
  * Diagnoses mistake etiology, guides learners through targeted scaffolding drills,
  * and updates Bayesian Knowledge Tracing (BKT) concept mastery in real time.
@@ -12,7 +12,7 @@ import {
   QuestionTelemetry,
   DiagnosticAssessment,
   RemediationDrillPayload,
-  DrillSubmissionResult
+  DrillSubmissionResult,
 } from '../../services/remediationService'
 
 export interface AdaptiveRemediationModalProps {
@@ -26,7 +26,7 @@ export const AdaptiveRemediationModal: React.FC<AdaptiveRemediationModalProps> =
   isOpen,
   onClose,
   telemetry,
-  onMasteryUpdated
+  onMasteryUpdated,
 }) => {
   const [loading, setLoading] = useState<boolean>(true)
   const [diagnosis, setDiagnosis] = useState<DiagnosticAssessment | null>(null)
@@ -57,7 +57,11 @@ export const AdaptiveRemediationModal: React.FC<AdaptiveRemediationModalProps> =
         if (!isMounted) return
         setDiagnosis(diag)
 
-        const drillData = await remediationService.getDrill(diag.conceptId, diag.conceptName, diag.etiology)
+        const drillData = await remediationService.getDrill(
+          diag.conceptId,
+          diag.conceptName,
+          diag.etiology
+        )
         if (!isMounted) return
         setDrill(drillData)
         setSelectedAnswers(new Array(drillData.steps.length).fill(-1))
@@ -177,7 +181,9 @@ export const AdaptiveRemediationModal: React.FC<AdaptiveRemediationModalProps> =
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16 space-y-4">
               <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-              <p className="text-sm text-slate-400">Analyzing cognitive telemetry & synthesizing remediation drill...</p>
+              <p className="text-sm text-slate-400">
+                Analyzing cognitive telemetry & synthesizing remediation drill...
+              </p>
             </div>
           ) : diagnosis && drill ? (
             <>
@@ -196,12 +202,12 @@ export const AdaptiveRemediationModal: React.FC<AdaptiveRemediationModalProps> =
                     Confidence: {(diagnosis.confidence * 100).toFixed(0)}%
                   </span>
                 </div>
-                <p className="text-sm text-slate-300 leading-relaxed">
-                  {diagnosis.explanation}
-                </p>
+                <p className="text-sm text-slate-300 leading-relaxed">{diagnosis.explanation}</p>
                 <div className="text-xs text-slate-400 pt-1 border-t border-slate-700/40 flex items-center justify-between">
                   <span>Prerequisite: {diagnosis.prescribedScaffold.prerequisiteName}</span>
-                  <span>Est. Time: {diagnosis.prescribedScaffold.estimatedRecoveryTimeMinutes} min</span>
+                  <span>
+                    Est. Time: {diagnosis.prescribedScaffold.estimatedRecoveryTimeMinutes} min
+                  </span>
                 </div>
               </div>
 
@@ -304,29 +310,35 @@ export const AdaptiveRemediationModal: React.FC<AdaptiveRemediationModalProps> =
                 /* Post-Drill Results & BKT Mastery Recovery Card */
                 <div data-testid="remediation-result-card" className="space-y-5 py-2">
                   <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 text-center space-y-3">
-                    <div className="text-4xl">
-                      {result.passed ? '🎉' : '📖'}
-                    </div>
+                    <div className="text-4xl">{result.passed ? '🎉' : '📖'}</div>
                     <h3 className="text-base font-bold text-white">
                       {result.passed ? 'Remediation Verified!' : 'Concept Requires Deep Review'}
                     </h3>
-                    <p className="text-xs text-slate-300 max-w-md mx-auto">
-                      {result.feedback}
-                    </p>
+                    <p className="text-xs text-slate-300 max-w-md mx-auto">{result.feedback}</p>
 
                     {/* Mastery Delta Bar */}
                     <div className="pt-4 max-w-sm mx-auto space-y-2">
                       <div className="flex items-center justify-between text-xs font-semibold">
                         <span className="text-slate-400">Bayesian Concept Mastery:</span>
-                        <span className={result.masteryDelta >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
-                          {(result.previousMastery * 100).toFixed(0)}% → {(result.updatedMastery * 100).toFixed(0)}% (
-                          {result.masteryDelta >= 0 ? `+${(result.masteryDelta * 100).toFixed(1)}%` : `${(result.masteryDelta * 100).toFixed(1)}%`})
+                        <span
+                          className={
+                            result.masteryDelta >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                          }
+                        >
+                          {(result.previousMastery * 100).toFixed(0)}% →{' '}
+                          {(result.updatedMastery * 100).toFixed(0)}% (
+                          {result.masteryDelta >= 0
+                            ? `+${(result.masteryDelta * 100).toFixed(1)}%`
+                            : `${(result.masteryDelta * 100).toFixed(1)}%`}
+                          )
                         </span>
                       </div>
                       <div className="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden">
                         <div
                           className={`h-full transition-all duration-700 ${
-                            result.passed ? 'bg-gradient-to-r from-emerald-500 to-teal-400' : 'bg-rose-500'
+                            result.passed
+                              ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                              : 'bg-rose-500'
                           }`}
                           style={{ width: `${Math.min(100, result.updatedMastery * 100)}%` }}
                         />

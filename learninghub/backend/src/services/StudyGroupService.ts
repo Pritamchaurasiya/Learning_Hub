@@ -59,7 +59,8 @@ const initialGroups: StudyGroup[] = [
   {
     id: 'sg-3',
     name: 'Generative AI & LLM Systems Research',
-    description: 'Fine-tuning, LoRA, RLHF, multi-agent orchestrations, and vector retrieval pipelines.',
+    description:
+      'Fine-tuning, LoRA, RLHF, multi-agent orchestrations, and vector retrieval pipelines.',
     category: 'AI & ML',
     examTarget: 'AI/ML Engineering & Research',
     memberCount: 175,
@@ -115,7 +116,10 @@ export class StudyGroupService {
   }
 
   async createGroup(
-    data: Omit<StudyGroup, 'id' | 'memberCount' | 'isJoined' | 'createdAt' | 'recentActivity' | 'createdBy'>,
+    data: Omit<
+      StudyGroup,
+      'id' | 'memberCount' | 'isJoined' | 'createdAt' | 'recentActivity' | 'createdBy'
+    >,
     creatorName = 'Learner'
   ): Promise<StudyGroup> {
     const newGroup: StudyGroup = {

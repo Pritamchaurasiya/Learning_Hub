@@ -285,6 +285,56 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_ACKS_LATE = True
+CELERY_TASK_REJECT_ON_WORKER_LOST = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_TASK_DEFAULT_RATE_LIMIT = '100/m'
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+# Celery Queue Definitions (aligned with celery.py)
+CELERY_TASK_QUEUES = {
+    "default": {"exchange": "default", "routing_key": "default"},
+    "ai_computation": {"exchange": "ai_computation", "routing_key": "ai_computation"},
+    "notifications": {"exchange": "notifications", "routing_key": "notifications"},
+    "payments": {"exchange": "payments", "routing_key": "payments"},
+    "periodic": {"exchange": "periodic", "routing_key": "periodic"},
+}
+
+CELERY_TASK_ROUTES = {
+    "apps.ai_engine.*": {"queue": "ai_computation"},
+    "apps.ai_tutor.*": {"queue": "ai_computation"},
+    "apps.updates.tasks.poll_all_active_sources": {"queue": "periodic"},
+    "apps.updates.tasks.dispatch_deadline_reminders": {"queue": "notifications"},
+    "apps.updates.tasks.release_queued_notifications": {"queue": "notifications"},
+    "apps.tests_engine.tasks.check_expired_attempts": {"queue": "periodic"},
+    "apps.tests_engine.tasks.cleanup_abandoned_attempts": {"queue": "periodic"},
+    "apps.ebooks.tasks.*": {"queue": "default"},
+    "apps.ecommerce.tasks.*": {"queue": "payments"},
+    "*": {"queue": "default"},
+}
+
+CELERY_BEAT_SCHEDULE = {
+    "check-expired-attempts-every-minute": {
+        "task": "apps.tests_engine.tasks.check_expired_attempts",
+        "schedule": 60.0,
+    },
+    "cleanup-abandoned-attempts-every-hour": {
+        "task": "apps.tests_engine.tasks.cleanup_abandoned_attempts",
+        "schedule": 3600.0,
+    },
+    "poll-student-updates-active-sources": {
+        "task": "apps.updates.tasks.poll_all_active_sources",
+        "schedule": 1800.0,  # Every 30 minutes
+    },
+    "dispatch-student-deadline-reminders": {
+        "task": "apps.updates.tasks.dispatch_deadline_reminders",
+        "schedule": 300.0,   # Every 5 minutes
+    },
+    "release-queued-notifications-every-minute": {
+        "task": "apps.updates.tasks.release_queued_notifications",
+        "schedule": 60.0,
+    },
+}
 
 ADMIN_SECRET = os.environ.get('ADMIN_SECRET', 'test-admin-secret-key-32charslong!!' if (DEBUG or 'pytest' in sys.modules) else '')
 

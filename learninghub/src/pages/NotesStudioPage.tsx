@@ -149,7 +149,10 @@ export default function NotesStudioPage() {
       return
     }
 
-    const tagsArray = editTags.split(',').map(t => t.trim()).filter(Boolean)
+    const tagsArray = editTags
+      .split(',')
+      .map(t => t.trim())
+      .filter(Boolean)
     const newNote: UserNote = {
       id: `note-${Date.now()}`,
       title: editTitle.trim(),
@@ -240,7 +243,10 @@ export default function NotesStudioPage() {
                 a.download = `learninghub-all-notes-${new Date().toISOString().split('T')[0]}.md`
                 a.click()
                 URL.revokeObjectURL(url)
-                addToast({ message: 'Exported all notes into a single Markdown archive!', type: 'success' })
+                addToast({
+                  message: 'Exported all notes into a single Markdown archive!',
+                  type: 'success',
+                })
               }}
               variant="outline"
               className="rounded-xl px-5 py-2.5 font-bold text-white border-amber-400/40 hover:bg-amber-800/40"
@@ -358,7 +364,10 @@ export default function NotesStudioPage() {
                     {selectedNote.title}
                   </h2>
                   <p className="text-xs text-gray-400">
-                    Source: <span className="text-gray-700 dark:text-gray-300 font-medium">{selectedNote.sourceTitle}</span>
+                    Source:{' '}
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">
+                      {selectedNote.sourceTitle}
+                    </span>
                   </p>
                 </div>
 
@@ -369,7 +378,11 @@ export default function NotesStudioPage() {
                     onClick={handleCopyMarkdown}
                     className="rounded-xl text-xs font-semibold"
                   >
-                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-500 mr-1" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
+                    {copied ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-500 mr-1" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5 mr-1" />
+                    )}
                     {copied ? 'Copied' : 'Copy'}
                   </Button>
                   <Button
@@ -416,12 +429,19 @@ export default function NotesStudioPage() {
                   <div className="flex items-center gap-2">
                     <Video className="w-4 h-4 text-amber-500" />
                     <span className="text-xs text-gray-700 dark:text-gray-300">
-                      Linked to video lesson: <strong className="text-gray-900 dark:text-white">{selectedNote.lessonId || 'Lecture'}</strong>
+                      Linked to video lesson:{' '}
+                      <strong className="text-gray-900 dark:text-white">
+                        {selectedNote.lessonId || 'Lecture'}
+                      </strong>
                     </span>
                   </div>
                   <Button
                     size="sm"
-                    onClick={() => navigate(`/lesson-player/${selectedNote.courseId}/${selectedNote.lessonId || ''}`)}
+                    onClick={() =>
+                      navigate(
+                        `/lesson-player/${selectedNote.courseId}/${selectedNote.lessonId || ''}`
+                      )
+                    }
                     className="rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white"
                   >
                     Jump to Lecture

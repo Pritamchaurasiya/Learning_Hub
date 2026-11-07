@@ -23,7 +23,8 @@ export const EDGE_MODEL_PRESETS: EdgeModelPreset[] = [
     sizeFormatted: 'Cloud Free (Groq LPU)',
     vramRequiredMB: 0,
     quantization: 'FP8 LPU Cloud',
-    description: 'World-class reasoning model with step-by-step thinking tokens. 100% Free via Groq.',
+    description:
+      'World-class reasoning model with step-by-step thinking tokens. 100% Free via Groq.',
     contextWindowTokens: 128000,
     recommendedFor: 'MATH_SCIENCE',
     isDownloaded: true,
@@ -36,7 +37,8 @@ export const EDGE_MODEL_PRESETS: EdgeModelPreset[] = [
     sizeFormatted: 'Cloud Free (Groq LPU)',
     vramRequiredMB: 0,
     quantization: 'FP8 LPU Cloud',
-    description: 'Meta flagship 70B open intelligence for advanced systems design & code generation.',
+    description:
+      'Meta flagship 70B open intelligence for advanced systems design & code generation.',
     contextWindowTokens: 128000,
     recommendedFor: 'CODE_DSA',
     isDownloaded: true,
@@ -49,7 +51,8 @@ export const EDGE_MODEL_PRESETS: EdgeModelPreset[] = [
     sizeFormatted: 'Local Host (:11434)',
     vramRequiredMB: 0,
     quantization: 'GGUF Q4_K_M',
-    description: 'Runs on your local machine via Ollama. 100% private, zero API key, unlimited offline use.',
+    description:
+      'Runs on your local machine via Ollama. 100% private, zero API key, unlimited offline use.',
     contextWindowTokens: 32768,
     recommendedFor: 'MATH_SCIENCE',
     isDownloaded: true,
@@ -62,7 +65,8 @@ export const EDGE_MODEL_PRESETS: EdgeModelPreset[] = [
     sizeFormatted: '380 MB',
     vramRequiredMB: 768,
     quantization: 'q4f16 (4-bit GPU Weights)',
-    description: 'Ultra-compact code-specialized transformer for real-time algorithmic syntax analysis & debugging.',
+    description:
+      'Ultra-compact code-specialized transformer for real-time algorithmic syntax analysis & debugging.',
     contextWindowTokens: 8192,
     recommendedFor: 'CODE_DSA',
     isDownloaded: true,
@@ -76,7 +80,8 @@ export const EDGE_MODEL_PRESETS: EdgeModelPreset[] = [
     sizeFormatted: '390 MB',
     vramRequiredMB: 600,
     quantization: 'q4f16 (Ultralight)',
-    description: 'Hugging Face ultra-fast compact tutor. Starts in seconds, ideal for low-end laptops and mobile phones.',
+    description:
+      'Hugging Face ultra-fast compact tutor. Starts in seconds, ideal for low-end laptops and mobile phones.',
     contextWindowTokens: 4096,
     recommendedFor: 'ULTRA_FAST',
     isDownloaded: true,
@@ -90,7 +95,8 @@ export const EDGE_MODEL_PRESETS: EdgeModelPreset[] = [
     sizeFormatted: '1.2 GB',
     vramRequiredMB: 1800,
     quantization: 'q4f16 (4-bit GPU Weights)',
-    description: 'Meta compact SLM executing directly inside browser tab via WebGPU compute shaders. Zero server latency.',
+    description:
+      'Meta compact SLM executing directly inside browser tab via WebGPU compute shaders. Zero server latency.',
     contextWindowTokens: 8192,
     recommendedFor: 'GENERAL_TUTOR',
     isDownloaded: false,
@@ -104,7 +110,8 @@ export const EDGE_MODEL_PRESETS: EdgeModelPreset[] = [
     sizeFormatted: '2.2 GB',
     vramRequiredMB: 2800,
     quantization: 'q4f16 (4-bit GPU Weights)',
-    description: 'Microsoft high-density reasoning SLM trained on synthetic textbook data for deep Socratic inquiry.',
+    description:
+      'Microsoft high-density reasoning SLM trained on synthetic textbook data for deep Socratic inquiry.',
     contextWindowTokens: 16384,
     recommendedFor: 'MATH_SCIENCE',
     isDownloaded: false,
@@ -130,11 +137,15 @@ class EdgeAIService {
         const adapter = await gpu.requestAdapter({ powerPreference: 'high-performance' })
 
         if (adapter) {
-          const info = adapter.info || (adapter.requestAdapterInfo ? await adapter.requestAdapterInfo() : {})
-          const adapterName = info.description || info.device || info.architecture || 'WebGPU Compatible Accelerator'
+          const info =
+            adapter.info || (adapter.requestAdapterInfo ? await adapter.requestAdapterInfo() : {})
+          const adapterName =
+            info.description || info.device || info.architecture || 'WebGPU Compatible Accelerator'
           const vendor = info.vendor || 'Unknown GPU Vendor'
           const f16Supported = adapter.features?.has?.('shader-f16') ?? false
-          const maxBufferSizeMB = Math.round((adapter.limits?.maxBufferSize ?? 1073741824) / (1024 * 1024))
+          const maxBufferSizeMB = Math.round(
+            (adapter.limits?.maxBufferSize ?? 1073741824) / (1024 * 1024)
+          )
 
           // Heuristic for dedicated GPU vs integrated
           const isDedicated =
@@ -460,11 +471,7 @@ class EdgeAIService {
 
   streamInference = this.generateStreamingResponse
 
-  private generateEducationalContent(
-    prompt: string,
-    role: string,
-    modelId: string
-  ): string[] {
+  private generateEducationalContent(prompt: string, role: string, modelId: string): string[] {
     const isReasoningModel = modelId.includes('deepseek-r1')
     const lower = prompt.toLowerCase()
 
@@ -479,26 +486,37 @@ class EdgeAIService {
 
     if (lower.includes('dijkstra') || lower.includes('shortest path') || lower.includes('graph')) {
       response += "### Dijkstra's Shortest Path Algorithm\n\n"
-      response += "Dijkstra's algorithm finds the shortest path from a single source vertex to all other vertices in a weighted graph with **non-negative edge weights**.\n\n"
+      response +=
+        "Dijkstra's algorithm finds the shortest path from a single source vertex to all other vertices in a weighted graph with **non-negative edge weights**.\n\n"
       response += '#### Core Invariant:\n'
-      response += '- At each step, greedily select the vertex $u$ with the minimum tentative distance that has not yet been processed.\n'
-      response += '- Once extracted from the priority queue, the distance to $u$ is guaranteed optimal.\n\n'
+      response +=
+        '- At each step, greedily select the vertex $u$ with the minimum tentative distance that has not yet been processed.\n'
+      response +=
+        '- Once extracted from the priority queue, the distance to $u$ is guaranteed optimal.\n\n'
       response += '#### Complexity Analysis:\n'
-      response += '- **Time Complexity**: $\\mathcal{O}((V + E) \\log V)$ using a Min-Heap (Priority Queue).\n'
+      response +=
+        '- **Time Complexity**: $\\mathcal{O}((V + E) \\log V)$ using a Min-Heap (Priority Queue).\n'
       response += '- **Space Complexity**: $\\mathcal{O}(V)$ for distance table & heap.\n\n'
       response += '#### Socratic Check:\n'
-      response += '*Why does Dijkstra fail when edge weights are negative? Which algorithm would you employ instead?*'
+      response +=
+        '*Why does Dijkstra fail when edge weights are negative? Which algorithm would you employ instead?*'
     } else if (lower.includes('binary search') || lower.includes('search')) {
       response += '### Binary Search Optimization & Edge Cases\n\n'
-      response += 'Binary Search operates on a monotonic search space (sorted array or monotonic function) in **$\\mathcal{O}(\\log N)$** time.\n\n'
-      response += '```typescript\nfunction binarySearch(nums: number[], target: number): number {\n  let left = 0, right = nums.length - 1;\n  while (left <= right) {\n    const mid = left + Math.floor((right - left) / 2);\n    if (nums[mid] === target) return mid;\n    if (nums[mid] < target) left = mid + 1;\n    else right = mid - 1;\n  }\n  return -1;\n}\n```\n\n'
-      response += '💡 **Key Insight**: Always compute `mid = left + Math.floor((right - left) / 2)` to prevent 32-bit integer overflow.'
+      response +=
+        'Binary Search operates on a monotonic search space (sorted array or monotonic function) in **$\\mathcal{O}(\\log N)$** time.\n\n'
+      response +=
+        '```typescript\nfunction binarySearch(nums: number[], target: number): number {\n  let left = 0, right = nums.length - 1;\n  while (left <= right) {\n    const mid = left + Math.floor((right - left) / 2);\n    if (nums[mid] === target) return mid;\n    if (nums[mid] < target) left = mid + 1;\n    else right = mid - 1;\n  }\n  return -1;\n}\n```\n\n'
+      response +=
+        '💡 **Key Insight**: Always compute `mid = left + Math.floor((right - left) / 2)` to prevent 32-bit integer overflow.'
     } else {
       response += `### ${role === 'CODE_REVIEWER' ? 'Code Review & Analysis' : 'Socratic Guidance'}\n\n`
       response += "Let's break this down systematically:\n\n"
-      response += '1. **Core Problem Formulation**: Clarify input constraints and boundary conditions.\n'
-      response += '2. **Algorithmic Invariant**: Identify what property must remain true at every iteration or recursive frame.\n'
-      response += '3. **Optimization Vectors**: What are the trade-offs between asymptotic time complexity and auxiliary space allocation?\n\n'
+      response +=
+        '1. **Core Problem Formulation**: Clarify input constraints and boundary conditions.\n'
+      response +=
+        '2. **Algorithmic Invariant**: Identify what property must remain true at every iteration or recursive frame.\n'
+      response +=
+        '3. **Optimization Vectors**: What are the trade-offs between asymptotic time complexity and auxiliary space allocation?\n\n'
       response += 'What hypothesis would you test first to confirm this invariant?'
     }
 

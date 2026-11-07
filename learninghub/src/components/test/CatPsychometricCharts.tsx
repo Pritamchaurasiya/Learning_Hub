@@ -112,7 +112,11 @@ export const CatPsychometricCharts: React.FC<CatPsychometricChartsProps> = ({ sc
         </div>
 
         <div className="text-[11px] font-mono text-slate-400">
-          θ = <strong className="text-cyan-400">{scorecard.finalTheta > 0 ? `+${scorecard.finalTheta}` : scorecard.finalTheta}</strong> | SEM = ±{scorecard.finalSem}
+          θ ={' '}
+          <strong className="text-cyan-400">
+            {scorecard.finalTheta > 0 ? `+${scorecard.finalTheta}` : scorecard.finalTheta}
+          </strong>{' '}
+          | SEM = ±{scorecard.finalSem}
         </div>
       </div>
 
@@ -121,7 +125,8 @@ export const CatPsychometricCharts: React.FC<CatPsychometricChartsProps> = ({ sc
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-slate-400">
             <p>
-              Standard normal latent ability distribution ($\mu=0, \sigma=1$). The shaded band marks your 95% Confidence Interval.
+              Standard normal latent ability distribution ($\mu=0, \sigma=1$). The shaded band marks
+              your 95% Confidence Interval.
             </p>
             <span className="text-indigo-400 font-bold whitespace-nowrap">
               Percentile Rank: {scorecard.percentileRank.toFixed(1)}%
@@ -196,12 +201,16 @@ export const CatPsychometricCharts: React.FC<CatPsychometricChartsProps> = ({ sc
       {activeTab === 'trajectory' && (
         <div className="space-y-3">
           <p className="text-xs text-slate-400">
-            Real-time Bayesian EAP progression showing question difficulty ($b$) targeting your converging ability score ($\theta$).
+            Real-time Bayesian EAP progression showing question difficulty ($b$) targeting your
+            converging ability score ($\theta$).
           </p>
 
           <div className="h-56 w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trajectoryData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <LineChart
+                data={trajectoryData}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                 <XAxis dataKey="step" tick={{ fontSize: 11, fill: '#94a3b8' }} stroke="#334155" />
                 <YAxis domain={[-3, 3]} tick={{ fontSize: 10, fill: '#94a3b8' }} stroke="#334155" />
@@ -246,7 +255,11 @@ export const CatPsychometricCharts: React.FC<CatPsychometricChartsProps> = ({ sc
                     : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
                 }`}
               >
-                {step.isCorrect ? <CheckCircle2 className="w-2.5 h-2.5" /> : <XCircle className="w-2.5 h-2.5" />}
+                {step.isCorrect ? (
+                  <CheckCircle2 className="w-2.5 h-2.5" />
+                ) : (
+                  <XCircle className="w-2.5 h-2.5" />
+                )}
                 {step.step}: b={step.difficulty}
               </span>
             ))}
@@ -258,12 +271,16 @@ export const CatPsychometricCharts: React.FC<CatPsychometricChartsProps> = ({ sc
       {activeTab === 'information_curve' && (
         <div className="space-y-3">
           <p className="text-xs text-slate-400">
-            Fisher Test Information $I(\theta)$. Peak curvature demonstrates where the assessment provides maximum measurement confidence.
+            Fisher Test Information $I(\theta)$. Peak curvature demonstrates where the assessment
+            provides maximum measurement confidence.
           </p>
 
           <div className="h-56 w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={informationData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart
+                data={informationData}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
                 <defs>
                   <linearGradient id="infoCurveGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />

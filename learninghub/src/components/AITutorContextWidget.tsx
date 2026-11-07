@@ -182,7 +182,8 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
           {
             id: `err-${Date.now()}`,
             role: 'assistant',
-            content: 'Mentorship engine is briefly reconnecting. Please submit your question again.',
+            content:
+              'Mentorship engine is briefly reconnecting. Please submit your question again.',
             createdAt: new Date().toISOString(),
           },
         ])
@@ -210,7 +211,8 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
         {
           label: 'Study Roadmap',
           icon: Compass,
-          prompt: 'Help me review the high-yield topics for competitive entrance and system design.',
+          prompt:
+            'Help me review the high-yield topics for competitive entrance and system design.',
         },
         {
           label: 'Concept Clarity',
@@ -261,8 +263,7 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
         {
           label: 'Analyze Invariants',
           icon: Code2,
-          prompt:
-            'Analyze my current approach and discuss optimal loop invariants and edge cases.',
+          prompt: 'Analyze my current approach and discuss optimal loop invariants and edge cases.',
         },
         {
           label: 'Algorithmic Hint',
@@ -272,7 +273,8 @@ export function AITutorContextWidget({ context }: AITutorContextWidgetProps) {
         {
           label: 'Time & Space Bounds',
           icon: BookOpen,
-          prompt: 'What are the theoretical lower bounds for time and space complexity on this problem?',
+          prompt:
+            'What are the theoretical lower bounds for time and space complexity on this problem?',
         },
       ]
     }

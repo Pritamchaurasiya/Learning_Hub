@@ -50,50 +50,46 @@ export class PredictiveAnalyticsService {
     if (cached) return cached as any
 
     try {
-      const [
-        user,
-        recentActivity,
-        testHistory,
-        aiUsage,
-        streakData,
-        socialData,
-      ] = await Promise.all([
-        // Get user profile
-        prisma.user.findUnique({
-          where: { id: userId },
-          select: { id: true, streak: true, lastActive: true, createdAt: true },
-        }),
-        // Recent activity (last 30 days)
-        prisma.activityLog.findMany({
-          where: {
-            userId,
-            createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
-          },
-          orderBy: { createdAt: 'desc' },
-        }),
-        // Test history
-        prisma.testResult.findMany({
-          where: { userId },
-          orderBy: { createdAt: 'desc' },
-          take: 20,
-        }),
-        // AI usage
-        prisma.aIChatMessage.findMany({
-          where: {
-            role: 'USER',
-            session: { userId },
-            createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
-          },
-          orderBy: { createdAt: 'desc' },
-        }),
-        // Streak data
-        prisma.user.findUnique({
-          where: { id: userId },
-          select: { streak: true, lastActive: true },
-        }),
-        // Social engagement
-        (prisma as any).discussionComment ? (prisma as any).discussionComment.count({ where: { userId } }) : Promise.resolve(0),
-      ])
+      const [user, recentActivity, testHistory, aiUsage, streakData, socialData] =
+        await Promise.all([
+          // Get user profile
+          prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, streak: true, lastActive: true, createdAt: true },
+          }),
+          // Recent activity (last 30 days)
+          prisma.activityLog.findMany({
+            where: {
+              userId,
+              createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+            },
+            orderBy: { createdAt: 'desc' },
+          }),
+          // Test history
+          prisma.testResult.findMany({
+            where: { userId },
+            orderBy: { createdAt: 'desc' },
+            take: 20,
+          }),
+          // AI usage
+          prisma.aIChatMessage.findMany({
+            where: {
+              role: 'USER',
+              session: { userId },
+              createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+            },
+            orderBy: { createdAt: 'desc' },
+          }),
+          // Streak data
+          prisma.user.findUnique({
+            where: { id: userId },
+            select: { streak: true, lastActive: true },
+          }),
+          // Social engagement
+          (prisma as any).discussionComment
+            ? (prisma as any).discussionComment.count({ where: { userId } })
+            : Promise.resolve(0),
+        ])
 
       // Calculate risk factors
       const factors = this.calculateRiskFactors({
@@ -124,7 +120,10 @@ export class PredictiveAnalyticsService {
 
       return { prediction, factors }
     } catch (error) {
-      logger.error('[PredictiveAnalytics] Churn prediction failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[PredictiveAnalytics] Churn prediction failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       throw new Error('Churn prediction failed')
     }
   }
@@ -145,28 +144,31 @@ export class PredictiveAnalyticsService {
 
     const streakBroken = data.streakData?.streak === 0
     const daysSinceLastActive = data.streakData?.lastActive
-      ? Math.floor((Date.now() - new Date(data.streakData.lastActive).getTime()) / (1000 * 60 * 60 * 24))
+      ? Math.floor(
+          (Date.now() - new Date(data.streakData.lastActive).getTime()) / (1000 * 60 * 60 * 24)
+        )
       : 999
 
     // Calculate test score trend from testHistory
-    const recentScores = data.testHistory
-      .slice(0, 10)
-      .map(r => r.percentage)
-    const avgScoreTrend = recentScores.length >= 3
-      ? (recentScores[0] - recentScores[recentScores.length - 1]) / recentScores.length
-      : 0
+    const recentScores = data.testHistory.slice(0, 10).map(r => r.percentage)
+    const avgScoreTrend =
+      recentScores.length >= 3
+        ? (recentScores[0] - recentScores[recentScores.length - 1]) / recentScores.length
+        : 0
 
-    const testCompletionRate = data.testHistory.length > 0
-      ? data.testHistory.filter(r => r.status === 'COMPLETED').length / data.testHistory.length
-      : 0
+    const testCompletionRate =
+      data.testHistory.length > 0
+        ? data.testHistory.filter(r => r.status === 'COMPLETED').length / data.testHistory.length
+        : 0
 
     // AI usage drop
     const recentAIUsage = data.aiUsage.filter(
       u => Date.now() - new Date(u.createdAt).getTime() < 7 * 24 * 60 * 60 * 1000
     ).length
     const previousAIUsage = data.aiUsage.filter(
-      u => Date.now() - new Date(u.createdAt).getTime() >= 7 * 24 * 60 * 60 * 1000 &&
-           Date.now() - new Date(u.createdAt).getTime() < 14 * 24 * 60 * 60 * 1000
+      u =>
+        Date.now() - new Date(u.createdAt).getTime() >= 7 * 24 * 60 * 60 * 1000 &&
+        Date.now() - new Date(u.createdAt).getTime() < 14 * 24 * 60 * 60 * 1000
     ).length
     const aiUsageDrop = previousAIUsage > 0 && recentAIUsage < previousAIUsage * 0.5
 
@@ -231,9 +233,11 @@ export class PredictiveAnalyticsService {
 
   private static generateRecommendedActions(factors: ChurnRiskFactors): string[] {
     const actions: string[] = []
-    if (factors.daysSinceLastActivity > 7) actions.push('Send re-engagement email with personalized course recommendations')
+    if (factors.daysSinceLastActivity > 7)
+      actions.push('Send re-engagement email with personalized course recommendations')
     if (factors.streakBroken) actions.push('Send streak recovery encouragement with easy win')
-    if (factors.avgScoreTrend === 'declining') actions.push('Recommend review sessions for weak topics')
+    if (factors.avgScoreTrend === 'declining')
+      actions.push('Recommend review sessions for weak topics')
     if (factors.testCompletionRate < 0.5) actions.push('Suggest shorter practice sessions')
     if (factors.aiUsageDrop) actions.push('Prompt AI tutor usage with personalized prompt')
     if (factors.socialIsolation) actions.push('Invite to study group or community challenge')
@@ -241,7 +245,7 @@ export class PredictiveAnalyticsService {
   }
 
   private static calculateConfidence(factors: ChurnRiskFactors): number {
-    let confidence = 0.5
+    const confidence = 0.5
     // More data points = higher confidence
     // This is simplified - in production, use actual sample sizes
     return Math.min(0.95, confidence + 0.1)
@@ -250,7 +254,10 @@ export class PredictiveAnalyticsService {
   /**
    * Generate personalized learning path optimization
    */
-  static async optimizeLearningPath(userId: string, targetGoal?: string): Promise<{
+  static async optimizeLearningPath(
+    userId: string,
+    targetGoal?: string
+  ): Promise<{
     optimization: LearningPathOptimization
     reasoning: string
   }> {
@@ -263,25 +270,43 @@ export class PredictiveAnalyticsService {
 
     try {
       // Get user's learning profile
-      const [userProfile, completedTopics, weakAreas, learningVelocity, preferences] = await Promise.all([
-        prisma.user.findUnique({ where: { id: userId }, select: { id: true, level: true, streak: true } }),
-        prisma.topicPerformance.findMany({ where: { userId, accuracy: { gte: 70 } }, orderBy: { accuracy: 'desc' } }),
-        prisma.topicPerformance.findMany({ where: { userId, accuracy: { lt: 60 } }, orderBy: { accuracy: 'asc' } }),
-        prisma.learningVelocityEvent.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 20 }),
-        prisma.userExamPreference.findFirst({ where: { userId } }),
-      ])
+      const [userProfile, completedTopics, weakAreas, learningVelocity, preferences] =
+        await Promise.all([
+          prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, level: true, streak: true },
+          }),
+          prisma.topicPerformance.findMany({
+            where: { userId, accuracy: { gte: 70 } },
+            orderBy: { accuracy: 'desc' },
+          }),
+          prisma.topicPerformance.findMany({
+            where: { userId, accuracy: { lt: 60 } },
+            orderBy: { accuracy: 'asc' },
+          }),
+          prisma.learningVelocityEvent.findMany({
+            where: { userId },
+            orderBy: { createdAt: 'desc' },
+            take: 20,
+          }),
+          prisma.userExamPreference.findFirst({ where: { userId } }),
+        ])
 
       // Analyze learning patterns
-      const velocity = learningVelocity.reduce((acc: number, v: any) => acc + (v.velocity ?? 0), 0) / Math.max(1, learningVelocity.length)
-      const avgTimePerTopic = learningVelocity.length > 0
-        ? learningVelocity.reduce((a: number, v: any) => a + (v.timeSpentMinutes ?? 0), 0) / learningVelocity.length
-        : 60
+      const velocity =
+        learningVelocity.reduce((acc: number, v: any) => acc + (v.velocity ?? 0), 0) /
+        Math.max(1, learningVelocity.length)
+      const avgTimePerTopic =
+        learningVelocity.length > 0
+          ? learningVelocity.reduce((a: number, v: any) => a + (v.timeSpentMinutes ?? 0), 0) /
+            learningVelocity.length
+          : 60
 
       // Identify knowledge gaps
       const knowledgeGaps = weakAreas.map((w: any) => ({
         topic: w.topic,
         severity: (60 - w.accuracy) / 40, // 0-1 scale
-        estimatedHoursToMaster: Math.ceil((60 - w.accuracy) / 5 * 2), // rough estimate
+        estimatedHoursToMaster: Math.ceil(((60 - w.accuracy) / 5) * 2), // rough estimate
       }))
 
       // Get available tests for weak areas
@@ -293,16 +318,16 @@ export class PredictiveAnalyticsService {
       })
 
       // Build optimized path
-      const optimizedPath = weakAreas
-        .slice(0, 5)
-        .map((area: any, index: number) => {
-          const test = recommendedTests.find((t: any) => t.title.toLowerCase().includes(area.topic.toLowerCase()))
-          return {
-            courseId: test?.id || `topic-${area.topic}`,
-            order: index + 1,
-            reason: `Addresses weakness in ${area.topic} (${area.accuracy}% accuracy)`,
-          }
-        })
+      const optimizedPath = weakAreas.slice(0, 5).map((area: any, index: number) => {
+        const test = recommendedTests.find((t: any) =>
+          t.title.toLowerCase().includes(area.topic.toLowerCase())
+        )
+        return {
+          courseId: test?.id || `topic-${area.topic}`,
+          order: index + 1,
+          reason: `Addresses weakness in ${area.topic} (${area.accuracy}% accuracy)`,
+        }
+      })
 
       const optimization: LearningPathOptimization = {
         userId,
@@ -310,14 +335,20 @@ export class PredictiveAnalyticsService {
         optimizedPath,
         estimatedTimeToGoal: optimizedPath.reduce((sum: number, p: any) => sum + 5, 0), // 5 hours per topic estimate
         confidence: 0.85,
-        reasoning: `Prioritized ${weakAreas.length} weak areas. Estimated ${optimizedPath.length * 5}h to close gaps.`
+        reasoning: `Prioritized ${weakAreas.length} weak areas. Estimated ${optimizedPath.length * 5}h to close gaps.`,
       }
 
-      const result = { optimization, reasoning: `Prioritized ${weakAreas.length} weak areas. Estimated ${optimization.estimatedTimeToGoal}h to close gaps.` }
+      const result = {
+        optimization,
+        reasoning: `Prioritized ${weakAreas.length} weak areas. Estimated ${optimization.estimatedTimeToGoal}h to close gaps.`,
+      }
       await cacheService.set(`learningPath:${userId}:${targetGoal || 'general'}`, result, 3600)
       return result
     } catch (error) {
-      logger.error('[PredictiveAnalytics] Learning path optimization failed', error instanceof Error ? error : new Error(String(error)))
+      logger.error(
+        '[PredictiveAnalytics] Learning path optimization failed',
+        error instanceof Error ? error : new Error(String(error))
+      )
       throw new Error('Learning path optimization failed')
     }
   }

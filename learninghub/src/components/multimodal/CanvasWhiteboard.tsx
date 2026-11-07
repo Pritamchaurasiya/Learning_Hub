@@ -224,7 +224,9 @@ export const CanvasWhiteboard: React.FC<CanvasWhiteboardProps> = ({
                   if (currentTool === 'eraser') setCurrentTool('pen')
                 }}
                 className={`w-5 h-5 rounded-full border-2 transition-transform ${
-                  currentColor === c.hex ? 'scale-125 border-white' : 'border-transparent opacity-80 hover:opacity-100'
+                  currentColor === c.hex
+                    ? 'scale-125 border-white'
+                    : 'border-transparent opacity-80 hover:opacity-100'
                 }`}
                 style={{ backgroundColor: c.hex }}
               />
@@ -318,7 +320,9 @@ export const CanvasWhiteboard: React.FC<CanvasWhiteboardProps> = ({
         {strokes.length === 0 && !isDrawing && (
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-slate-600 space-y-2">
             <PenTool className="w-8 h-8 opacity-40" />
-            <p className="text-xs">Draw mathematical equations, tree graphs, or state machines here</p>
+            <p className="text-xs">
+              Draw mathematical equations, tree graphs, or state machines here
+            </p>
           </div>
         )}
       </div>
@@ -329,9 +333,12 @@ export const CanvasWhiteboard: React.FC<CanvasWhiteboardProps> = ({
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                <Check className="w-3 h-3" /> LaTeX Recognized ({Math.round(parsedEquation.confidence * 100)}%)
+                <Check className="w-3 h-3" /> LaTeX Recognized (
+                {Math.round(parsedEquation.confidence * 100)}%)
               </span>
-              <span className="text-xs font-mono text-slate-400">{parsedEquation.complexityCategory}</span>
+              <span className="text-xs font-mono text-slate-400">
+                {parsedEquation.complexityCategory}
+              </span>
             </div>
             <div className="font-mono text-cyan-300 text-sm font-semibold select-all">
               {parsedEquation.recognizedLatex}

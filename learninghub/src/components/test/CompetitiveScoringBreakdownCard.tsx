@@ -53,8 +53,7 @@ export function CompetitiveScoringBreakdownCard({ result }: CompetitiveScoringBr
   const netScorePercentage = maxPossibleMarks > 0 ? (netScore / maxPossibleMarks) * 100 : 0
 
   // Penalty drag: percentage of positive marks erased by incorrect guesses
-  const penaltyDrag =
-    grossMarks > 0 ? Math.round((negativePenalty / grossMarks) * 100) : 0
+  const penaltyDrag = grossMarks > 0 ? Math.round((negativePenalty / grossMarks) * 100) : 0
 
   // Predictive NTA Percentile Modeling (calibrated to historical distribution)
   const predictiveMetrics = useMemo(() => {
@@ -65,10 +64,7 @@ export function CompetitiveScoringBreakdownCard({ result }: CompetitiveScoringBr
     const percentile = Math.min(99.98, Math.max(1.0, Math.round(cdfValue * 10000) / 100))
 
     // Projected AIR among 1,200,000 national candidates
-    const estimatedAir = Math.max(
-      1,
-      Math.round((1 - percentile / 100) * 1200000)
-    )
+    const estimatedAir = Math.max(1, Math.round((1 - percentile / 100) * 1200000))
 
     let tierLabel = 'Developing Foundation'
     let tierColor = 'text-amber-400 bg-amber-500/10 border-amber-500/30'
@@ -152,12 +148,15 @@ export function CompetitiveScoringBreakdownCard({ result }: CompetitiveScoringBr
               </Badge>
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              Official competitive scoring formula with negative marking penalty and projected All India Rank
+              Official competitive scoring formula with negative marking penalty and projected All
+              India Rank
             </p>
           </div>
         </div>
 
-        <div className={`px-3 py-1.5 rounded-xl border text-xs font-bold inline-flex items-center gap-1.5 self-start sm:self-center ${predictiveMetrics.tierColor}`}>
+        <div
+          className={`px-3 py-1.5 rounded-xl border text-xs font-bold inline-flex items-center gap-1.5 self-start sm:self-center ${predictiveMetrics.tierColor}`}
+        >
           <Sparkles className="w-3.5 h-3.5" />
           <span>{predictiveMetrics.tierLabel}</span>
         </div>
@@ -169,9 +168,7 @@ export function CompetitiveScoringBreakdownCard({ result }: CompetitiveScoringBr
           <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 block mb-1">
             Gross Score
           </span>
-          <div className="text-2xl font-black font-mono text-white">
-            +{grossMarks}
-          </div>
+          <div className="text-2xl font-black font-mono text-white">+{grossMarks}</div>
           <span className="text-[11px] text-slate-400 mt-1 block">
             {correctCount} &times; 4 marks
           </span>
@@ -184,9 +181,7 @@ export function CompetitiveScoringBreakdownCard({ result }: CompetitiveScoringBr
             </span>
             <TrendingDown className="w-3.5 h-3.5 text-rose-400" />
           </div>
-          <div className="text-2xl font-black font-mono text-rose-400">
-            -{negativePenalty}
-          </div>
+          <div className="text-2xl font-black font-mono text-rose-400">-{negativePenalty}</div>
           <span className="text-[11px] text-slate-400 mt-1 block">
             {incorrectCount} &times; 1 mark lost
           </span>
@@ -197,7 +192,8 @@ export function CompetitiveScoringBreakdownCard({ result }: CompetitiveScoringBr
             Net Score
           </span>
           <div className="text-2xl font-black font-mono text-amber-400">
-            {netScore} <span className="text-xs text-slate-500 font-normal">/ {maxPossibleMarks}</span>
+            {netScore}{' '}
+            <span className="text-xs text-slate-500 font-normal">/ {maxPossibleMarks}</span>
           </div>
           <span className="text-[11px] text-slate-400 mt-1 block">
             {netScorePercentage.toFixed(1)}% Normalized

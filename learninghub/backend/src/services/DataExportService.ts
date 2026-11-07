@@ -71,29 +71,32 @@ export class DataExportService {
         completedAt: result.completedAt,
       })),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      topicPerformance: (scrubbedUser as any).topicPerformances?.map((tp: any) => ({
-        topicName: tp.topicName,
-        subjectName: tp.subjectName,
-        totalAttempts: tp.totalAttempts,
-        accuracy: tp.accuracy,
-        lastAttemptAt: tp.lastAttemptAt,
-        avgTimePerQuestionSeconds: tp.avgTimeSeconds,
-      })) ?? [],
+      topicPerformance:
+        (scrubbedUser as any).topicPerformances?.map((tp: any) => ({
+          topicName: tp.topicName,
+          subjectName: tp.subjectName,
+          totalAttempts: tp.totalAttempts,
+          accuracy: tp.accuracy,
+          lastAttemptAt: tp.lastAttemptAt,
+          avgTimePerQuestionSeconds: tp.avgTimeSeconds,
+        })) ?? [],
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      achievements: (scrubbedUser as any).achievements?.map((ach: any) => ({
-        achievementId: ach.achievementId,
-        name: ach.name,
-        description: ach.description,
-        unlockedAt: ach.unlockedAt,
-      })) ?? [],
+      achievements:
+        (scrubbedUser as any).achievements?.map((ach: any) => ({
+          achievementId: ach.achievementId,
+          name: ach.name,
+          description: ach.description,
+          unlockedAt: ach.unlockedAt,
+        })) ?? [],
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      experimentEvents: (scrubbedUser as any).experimentEvents?.map((exp: any) => ({
-        experimentId: exp.experimentId,
-        variant: exp.variant,
-        event: exp.event,
-        value: exp.value,
-        createdAt: exp.createdAt,
-      })) ?? [],
+      experimentEvents:
+        (scrubbedUser as any).experimentEvents?.map((exp: any) => ({
+          experimentId: exp.experimentId,
+          variant: exp.variant,
+          event: exp.event,
+          value: exp.value,
+          createdAt: exp.createdAt,
+        })) ?? [],
     }
   }
 }

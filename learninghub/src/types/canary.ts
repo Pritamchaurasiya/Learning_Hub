@@ -7,13 +7,7 @@ export type RolloutStage =
   | 'ROLLED_BACK'
 
 export type DeploymentStatus =
-  | 'PENDING'
-  | 'RUNNING'
-  | 'EVALUATING'
-  | 'HEALTHY'
-  | 'ANOMALY_DETECTED'
-  | 'PROMOTED'
-  | 'ROLLED_BACK'
+  'PENDING' | 'RUNNING' | 'EVALUATING' | 'HEALTHY' | 'ANOMALY_DETECTED' | 'PROMOTED' | 'ROLLED_BACK'
 
 export type TargetRegion = 'us-east-1' | 'eu-central-1' | 'ap-south-1' | 'global-mesh'
 

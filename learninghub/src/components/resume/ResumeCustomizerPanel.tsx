@@ -76,7 +76,9 @@ export const ResumeCustomizerPanel: React.FC<ResumeCustomizerPanelProps> = ({
                 }`}
               >
                 <div className="flex items-center gap-2 font-medium text-xs">
-                  <span className={isSelected ? 'text-emerald-400' : 'text-slate-400'}>{role.icon}</span>
+                  <span className={isSelected ? 'text-emerald-400' : 'text-slate-400'}>
+                    {role.icon}
+                  </span>
                   <span>{role.label}</span>
                 </div>
                 <p className="text-[11px] text-slate-400 mt-1 leading-snug">{role.desc}</p>
@@ -98,7 +100,9 @@ export const ResumeCustomizerPanel: React.FC<ResumeCustomizerPanelProps> = ({
             )}`}
           >
             <span>{atsScoring.overallScore}/100</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/30">Grade {atsScoring.grade}</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/30">
+              Grade {atsScoring.grade}
+            </span>
           </div>
         </div>
 
@@ -114,7 +118,9 @@ export const ResumeCustomizerPanel: React.FC<ResumeCustomizerPanelProps> = ({
             <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
               <div
                 className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                style={{ width: `${(atsScoring.criteriaScores.quantifiedMetricsScore / 25) * 100}%` }}
+                style={{
+                  width: `${(atsScoring.criteriaScores.quantifiedMetricsScore / 25) * 100}%`,
+                }}
               />
             </div>
           </div>
@@ -122,7 +128,9 @@ export const ResumeCustomizerPanel: React.FC<ResumeCustomizerPanelProps> = ({
           <div>
             <div className="flex justify-between text-slate-400 mb-1">
               <span>Commanding Action Verbs</span>
-              <span className="text-slate-200 font-medium">{atsScoring.criteriaScores.actionVerbsScore}/25</span>
+              <span className="text-slate-200 font-medium">
+                {atsScoring.criteriaScores.actionVerbsScore}/25
+              </span>
             </div>
             <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
               <div
@@ -142,7 +150,9 @@ export const ResumeCustomizerPanel: React.FC<ResumeCustomizerPanelProps> = ({
             <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
               <div
                 className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                style={{ width: `${(atsScoring.criteriaScores.keywordOptimizationScore / 25) * 100}%` }}
+                style={{
+                  width: `${(atsScoring.criteriaScores.keywordOptimizationScore / 25) * 100}%`,
+                }}
               />
             </div>
           </div>
@@ -157,7 +167,9 @@ export const ResumeCustomizerPanel: React.FC<ResumeCustomizerPanelProps> = ({
             <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
               <div
                 className="h-full bg-purple-500 rounded-full transition-all duration-500"
-                style={{ width: `${(atsScoring.criteriaScores.formattingComplianceScore / 25) * 100}%` }}
+                style={{
+                  width: `${(atsScoring.criteriaScores.formattingComplianceScore / 25) * 100}%`,
+                }}
               />
             </div>
           </div>

@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { X, Moon, Bell, Shield, Sliders, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
-import { updatesService } from '../../services/updatesService';
-import type { UpdateNotificationPreference } from '../../types/updates';
+import React, { useState, useEffect } from 'react'
+import { X, Moon, Bell, Shield, Sliders, CheckCircle2, Loader2, Sparkles } from 'lucide-react'
+import { updatesService } from '../../services/updatesService'
+import type { UpdateNotificationPreference } from '../../types/updates'
 
 export interface NotificationPreferencesModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSaved?: (preferences: UpdateNotificationPreference) => void;
+  isOpen: boolean
+  onClose: () => void
+  onSaved?: (preferences: UpdateNotificationPreference) => void
 }
 
 export const NotificationPreferencesModal: React.FC<NotificationPreferencesModalProps> = ({
@@ -14,64 +14,64 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
   onClose,
   onSaved,
 }) => {
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [successMsg, setSuccessMsg] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
 
   // Preference State
-  const [quietHoursEnabled, setQuietHoursEnabled] = useState(true);
-  const [quietHoursStart, setQuietHoursStart] = useState('22:00');
-  const [quietHoursEnd, setQuietHoursEnd] = useState('07:00');
-  const [maxDailyPush, setMaxDailyPush] = useState(3);
-  const [digestMode, setDigestMode] = useState(false);
+  const [quietHoursEnabled, setQuietHoursEnabled] = useState(true)
+  const [quietHoursStart, setQuietHoursStart] = useState('22:00')
+  const [quietHoursEnd, setQuietHoursEnd] = useState('07:00')
+  const [maxDailyPush, setMaxDailyPush] = useState(3)
+  const [digestMode, setDigestMode] = useState(false)
 
   // Category Toggles
-  const [allowResults, setAllowResults] = useState(true);
-  const [allowExamForms, setAllowExamForms] = useState(true);
-  const [allowTimetables, setAllowTimetables] = useState(true);
-  const [allowAdmitCards, setAllowAdmitCards] = useState(true);
-  const [allowScholarships, setAllowScholarships] = useState(true);
-  const [allowAcademic, setAllowAcademic] = useState(true);
+  const [allowResults, setAllowResults] = useState(true)
+  const [allowExamForms, setAllowExamForms] = useState(true)
+  const [allowTimetables, setAllowTimetables] = useState(true)
+  const [allowAdmitCards, setAllowAdmitCards] = useState(true)
+  const [allowScholarships, setAllowScholarships] = useState(true)
+  const [allowAcademic, setAllowAcademic] = useState(true)
 
   useEffect(() => {
     if (isOpen) {
-      loadPreferences();
+      loadPreferences()
     }
-  }, [isOpen]);
+  }, [isOpen])
 
   const loadPreferences = async () => {
     try {
-      setLoading(true);
-      setErrorMsg('');
-      const prefs = await updatesService.getNotificationPreferences();
+      setLoading(true)
+      setErrorMsg('')
+      const prefs = await updatesService.getNotificationPreferences()
       if (prefs) {
-        setQuietHoursEnabled(prefs.quiet_hours_enabled ?? true);
-        setQuietHoursStart(prefs.quiet_hours_start ? prefs.quiet_hours_start.slice(0, 5) : '22:00');
-        setQuietHoursEnd(prefs.quiet_hours_end ? prefs.quiet_hours_end.slice(0, 5) : '07:00');
-        setMaxDailyPush(prefs.max_daily_push ?? 3);
-        setDigestMode(prefs.digest_mode ?? false);
-        setAllowResults(prefs.allow_results ?? true);
-        setAllowExamForms(prefs.allow_exam_forms ?? true);
-        setAllowTimetables(prefs.allow_timetables ?? true);
-        setAllowAdmitCards(prefs.allow_admit_cards ?? true);
-        setAllowScholarships(prefs.allow_scholarships ?? true);
-        setAllowAcademic(prefs.allow_academic ?? true);
+        setQuietHoursEnabled(prefs.quiet_hours_enabled ?? true)
+        setQuietHoursStart(prefs.quiet_hours_start ? prefs.quiet_hours_start.slice(0, 5) : '22:00')
+        setQuietHoursEnd(prefs.quiet_hours_end ? prefs.quiet_hours_end.slice(0, 5) : '07:00')
+        setMaxDailyPush(prefs.max_daily_push ?? 3)
+        setDigestMode(prefs.digest_mode ?? false)
+        setAllowResults(prefs.allow_results ?? true)
+        setAllowExamForms(prefs.allow_exam_forms ?? true)
+        setAllowTimetables(prefs.allow_timetables ?? true)
+        setAllowAdmitCards(prefs.allow_admit_cards ?? true)
+        setAllowScholarships(prefs.allow_scholarships ?? true)
+        setAllowAcademic(prefs.allow_academic ?? true)
       }
     } catch {
       // Use defaults
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     try {
-      setSaving(true);
-      setErrorMsg('');
+      setSaving(true)
+      setErrorMsg('')
       const payload: Partial<UpdateNotificationPreference> = {
         quiet_hours_enabled: quietHoursEnabled,
         quiet_hours_start: quietHoursStart.length === 5 ? `${quietHoursStart}:00` : quietHoursStart,
@@ -84,23 +84,23 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
         allow_admit_cards: allowAdmitCards,
         allow_scholarships: allowScholarships,
         allow_academic: allowAcademic,
-      };
+      }
 
-      const updated = await updatesService.updateNotificationPreferences(payload);
+      const updated = await updatesService.updateNotificationPreferences(payload)
       if (updated) {
-        setSuccessMsg('Notification preferences updated successfully!');
-        onSaved?.(updated);
+        setSuccessMsg('Notification preferences updated successfully!')
+        onSaved?.(updated)
         setTimeout(() => {
-          setSuccessMsg('');
-          onClose();
-        }, 1000);
+          setSuccessMsg('')
+          onClose()
+        }, 1000)
       }
     } catch {
-      setErrorMsg('Failed to save preferences. Please try again.');
+      setErrorMsg('Failed to save preferences. Please try again.')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   return (
     <div
@@ -117,7 +117,10 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
               <Sliders className="w-5 h-5" />
             </div>
             <div>
-              <h2 id="notification-pref-title" className="text-lg font-bold text-foreground flex items-center gap-2">
+              <h2
+                id="notification-pref-title"
+                className="text-lg font-bold text-foreground flex items-center gap-2"
+              >
                 Notification Delivery Settings
                 <span className="px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase bg-primary/10 text-primary rounded-full">
                   Anti-Noise
@@ -157,15 +160,16 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
                   <input
                     type="checkbox"
                     checked={quietHoursEnabled}
-                    onChange={(e) => setQuietHoursEnabled(e.target.checked)}
+                    onChange={e => setQuietHoursEnabled(e.target.checked)}
                     className="sr-only peer"
                     aria-label="Toggle quiet hours"
                   />
-                  <div className="w-9 h-5 bg-muted peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                  <div className="w-9 h-5 bg-muted peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary" />
                 </label>
               </div>
               <p className="text-xs text-muted-foreground">
-                Non-urgent updates will be quietly queued overnight and delivered during your morning digest.
+                Non-urgent updates will be quietly queued overnight and delivered during your
+                morning digest.
               </p>
 
               {quietHoursEnabled && (
@@ -177,7 +181,7 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
                     <input
                       type="time"
                       value={quietHoursStart}
-                      onChange={(e) => setQuietHoursStart(e.target.value)}
+                      onChange={e => setQuietHoursStart(e.target.value)}
                       className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-xs text-foreground focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
@@ -188,7 +192,7 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
                     <input
                       type="time"
                       value={quietHoursEnd}
-                      onChange={(e) => setQuietHoursEnd(e.target.value)}
+                      onChange={e => setQuietHoursEnd(e.target.value)}
                       className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-xs text-foreground focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
@@ -200,17 +204,23 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
             <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-3">
               <div className="flex items-center gap-2.5">
                 <Bell className="w-4 h-4 text-amber-500" />
-                <span className="text-sm font-semibold text-foreground">Anti-Noise Frequency Capping</span>
+                <span className="text-sm font-semibold text-foreground">
+                  Anti-Noise Frequency Capping
+                </span>
               </div>
 
               <div className="flex items-center justify-between pt-1">
                 <div>
-                  <span className="text-xs font-medium text-foreground">Max Daily Push Notifications</span>
-                  <p className="text-[11px] text-muted-foreground">Caps non-urgent alerts per 24 hours.</p>
+                  <span className="text-xs font-medium text-foreground">
+                    Max Daily Push Notifications
+                  </span>
+                  <p className="text-[11px] text-muted-foreground">
+                    Caps non-urgent alerts per 24 hours.
+                  </p>
                 </div>
                 <select
                   value={maxDailyPush}
-                  onChange={(e) => setMaxDailyPush(Number(e.target.value))}
+                  onChange={e => setMaxDailyPush(Number(e.target.value))}
                   aria-label="Max daily push notifications"
                   className="px-3 py-1.5 rounded-lg border border-border bg-background text-xs text-foreground font-semibold"
                 >
@@ -225,17 +235,19 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
               <div className="flex items-center justify-between pt-3 border-t border-border/40">
                 <div>
                   <span className="text-xs font-medium text-foreground">Morning Digest Mode</span>
-                  <p className="text-[11px] text-muted-foreground">Bundle non-critical alerts into a single 07:30 AM summary.</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Bundle non-critical alerts into a single 07:30 AM summary.
+                  </p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
                     checked={digestMode}
-                    onChange={(e) => setDigestMode(e.target.checked)}
+                    onChange={e => setDigestMode(e.target.checked)}
                     className="sr-only peer"
                     aria-label="Toggle morning digest mode"
                   />
-                  <div className="w-9 h-5 bg-muted peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                  <div className="w-9 h-5 bg-muted peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary" />
                 </label>
               </div>
             </div>
@@ -249,10 +261,26 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
                 {[
                   { label: 'Results & Scorecards', checked: allowResults, set: setAllowResults },
                   { label: 'Examination Forms', checked: allowExamForms, set: setAllowExamForms },
-                  { label: 'Timetables & Date Sheets', checked: allowTimetables, set: setAllowTimetables },
-                  { label: 'Admit Cards & Hall Tickets', checked: allowAdmitCards, set: setAllowAdmitCards },
-                  { label: 'Scholarships & Aid', checked: allowScholarships, set: setAllowScholarships },
-                  { label: 'General Academic Circulars', checked: allowAcademic, set: setAllowAcademic },
+                  {
+                    label: 'Timetables & Date Sheets',
+                    checked: allowTimetables,
+                    set: setAllowTimetables,
+                  },
+                  {
+                    label: 'Admit Cards & Hall Tickets',
+                    checked: allowAdmitCards,
+                    set: setAllowAdmitCards,
+                  },
+                  {
+                    label: 'Scholarships & Aid',
+                    checked: allowScholarships,
+                    set: setAllowScholarships,
+                  },
+                  {
+                    label: 'General Academic Circulars',
+                    checked: allowAcademic,
+                    set: setAllowAcademic,
+                  },
                 ].map((item, idx) => (
                   <label
                     key={idx}
@@ -262,7 +290,7 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
                     <input
                       type="checkbox"
                       checked={item.checked}
-                      onChange={(e) => item.set(e.target.checked)}
+                      onChange={e => item.set(e.target.checked)}
                       className="rounded border-border text-primary focus:ring-primary/20 h-4 w-4"
                     />
                   </label>
@@ -317,5 +345,5 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
         )}
       </div>
     </div>
-  );
-};
+  )
+}

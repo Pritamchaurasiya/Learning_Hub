@@ -61,9 +61,7 @@ export const ParetoTradeoffRadar: React.FC<ParetoTradeoffRadarProps> = ({
             <Award className="w-4 h-4 text-indigo-400" />
             Pareto Consensus Scorecard
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Multi-dimensional dialectical evaluation
-          </p>
+          <p className="text-xs text-slate-400 mt-0.5">Multi-dimensional dialectical evaluation</p>
         </div>
 
         <div className="text-right">
@@ -73,8 +71,8 @@ export const ParetoTradeoffRadar: React.FC<ParetoTradeoffRadarProps> = ({
                 isApproved
                   ? 'text-emerald-400'
                   : metrics.compositeConsensusScore >= 65
-                  ? 'text-amber-400'
-                  : 'text-rose-400'
+                    ? 'text-amber-400'
+                    : 'text-rose-400'
               }
             >
               {metrics.compositeConsensusScore}
@@ -95,7 +93,7 @@ export const ParetoTradeoffRadar: React.FC<ParetoTradeoffRadarProps> = ({
 
       {/* Progress Bars for the 5 Dimensions */}
       <div className="space-y-3.5">
-        {dimensions.map((dim) => (
+        {dimensions.map(dim => (
           <div key={dim.key} className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <span className="flex items-center gap-1.5 font-medium text-slate-300">
@@ -119,7 +117,8 @@ export const ParetoTradeoffRadar: React.FC<ParetoTradeoffRadarProps> = ({
         <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 text-xs text-slate-400 leading-relaxed flex items-start gap-2">
           <CheckCircle className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
           <span>
-            BFT Consensus Threshold (&ge; 75%) satisfied. Multi-agent debate verified that zero unmitigated single points of failure remain.
+            BFT Consensus Threshold (&ge; 75%) satisfied. Multi-agent debate verified that zero
+            unmitigated single points of failure remain.
           </span>
         </div>
 

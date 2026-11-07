@@ -51,7 +51,7 @@ export const DebatePersonaAvatarHUD: React.FC<DebatePersonaAvatarHUDProps> = ({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {personas.map((persona) => {
+        {personas.map(persona => {
           const isSpeaking = activeSpeakerId === persona.id
           return (
             <div
@@ -63,15 +63,16 @@ export const DebatePersonaAvatarHUD: React.FC<DebatePersonaAvatarHUDProps> = ({
               }`}
             >
               {isSpeaking && (
-                <div
-                  className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-pulse"
-                />
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-pulse" />
               )}
 
               <div className="flex items-center justify-between mb-2">
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-inner"
-                  style={{ backgroundColor: `${persona.avatarColor}25`, color: persona.avatarColor }}
+                  style={{
+                    backgroundColor: `${persona.avatarColor}25`,
+                    color: persona.avatarColor,
+                  }}
                 >
                   {getPersonaIcon(persona.id)}
                 </div>

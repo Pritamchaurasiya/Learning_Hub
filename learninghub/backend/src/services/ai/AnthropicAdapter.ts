@@ -23,7 +23,11 @@ export class AnthropicAdapter implements IAIAgent {
     }
     this.apiKey = key
     this.defaultModel = model ?? process.env.ANTHROPIC_MODEL ?? 'claude-3-5-haiku-20241022'
-    this.baseUrl = (baseUrl ?? process.env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com/v1').replace(/\/$/, '')
+    this.baseUrl = (
+      baseUrl ??
+      process.env.ANTHROPIC_BASE_URL ??
+      'https://api.anthropic.com/v1'
+    ).replace(/\/$/, '')
   }
 
   private async withRetry<T>(operation: () => Promise<T>, operationName: string): Promise<T> {
@@ -94,10 +98,16 @@ export class AnthropicAdapter implements IAIAgent {
       }
     }
 
-    throw lastError || new Error(`[AnthropicAdapter] ${operationName} failed after ${MAX_RETRIES} retries`)
+    throw (
+      lastError ||
+      new Error(`[AnthropicAdapter] ${operationName} failed after ${MAX_RETRIES} retries`)
+    )
   }
 
-  private formatMessages(messages: AIMessage[]): { system?: string; messages: { role: 'user' | 'assistant'; content: string }[] } {
+  private formatMessages(messages: AIMessage[]): {
+    system?: string
+    messages: { role: 'user' | 'assistant'; content: string }[]
+  } {
     let systemText = ''
     const filteredMessages: { role: 'user' | 'assistant'; content: string }[] = []
 
@@ -163,7 +173,10 @@ export class AnthropicAdapter implements IAIAgent {
     }, 'generateText')
   }
 
-  async generateChat(messages: AIMessage[], options?: AIProviderOptions): Promise<AIGenerationResult> {
+  async generateChat(
+    messages: AIMessage[],
+    options?: AIProviderOptions
+  ): Promise<AIGenerationResult> {
     return this.withRetry(async () => {
       const model = options?.model || this.defaultModel
       const { system, messages: formatted } = this.formatMessages(messages)
@@ -194,7 +207,8 @@ export class AnthropicAdapter implements IAIAgent {
       const model = options?.model || this.defaultModel
       const res = await this.postMessages({
         model,
-        system: 'You are a precise backend system. Return only valid, minified JSON without any surrounding text or markdown formatting.',
+        system:
+          'You are a precise backend system. Return only valid, minified JSON without any surrounding text or markdown formatting.',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: options?.maxTokens ?? 2048,
         temperature: options?.temperature ?? 0.2,
@@ -202,7 +216,10 @@ export class AnthropicAdapter implements IAIAgent {
 
       const data = (await res.json()) as any
       let content = data?.content?.[0]?.text ?? '{}'
-      content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+      content = content
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```$/, '')
+        .trim()
       return JSON.parse(content) as T
     }, 'generateJSON')
   }

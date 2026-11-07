@@ -23,7 +23,10 @@ export class OpenAIAdapter implements IAIAgent {
     }
     this.apiKey = key
     this.defaultModel = model ?? process.env.OPENAI_MODEL ?? 'gpt-4o-mini'
-    this.baseUrl = (baseUrl ?? process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1').replace(/\/$/, '')
+    this.baseUrl = (baseUrl ?? process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1').replace(
+      /\/$/,
+      ''
+    )
   }
 
   private async withRetry<T>(operation: () => Promise<T>, operationName: string): Promise<T> {
@@ -94,7 +97,9 @@ export class OpenAIAdapter implements IAIAgent {
       }
     }
 
-    throw lastError || new Error(`[OpenAIAdapter] ${operationName} failed after ${MAX_RETRIES} retries`)
+    throw (
+      lastError || new Error(`[OpenAIAdapter] ${operationName} failed after ${MAX_RETRIES} retries`)
+    )
   }
 
   private async postChat(body: Record<string, unknown>, stream = false): Promise<Response> {
@@ -139,7 +144,10 @@ export class OpenAIAdapter implements IAIAgent {
     }, 'generateText')
   }
 
-  async generateChat(messages: AIMessage[], options?: AIProviderOptions): Promise<AIGenerationResult> {
+  async generateChat(
+    messages: AIMessage[],
+    options?: AIProviderOptions
+  ): Promise<AIGenerationResult> {
     return this.withRetry(async () => {
       const model = options?.model || this.defaultModel
       const res = await this.postChat({
@@ -171,7 +179,8 @@ export class OpenAIAdapter implements IAIAgent {
         messages: [
           {
             role: 'system',
-            content: 'You are a precise backend system that strictly returns valid, minified JSON without commentary.',
+            content:
+              'You are a precise backend system that strictly returns valid, minified JSON without commentary.',
           },
           { role: 'user', content: prompt },
         ],
@@ -181,7 +190,10 @@ export class OpenAIAdapter implements IAIAgent {
 
       const data = (await res.json()) as any
       let content = data?.choices?.[0]?.message?.content ?? '{}'
-      content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+      content = content
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```$/, '')
+        .trim()
       return JSON.parse(content) as T
     }, 'generateJSON')
   }

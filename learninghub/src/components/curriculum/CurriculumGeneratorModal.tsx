@@ -1,18 +1,8 @@
 import React, { useState } from 'react'
-import {
-  Sparkles,
-  Calendar,
-  Clock,
-  Target,
-  Award,
-} from 'lucide-react'
+import { Sparkles, Calendar, Clock, Target, Award } from 'lucide-react'
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
-import {
-  TargetExam,
-  EXAM_REGISTRY,
-  GenerateCurriculumInput,
-} from '../../types/curriculum'
+import { TargetExam, EXAM_REGISTRY, GenerateCurriculumInput } from '../../types/curriculum'
 
 interface CurriculumGeneratorModalProps {
   isOpen: boolean
@@ -49,17 +39,14 @@ export const CurriculumGeneratorModal: React.FC<CurriculumGeneratorModalProps> =
   const selectedExamMeta = EXAM_REGISTRY[targetExam]
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="AI Autonomous Curriculum Synthesizer"
-      size="lg"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="AI Autonomous Curriculum Synthesizer" size="lg">
       <form onSubmit={handleSubmit} className="space-y-6 pt-2">
         <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 flex items-start gap-3">
           <Sparkles className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
           <p className="text-sm text-gray-700 dark:text-gray-300">
-            Our multi-agent curriculum synthesizer ingests your target exam requirements, available study runway, and weekly time budget to construct a week-by-week mastery roadmap with built-in buffer weeks and KaTeX formulas.
+            Our multi-agent curriculum synthesizer ingests your target exam requirements, available
+            study runway, and weekly time budget to construct a week-by-week mastery roadmap with
+            built-in buffer weeks and KaTeX formulas.
           </p>
         </div>
 
@@ -127,7 +114,11 @@ export const CurriculumGeneratorModal: React.FC<CurriculumGeneratorModalProps> =
             <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">
               {weeklyStudyHours} hrs / week
               <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300">
-                {weeklyStudyHours >= 22 ? '⚡ Intensive' : weeklyStudyHours >= 12 ? '⚖️ Balanced' : '🌱 Steady'}
+                {weeklyStudyHours >= 22
+                  ? '⚡ Intensive'
+                  : weeklyStudyHours >= 12
+                    ? '⚖️ Balanced'
+                    : '🌱 Steady'}
               </span>
             </span>
           </div>

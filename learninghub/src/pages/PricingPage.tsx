@@ -201,11 +201,7 @@ export default function PricingPage() {
           ) : (
             tiers.map((tier, idx) => {
               const displayPrice =
-                tier.price === 0
-                  ? 0
-                  : isAnnual
-                    ? Math.round(tier.price * 0.75)
-                    : tier.price
+                tier.price === 0 ? 0 : isAnnual ? Math.round(tier.price * 0.75) : tier.price
 
               const isPopular = tier.isPopular || (tier as any).popular
 

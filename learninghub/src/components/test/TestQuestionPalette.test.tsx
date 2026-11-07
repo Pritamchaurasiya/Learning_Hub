@@ -64,4 +64,22 @@ describe('TestQuestionPalette Component', () => {
     const currentBtn = screen.getByTestId('palette-question-2')
     expect(currentBtn).toHaveAttribute('aria-current', 'true')
   })
+
+  it('preserves underlying candidate state color while applying active ring when current', () => {
+    render(
+      <TestQuestionPalette
+        questions={mockQuestions}
+        currentIndex={0}
+        answers={{ q1: 'optA' }}
+        flaggedQuestions={['q2']}
+        onSelectQuestion={vi.fn()}
+      />
+    )
+
+    const currentAnsweredBtn = screen.getByTestId('palette-question-1')
+    expect(currentAnsweredBtn).toHaveAttribute('aria-current', 'true')
+    // Should preserve emerald background from answered state and have active focus ring
+    expect(currentAnsweredBtn.className).toContain('bg-emerald-600')
+    expect(currentAnsweredBtn.className).toContain('ring-blue-500')
+  })
 })

@@ -44,12 +44,7 @@ export interface CrdtCodeSnippet {
 }
 
 export type CrdtOpType =
-  | 'STROKE_ADD'
-  | 'STROKE_DELETE'
-  | 'CODE_UPDATE'
-  | 'CURSOR_BEACON'
-  | 'CLEAR_CANVAS'
-  | 'DELTA_SYNC'
+  'STROKE_ADD' | 'STROKE_DELETE' | 'CODE_UPDATE' | 'CURSOR_BEACON' | 'CLEAR_CANVAS' | 'DELTA_SYNC'
 
 export interface CrdtOperation {
   id: string
@@ -99,12 +94,7 @@ export interface CollabRoomState {
   ipfsSnapshotCid?: string
 }
 
-export type SignalingMessageType =
-  | 'OFFER'
-  | 'ANSWER'
-  | 'ICE_CANDIDATE'
-  | 'PEER_JOIN'
-  | 'PEER_LEAVE'
+export type SignalingMessageType = 'OFFER' | 'ANSWER' | 'ICE_CANDIDATE' | 'PEER_JOIN' | 'PEER_LEAVE'
 
 export interface WebRtcSignalingMessage {
   id: string

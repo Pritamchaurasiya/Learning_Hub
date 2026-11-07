@@ -1,14 +1,5 @@
 import React, { useState } from 'react'
-import {
-  Users,
-  Wifi,
-  Radio,
-  Share2,
-  Check,
-  Shield,
-  Clock,
-  Sparkles,
-} from 'lucide-react'
+import { Users, Wifi, Radio, Share2, Check, Shield, Clock, Sparkles } from 'lucide-react'
 import { CollabPeer, CollabRoomState } from '../../types/crdtCollab'
 
 interface PeerPresenceHUDProps {
@@ -65,7 +56,8 @@ export const PeerPresenceHUD: React.FC<PeerPresenceHUDProps> = ({
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3 text-slate-500" /> {room.peers.length}/{room.maxPeers} Peers
+                <Clock className="w-3 h-3 text-slate-500" /> {room.peers.length}/{room.maxPeers}{' '}
+                Peers
               </span>
               <span>•</span>
               <span className="flex items-center gap-1 text-indigo-300 font-medium">
@@ -100,8 +92,8 @@ export const PeerPresenceHUD: React.FC<PeerPresenceHUDProps> = ({
                     peer.connectionType === 'P2P_WEBRTC'
                       ? 'bg-emerald-400'
                       : peer.connectionType === 'RELAY_FALLBACK'
-                      ? 'bg-amber-400'
-                      : 'bg-blue-400'
+                        ? 'bg-amber-400'
+                        : 'bg-blue-400'
                   }`}
                 />
                 {/* Tooltip on Hover */}

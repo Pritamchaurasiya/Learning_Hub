@@ -30,15 +30,16 @@ export function FounderMissionSection() {
 
           <div className="space-y-4 text-sm sm:text-base text-slate-300 leading-relaxed font-sans">
             <p>
-              Like many of you, our team spent years navigating the intense pressure cooker of Indian
-              competitive exams and technical coding interviews. We experienced firsthand the frustration
-              with legacy coaching institutes: slow, clunky web portals that charged exorbitant fees,
-              locked PDFs behind aggressive sales calls, and provided explanations with missing steps.
+              Like many of you, our team spent years navigating the intense pressure cooker of
+              Indian competitive exams and technical coding interviews. We experienced firsthand the
+              frustration with legacy coaching institutes: slow, clunky web portals that charged
+              exorbitant fees, locked PDFs behind aggressive sales calls, and provided explanations
+              with missing steps.
             </p>
             <p>
-              More recently, we saw the rise of generic &ldquo;AI ed-tech&rdquo; websites that churned out
-              hallucinated calculus proofs and buggy code snippets that left students more confused
-              than when they started.
+              More recently, we saw the rise of generic &ldquo;AI ed-tech&rdquo; websites that
+              churned out hallucinated calculus proofs and buggy code snippets that left students
+              more confused than when they started.
             </p>
             <p className="font-semibold text-white">
               We decided to build the platform we wished had existed when we were preparing.
@@ -54,8 +55,8 @@ export function FounderMissionSection() {
               <div>
                 <p className="font-bold text-white mb-0.5">Zero Telemarketing Spam</p>
                 <p className="text-slate-400">
-                  We never sell student data or employ sales callers. Your phone number is strictly for
-                  two-factor auth.
+                  We never sell student data or employ sales callers. Your phone number is strictly
+                  for two-factor auth.
                 </p>
               </div>
             </div>
@@ -67,8 +68,8 @@ export function FounderMissionSection() {
               <div>
                 <p className="font-bold text-white mb-0.5">Client-Side Speed</p>
                 <p className="text-slate-400">
-                  Sub-15ms code compilation and instant problem navigation. We value your preparation
-                  hours.
+                  Sub-15ms code compilation and instant problem navigation. We value your
+                  preparation hours.
                 </p>
               </div>
             </div>
@@ -93,8 +94,8 @@ export function FounderMissionSection() {
               <div>
                 <p className="font-bold text-white mb-0.5">Permanent Free Tier</p>
                 <p className="text-slate-400">
-                  Core practice questions, chapter filters, and formula notes remain accessible to every
-                  student, forever.
+                  Core practice questions, chapter filters, and formula notes remain accessible to
+                  every student, forever.
                 </p>
               </div>
             </div>
@@ -103,7 +104,9 @@ export function FounderMissionSection() {
           {/* Signature */}
           <div className="mt-8 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-slate-400 gap-3">
             <div>
-              <p className="font-semibold text-white">The LearningHub Engineering & Pedagogy Team</p>
+              <p className="font-semibold text-white">
+                The LearningHub Engineering & Pedagogy Team
+              </p>
               <p className="text-slate-500">Built with care across Bengaluru, Kota, and Delhi</p>
             </div>
             <div className="font-mono text-[11px] text-slate-500">

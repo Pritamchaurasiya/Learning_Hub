@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { Plus, Check, Loader2 } from 'lucide-react';
-import { updatesService } from '../../services/updatesService';
+import React, { useState } from 'react'
+import { Plus, Check, Loader2 } from 'lucide-react'
+import { updatesService } from '../../services/updatesService'
 
 export interface FollowButtonProps {
-  targetType: 'INSTITUTION' | 'COURSE' | 'SEMESTER' | 'EXAM' | 'CATEGORY';
-  targetValue: string;
-  initialFollowed?: boolean;
-  subscriptionId?: string;
-  onToggle?: (isFollowed: boolean) => void;
-  className?: string;
+  targetType: 'INSTITUTION' | 'COURSE' | 'SEMESTER' | 'EXAM' | 'CATEGORY'
+  targetValue: string
+  initialFollowed?: boolean
+  subscriptionId?: string
+  onToggle?: (isFollowed: boolean) => void
+  className?: string
 }
 
 export const FollowButton: React.FC<FollowButtonProps> = ({
@@ -19,37 +19,37 @@ export const FollowButton: React.FC<FollowButtonProps> = ({
   onToggle,
   className = '',
 }) => {
-  const [isFollowed, setIsFollowed] = useState(initialFollowed);
-  const [subId, setSubId] = useState<string | undefined>(initialSubId);
-  const [loading, setLoading] = useState(false);
+  const [isFollowed, setIsFollowed] = useState(initialFollowed)
+  const [subId, setSubId] = useState<string | undefined>(initialSubId)
+  const [loading, setLoading] = useState(false)
 
   const handleToggle = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
+    e.stopPropagation()
+    e.preventDefault()
 
-    if (loading) return;
+    if (loading) return
 
     try {
-      setLoading(true);
+      setLoading(true)
       if (isFollowed) {
         if (subId) {
-          await updatesService.unsubscribeTarget(subId);
+          await updatesService.unsubscribeTarget(subId)
         }
-        setIsFollowed(false);
-        setSubId(undefined);
-        onToggle?.(false);
+        setIsFollowed(false)
+        setSubId(undefined)
+        onToggle?.(false)
       } else {
-        const sub = await updatesService.subscribeTarget(targetType, targetValue);
-        setIsFollowed(true);
-        if (sub?.id) setSubId(sub.id);
-        onToggle?.(true);
+        const sub = await updatesService.subscribeTarget(targetType, targetValue)
+        setIsFollowed(true)
+        if (sub?.id) setSubId(sub.id)
+        onToggle?.(true)
       }
     } catch {
       // Revert on error
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <button
@@ -73,5 +73,5 @@ export const FollowButton: React.FC<FollowButtonProps> = ({
       )}
       <span>{isFollowed ? 'Following' : 'Follow'}</span>
     </button>
-  );
-};
+  )
+}

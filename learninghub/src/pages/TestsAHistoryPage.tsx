@@ -90,9 +90,7 @@ const TestsAHistoryPage = () => {
         setLoading(true)
         const [historyResponse, badgesResponse] = await Promise.all([
           testsAService.getMyResults(),
-          badgeService
-            .getUserBadges()
-            .catch(() => ({ status: 'success', data: { badges: [] } })),
+          badgeService.getUserBadges().catch(() => ({ status: 'success', data: { badges: [] } })),
         ])
         if (historyResponse.status === 'success') {
           setHistory(Array.isArray(historyResponse.data) ? historyResponse.data : [])
@@ -312,9 +310,7 @@ const TestsAHistoryPage = () => {
       const correctCount = answers.filter((a: any) => a.is_correct === true).length
       const incorrectCount = answers.filter((a: any) => a.is_correct === false).length
       const totalQuestions =
-        answers.length > 0
-          ? answers.length
-          : Math.max(1, Math.round((attempt.score / 100) * 10))
+        answers.length > 0 ? answers.length : Math.max(1, Math.round((attempt.score / 100) * 10))
 
       const result: TestResult = {
         attempt_id: attempt.id,
@@ -336,10 +332,7 @@ const TestsAHistoryPage = () => {
         submitted_at: attempt.submitted_at ?? attempt.started_at,
         is_passed: Boolean(attempt.passed),
         adaptive_diagnostics: {
-          finalTheta: Math.max(
-            -3,
-            Math.min(3, Number(((attempt.score - 50) / 16.66).toFixed(2)))
-          ),
+          finalTheta: Math.max(-3, Math.min(3, Number(((attempt.score - 50) / 16.66).toFixed(2)))),
         },
         telemetry_digest: {
           integrityScore: 100,
@@ -648,7 +641,13 @@ const TestsAHistoryPage = () => {
               Score Trend
             </h2>
             <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+                minWidth={0}
+                minHeight={0}
+                initialDimension={{ width: 320, height: 220 }}
+              >
                 <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                   <CartesianGrid
                     strokeDasharray="3 3"
@@ -787,9 +786,10 @@ const TestsAHistoryPage = () => {
                               <span>•</span>
                               <span className="flex items-center gap-1">
                                 <Target className="w-3.5 h-3.5 text-gray-400" />
-                                {Array.isArray(attempt.answers)
-                                  ? attempt.answers.length
-                                  : Object.keys(attempt.answers ?? {}).length}{' '}
+                                {(attempt as any).total_questions ??
+                                  (Array.isArray(attempt.answers)
+                                    ? attempt.answers.length
+                                    : Object.keys(attempt.answers ?? {}).length || 10)}{' '}
                                 questions
                               </span>
                             </div>
@@ -1046,4 +1046,3 @@ const TestsAHistoryPage = () => {
 }
 
 export default TestsAHistoryPage
-

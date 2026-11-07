@@ -54,10 +54,7 @@ export default function VerifyScorecardPage() {
     }
   }, [paramCode, searchParams])
 
-  const {
-    data: verificationResult,
-    isLoading,
-  } = useQuery({
+  const { data: verificationResult, isLoading } = useQuery({
     queryKey: ['verifyScorecard', activeCode, activeAttempt],
     queryFn: async () => {
       const trimmedCode = activeCode.trim()
@@ -78,7 +75,8 @@ export default function VerifyScorecardPage() {
             valid: true,
             verified_online: false,
             status: 'STRUCTURE_VALID_OFFLINE',
-            message: 'Scorecard checksum matches the cryptographic format, but the attempt is not indexed in the live cloud registry.',
+            message:
+              'Scorecard checksum matches the cryptographic format, but the attempt is not indexed in the live cloud registry.',
             verification_code: trimmedCode,
             test_title: 'Standard Academic Assessment',
             candidate_name: 'Verified Student',
@@ -93,7 +91,8 @@ export default function VerifyScorecardPage() {
         return {
           valid: false,
           status: 'TAMPERED_OR_CORRUPT',
-          message: err?.message || 'Verification failed. The cryptographic signature does not match.',
+          message:
+            err?.message || 'Verification failed. The cryptographic signature does not match.',
           verification_code: trimmedCode,
         }
       }
@@ -178,7 +177,8 @@ export default function VerifyScorecardPage() {
               Official Scorecard Verification Registry
             </h1>
             <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-              Verify the authenticity, tamper integrity, and proctoring telemetry of official examination results issued by the LearningHub National Testing Network.
+              Verify the authenticity, tamper integrity, and proctoring telemetry of official
+              examination results issued by the LearningHub National Testing Network.
             </p>
           </div>
 
@@ -187,7 +187,10 @@ export default function VerifyScorecardPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2 space-y-1.5">
-                  <label htmlFor="scorecard-code" className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                  <label
+                    htmlFor="scorecard-code"
+                    className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"
+                  >
                     Verification Digest / Code
                   </label>
                   <div className="relative">
@@ -204,7 +207,10 @@ export default function VerifyScorecardPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label htmlFor="scorecard-attempt" className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                  <label
+                    htmlFor="scorecard-attempt"
+                    className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"
+                  >
                     Attempt Reference (Optional)
                   </label>
                   <input
@@ -290,7 +296,11 @@ export default function VerifyScorecardPage() {
                           onClick={handleCopyVerificationLink}
                           className="rounded-xl flex items-center gap-1.5 text-xs"
                         >
-                          {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
+                          {copiedLink ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          ) : (
+                            <Share2 className="w-3.5 h-3.5" />
+                          )}
                           {copiedLink ? 'Copied' : 'Share Verification'}
                         </Button>
                         <Button
@@ -318,7 +328,10 @@ export default function VerifyScorecardPage() {
                               {verificationResult.candidate_name || 'Registered Candidate'}
                             </p>
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
-                              Attempt Reference: {verificationResult.attempt_id || activeAttempt || 'Online Verified Attempt'}
+                              Attempt Reference:{' '}
+                              {verificationResult.attempt_id ||
+                                activeAttempt ||
+                                'Online Verified Attempt'}
                             </p>
                           </div>
                         </div>
@@ -340,11 +353,14 @@ export default function VerifyScorecardPage() {
                               <span className="flex items-center gap-1">
                                 <Calendar className="w-3.5 h-3.5 text-slate-400" />
                                 {verificationResult.submitted_at
-                                  ? new Date(verificationResult.submitted_at).toLocaleDateString(undefined, {
-                                      year: 'numeric',
-                                      month: 'short',
-                                      day: 'numeric',
-                                    })
+                                  ? new Date(verificationResult.submitted_at).toLocaleDateString(
+                                      undefined,
+                                      {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric',
+                                      }
+                                    )
                                   : 'Recently Submitted'}
                               </span>
                               {verificationResult.time_taken_seconds && (
@@ -393,15 +409,20 @@ export default function VerifyScorecardPage() {
                             <div className="flex items-center gap-2">
                               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                               <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                                Integrity Level: {verificationResult.integrity_risk_level || 'EXCELLENT'}
+                                Integrity Level:{' '}
+                                {verificationResult.integrity_risk_level || 'EXCELLENT'}
                               </span>
                             </div>
-                            <Badge variant="success" className="text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                            <Badge
+                              variant="success"
+                              className="text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800"
+                            >
                               0 Tamper Flags
                             </Badge>
                           </div>
                           <p className="text-xs text-slate-500 dark:text-slate-400">
-                            Biometric tab focus, window blur, and fullscreen anti-cheat telemetry verified without violations.
+                            Biometric tab focus, window blur, and fullscreen anti-cheat telemetry
+                            verified without violations.
                           </p>
                         </div>
                       </div>
@@ -411,7 +432,8 @@ export default function VerifyScorecardPage() {
                     <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400 font-mono">
                       <span>SIGNATURE: {verificationResult.verification_code || activeCode}</span>
                       <span className="text-emerald-700 dark:text-emerald-400 font-sans font-medium flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Cryptographically Sealed by LearningHub
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Cryptographically Sealed by
+                        LearningHub
                       </span>
                     </div>
                   </div>
@@ -427,7 +449,8 @@ export default function VerifyScorecardPage() {
                           Scorecard Verification Failed
                         </h2>
                         <p className="text-sm text-rose-800 dark:text-rose-300">
-                          {verificationResult.message || 'The verification code provided does not match any authentic examination record or has failed cryptographic integrity validation.'}
+                          {verificationResult.message ||
+                            'The verification code provided does not match any authentic examination record or has failed cryptographic integrity validation.'}
                         </p>
                       </div>
                     </div>

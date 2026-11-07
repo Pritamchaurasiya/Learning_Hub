@@ -96,9 +96,7 @@ export function FacultyAdvisorySection() {
                 <p className="text-xs font-semibold text-amber-400 mb-1">{advisor.role}</p>
                 <p className="text-xs text-slate-400 mb-3">{advisor.pedigree}</p>
 
-                <p className="text-xs text-slate-300 leading-relaxed mb-4">
-                  {advisor.bio}
-                </p>
+                <p className="text-xs text-slate-300 leading-relaxed mb-4">{advisor.bio}</p>
               </div>
 
               {/* Tags */}
@@ -123,10 +121,13 @@ export function FacultyAdvisorySection() {
               <BookCheck className="w-6 h-6 text-amber-400" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-white mb-1">Our Triple-Pass Verification Guarantee</h4>
+              <h4 className="text-sm font-bold text-white mb-1">
+                Our Triple-Pass Verification Guarantee
+              </h4>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Before any question or proof is published, it passes: (1) Official Exam Key Alignment,
-                (2) Dimensional & Boundary-Condition Validation, and (3) Senior Faculty Peer Review.
+                Before any question or proof is published, it passes: (1) Official Exam Key
+                Alignment, (2) Dimensional & Boundary-Condition Validation, and (3) Senior Faculty
+                Peer Review.
               </p>
             </div>
           </div>

@@ -164,20 +164,28 @@ export class MentorService {
     return newSession
   }
 
-  async getAvailability(mentorId: string): Promise<Array<{ day: string; start_time: string; end_time: string }>> {
+  async getAvailability(
+    mentorId: string
+  ): Promise<Array<{ day: string; start_time: string; end_time: string }>> {
     const mentor = mockMentors.find(m => m.id === mentorId)
     if (!mentor) throw new Error('Mentor not found')
     return mentor.availability
   }
 
-  async cancelSession(sessionId: string, userId?: string, reason?: string): Promise<MentorshipSession> {
+  async cancelSession(
+    sessionId: string,
+    userId?: string,
+    reason?: string
+  ): Promise<MentorshipSession> {
     const session = mockSessions.find(s => s.id === sessionId)
     if (!session) throw new Error('Session not found')
     if (userId && session.student.id !== userId) {
       throw new Error('Unauthorized to cancel this session')
     }
     session.status = 'cancelled'
-    session.notes = reason ? `${session.notes ? session.notes + ' | ' : ''}Cancelled: ${reason}` : session.notes
+    session.notes = reason
+      ? `${session.notes ? `${session.notes} | ` : ''}Cancelled: ${reason}`
+      : session.notes
     return session
   }
 }

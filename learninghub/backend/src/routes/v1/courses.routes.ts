@@ -143,39 +143,43 @@ router.get(
     const course = await courseService.getCourse(courseId)
     const questions = course?.questions || []
 
-    const lessons = questions.length > 0
-      ? questions.map((q: any, idx: number) => ({
-          id: q.id,
-          title: `Module ${idx + 1}: ${q.text.slice(0, 40)}...`,
-          description: q.explanation || 'Master foundational invariants and solution walkthrough.',
-          order: idx + 1,
-          duration_minutes: 15,
-          is_completed: false,
-          video_url: null,
-          content: q.text,
-        }))
-      : [
-          {
-            id: `lesson-${courseId}-1`,
-            title: 'Lesson 1: Foundations & Core Invariants',
-            description: 'Core theoretical foundation, mental model calibration, and prerequisite walkthrough.',
-            order: 1,
-            duration_minutes: 20,
-            is_completed: true,
-            video_url: null,
-            content: 'Detailed theoretical breakdown and problem formulation.',
-          },
-          {
-            id: `lesson-${courseId}-2`,
-            title: 'Lesson 2: Algorithmic Strategies & Edge Cases',
-            description: 'In-depth asymptotic complexity analysis and optimal pattern recognition.',
-            order: 2,
-            duration_minutes: 30,
+    const lessons =
+      questions.length > 0
+        ? questions.map((q: any, idx: number) => ({
+            id: q.id,
+            title: `Module ${idx + 1}: ${q.text.slice(0, 40)}...`,
+            description:
+              q.explanation || 'Master foundational invariants and solution walkthrough.',
+            order: idx + 1,
+            duration_minutes: 15,
             is_completed: false,
             video_url: null,
-            content: 'Step-by-step algorithmic progression with code drills.',
-          },
-        ]
+            content: q.text,
+          }))
+        : [
+            {
+              id: `lesson-${courseId}-1`,
+              title: 'Lesson 1: Foundations & Core Invariants',
+              description:
+                'Core theoretical foundation, mental model calibration, and prerequisite walkthrough.',
+              order: 1,
+              duration_minutes: 20,
+              is_completed: true,
+              video_url: null,
+              content: 'Detailed theoretical breakdown and problem formulation.',
+            },
+            {
+              id: `lesson-${courseId}-2`,
+              title: 'Lesson 2: Algorithmic Strategies & Edge Cases',
+              description:
+                'In-depth asymptotic complexity analysis and optimal pattern recognition.',
+              order: 2,
+              duration_minutes: 30,
+              is_completed: false,
+              video_url: null,
+              content: 'Step-by-step algorithmic progression with code drills.',
+            },
+          ]
 
     sendSuccess(res, lessons)
   })
@@ -190,7 +194,8 @@ router.get(
       id: lessonId,
       course_id: id,
       title: `Detailed Lesson: ${lessonId}`,
-      content: 'Comprehensive lesson content with KaTeX mathematical formulas, code samples, and diagrams.',
+      content:
+        'Comprehensive lesson content with KaTeX mathematical formulas, code samples, and diagrams.',
       duration_minutes: 25,
       is_completed: false,
       resources: [],
@@ -213,7 +218,10 @@ router.post(
   optionalAuth,
   asyncHandler(async (req: Request, res: Response) => {
     const { progress } = req.body
-    sendSuccess(res, { progress_percent: Number(progress) || 100, completed: (Number(progress) || 0) >= 100 })
+    sendSuccess(res, {
+      progress_percent: Number(progress) || 100,
+      completed: (Number(progress) || 0) >= 100,
+    })
   })
 )
 
@@ -308,4 +316,3 @@ router.get(
 )
 
 export default router
-

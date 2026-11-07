@@ -1,14 +1,8 @@
 export type CareerTrack =
-  | 'DISTRIBUTED_SYSTEMS'
-  | 'AI_RESEARCH'
-  | 'FULL_STACK_WEB3'
-  | 'STAFF_SRE'
-  | 'ALGORITHM_QUANT'
+  'DISTRIBUTED_SYSTEMS' | 'AI_RESEARCH' | 'FULL_STACK_WEB3' | 'STAFF_SRE' | 'ALGORITHM_QUANT'
 
 export type RecruiterPersonaRole =
-  | 'EXECUTIVE_TALENT_LEAD'
-  | 'ENGINEERING_DIRECTOR'
-  | 'BAR_RAISER_PRINCIPAL'
+  'EXECUTIVE_TALENT_LEAD' | 'ENGINEERING_DIRECTOR' | 'BAR_RAISER_PRINCIPAL'
 
 export interface SimulatedJobListing {
   id: string

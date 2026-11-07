@@ -18,6 +18,8 @@ import {
   ShoppingBag,
   Minus,
   Square,
+  WifiOff,
+  RefreshCw,
 } from 'lucide-react'
 import { useStore } from '../stores/useStore'
 import { useShallow } from 'zustand/react/shallow'
@@ -30,6 +32,7 @@ import { CountrySelectorBadge } from './country/CountrySelectorBadge'
 import { useLearningContextStore } from '../stores/useLearningContextStore'
 import { prefetchRoute } from '../utils/routePrefetchRegistry'
 import { desktopService } from '../services/desktopService'
+import { offlineSyncService } from '../services/offlineSyncService'
 
 const LevelProgressionModal = lazy(() =>
   import('./gamification/LevelProgressionModal').then(m => ({ default: m.LevelProgressionModal }))
@@ -96,6 +99,18 @@ const Header = memo(() => {
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const [networkStatus, setNetworkStatus] = useState({
+    isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+    pendingCount: 0,
+  })
+
+  useEffect(() => {
+    const unsub = offlineSyncService.subscribe((isOnline, count) => {
+      setNetworkStatus({ isOnline, pendingCount: count })
+    })
+    return () => unsub()
   }, [])
 
   const mobileSearchInputRef = useRef<HTMLInputElement>(null)
@@ -339,6 +354,38 @@ const Header = memo(() => {
             </span>
           </motion.button>
         </div>
+
+        {/* Network & Offline Synchronization Badge */}
+        {!networkStatus.isOnline && (
+          <div
+            data-testid="header-offline-badge"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-semibold"
+            title="Working in offline mode. Assessment drafts and actions are safely cached."
+          >
+            <WifiOff className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Offline</span>
+            {networkStatus.pendingCount > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-slate-950 text-[10px] font-bold">
+                {networkStatus.pendingCount}
+              </span>
+            )}
+          </div>
+        )}
+        {networkStatus.isOnline && networkStatus.pendingCount > 0 && (
+          <button
+            type="button"
+            onClick={() => void offlineSyncService.flushQueue()}
+            data-testid="header-syncing-badge"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-xs font-semibold hover:bg-blue-500/20 transition-colors cursor-pointer"
+            title="Pending items ready to synchronize. Click to sync now."
+          >
+            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            <span className="hidden sm:inline">Syncing</span>
+            <span className="px-1.5 py-0.2 rounded-full bg-blue-600 text-white text-[10px] font-bold">
+              {networkStatus.pendingCount}
+            </span>
+          </button>
+        )}
 
         {/* Country / Region Selector Badge */}
         <CountrySelectorBadge className="hidden md:inline-flex" />

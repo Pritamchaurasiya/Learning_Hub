@@ -1,14 +1,9 @@
 import crypto from 'crypto'
 import logger from '../utils/logger'
+import { cacheService } from './CacheService'
 
 export type RankTier =
-  | 'UNRANKED'
-  | 'BRONZE'
-  | 'SILVER'
-  | 'GOLD'
-  | 'PLATINUM'
-  | 'DIAMOND'
-  | 'GRANDMASTER'
+  'UNRANKED' | 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND' | 'GRANDMASTER'
 
 export interface DuelPlayer {
   userId: string
@@ -52,6 +47,7 @@ export interface MatchPlayerState {
   submittedCode?: string
   submittedAt?: number
   keystrokes: number
+  lastHeartbeat?: number
 }
 
 export interface DuelMatch {
@@ -98,8 +94,18 @@ export const ARENA_DUEL_PROBLEMS: DuelProblem[] = [
       { id: 'tc-1', input: 'nums = [2,7,11,15], target = 9', expectedOutput: '[0, 1]' },
       { id: 'tc-2', input: 'nums = [3,2,4], target = 6', expectedOutput: '[1, 2]' },
       { id: 'tc-3', input: 'nums = [3,3], target = 6', expectedOutput: '[0, 1]' },
-      { id: 'tc-4', input: 'nums = [1,5,9,14], target = 15', expectedOutput: '[1, 3]', isHidden: true },
-      { id: 'tc-5', input: 'nums = [-3,4,3,90], target = 0', expectedOutput: '[0, 2]', isHidden: true },
+      {
+        id: 'tc-4',
+        input: 'nums = [1,5,9,14], target = 15',
+        expectedOutput: '[1, 3]',
+        isHidden: true,
+      },
+      {
+        id: 'tc-5',
+        input: 'nums = [-3,4,3,90], target = 0',
+        expectedOutput: '[0, 2]',
+        isHidden: true,
+      },
     ],
   },
   {
@@ -265,10 +271,7 @@ export class DuelEngine {
 
     if (opponentIndex !== -1) {
       const opponentEntry = this.matchmakingQueue.splice(opponentIndex, 1)[0]
-      const opponentProfile = this.getOrCreateProfile(
-        opponentEntry.userId,
-        opponentEntry.username
-      )
+      const opponentProfile = this.getOrCreateProfile(opponentEntry.userId, opponentEntry.username)
 
       // Create Live Peer Match: Waiting player is player1, incoming is player2
       const match = this.createMatch(opponentProfile, profile)
@@ -327,8 +330,7 @@ export class DuelEngine {
     isGhostMatch = false
   ): DuelMatch {
     const matchId = `duel-match-${crypto.randomBytes(6).toString('hex')}`
-    const problem =
-      ARENA_DUEL_PROBLEMS[Math.floor(Math.random() * ARENA_DUEL_PROBLEMS.length)]
+    const problem = ARENA_DUEL_PROBLEMS[Math.floor(Math.random() * ARENA_DUEL_PROBLEMS.length)]
 
     const match: DuelMatch = {
       id: matchId,
@@ -369,7 +371,18 @@ export class DuelEngine {
       this.userToActiveMatch.set(player2Profile.userId, matchId)
     }
 
-    logger.info('Created duel arena match', { matchId, p1: player1Profile.userId, p2: player2Profile.userId })
+    // Write-through to cacheService for multi-instance cluster durability
+    void cacheService.set(`duel:match:${matchId}`, match, 3600).catch(() => {})
+    void cacheService.set(`duel:user:${player1Profile.userId}`, matchId, 3600).catch(() => {})
+    if (!isGhostMatch) {
+      void cacheService.set(`duel:user:${player2Profile.userId}`, matchId, 3600).catch(() => {})
+    }
+
+    logger.info('Created duel arena match', {
+      matchId,
+      p1: player1Profile.userId,
+      p2: player2Profile.userId,
+    })
     return match
   }
 
@@ -405,8 +418,10 @@ export class DuelEngine {
     if (typeof keystrokes === 'number') {
       playerState.keystrokes = keystrokes
     }
+    playerState.lastHeartbeat = Date.now()
     playerState.status = playerState.testsPassed > 0 ? 'RUNNING' : 'DRAFTING'
 
+    void cacheService.set(`duel:match:${matchId}`, match, 3600).catch(() => {})
     return match
   }
 
@@ -492,9 +507,12 @@ export class DuelEngine {
       match.eloDeltaPlayer1 = p1Adj.delta
       match.eloDeltaPlayer2 = p2Adj.delta
 
-      // Clear user active match map
+      // Clear user active match map and cache mappings
       this.userToActiveMatch.delete(match.player1.userId)
       this.userToActiveMatch.delete(match.player2.userId)
+      void cacheService.delete(`duel:user:${match.player1.userId}`).catch(() => {})
+      void cacheService.delete(`duel:user:${match.player2.userId}`).catch(() => {})
+      void cacheService.set(`duel:match:${matchId}`, match, 300).catch(() => {})
 
       return {
         match,
@@ -510,16 +528,105 @@ export class DuelEngine {
     }
   }
 
+  public static async getActiveMatchForUserAsync(userId: string): Promise<DuelMatch | null> {
+    const localMatch = this.getActiveMatchForUser(userId)
+    if (localMatch && localMatch.status !== 'FINISHED') return localMatch
+
+    try {
+      const matchId = await cacheService.get<string>(`duel:user:${userId}`)
+      if (matchId) {
+        const cachedMatch = await cacheService.get<DuelMatch>(`duel:match:${matchId}`)
+        if (cachedMatch && cachedMatch.status !== 'FINISHED') {
+          this.activeMatches.set(cachedMatch.id, cachedMatch)
+          this.userToActiveMatch.set(userId, cachedMatch.id)
+          return cachedMatch
+        }
+      }
+    } catch (err) {
+      logger.debug('[DuelEngine] Async cache match lookup skipped:', {
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
+    return null
+  }
+
+  public static touchPlayerHeartbeat(matchId: string, userId: string): boolean {
+    const match = this.getMatch(matchId)
+    if (!match || match.status === 'FINISHED') return false
+
+    if (match.player1.userId === userId) {
+      match.player1.lastHeartbeat = Date.now()
+      return true
+    }
+    if (match.player2.userId === userId) {
+      match.player2.lastHeartbeat = Date.now()
+      return true
+    }
+    return false
+  }
+
+  public static resetArenaStateForTesting(): void {
+    this.userProfiles.clear()
+    this.activeMatches.clear()
+    this.userToActiveMatch.clear()
+    this.matchmakingQueue = []
+  }
+
   // ── Leaderboard ────────────────────────────────────────────────
   public static getLeaderboard(): DuelPlayer[] {
     const list = Array.from(this.userProfiles.values())
     // Add default elite masters for competitive presence
     const seededProfiles: DuelPlayer[] = [
-      { userId: 'seed-1', username: 'AlgorithmAce', elo: 2420, tier: 'GRANDMASTER', wins: 88, losses: 12, streak: 8, peakElo: 2450 },
-      { userId: 'seed-2', username: 'ByteMaster_99', elo: 2210, tier: 'DIAMOND', wins: 64, losses: 19, streak: 4, peakElo: 2280 },
-      { userId: 'seed-3', username: 'BinaryWizard', elo: 2040, tier: 'PLATINUM', wins: 51, losses: 23, streak: 2, peakElo: 2090 },
-      { userId: 'seed-4', username: 'GraphTraverser', elo: 1870, tier: 'PLATINUM', wins: 40, losses: 20, streak: 1, peakElo: 1920 },
-      { userId: 'seed-5', username: 'DynamicDev', elo: 1720, tier: 'GOLD', wins: 33, losses: 21, streak: 3, peakElo: 1750 },
+      {
+        userId: 'seed-1',
+        username: 'AlgorithmAce',
+        elo: 2420,
+        tier: 'GRANDMASTER',
+        wins: 88,
+        losses: 12,
+        streak: 8,
+        peakElo: 2450,
+      },
+      {
+        userId: 'seed-2',
+        username: 'ByteMaster_99',
+        elo: 2210,
+        tier: 'DIAMOND',
+        wins: 64,
+        losses: 19,
+        streak: 4,
+        peakElo: 2280,
+      },
+      {
+        userId: 'seed-3',
+        username: 'BinaryWizard',
+        elo: 2040,
+        tier: 'PLATINUM',
+        wins: 51,
+        losses: 23,
+        streak: 2,
+        peakElo: 2090,
+      },
+      {
+        userId: 'seed-4',
+        username: 'GraphTraverser',
+        elo: 1870,
+        tier: 'PLATINUM',
+        wins: 40,
+        losses: 20,
+        streak: 1,
+        peakElo: 1920,
+      },
+      {
+        userId: 'seed-5',
+        username: 'DynamicDev',
+        elo: 1720,
+        tier: 'GOLD',
+        wins: 33,
+        losses: 21,
+        streak: 3,
+        peakElo: 1750,
+      },
     ]
 
     const merged = [...list, ...seededProfiles]

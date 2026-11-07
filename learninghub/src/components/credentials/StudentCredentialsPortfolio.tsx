@@ -169,7 +169,8 @@ export const StudentCredentialsPortfolio: React.FC<StudentCredentialsPortfolioPr
             </Badge>
           </div>
           <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-            Tamper-proof academic and percentile credentials cryptographically anchored on Polygon PoS & Base L2.
+            Tamper-proof academic and percentile credentials cryptographically anchored on Polygon
+            PoS & Base L2.
           </p>
         </div>
 
@@ -219,8 +220,8 @@ export const StudentCredentialsPortfolio: React.FC<StudentCredentialsPortfolioPr
             tab === 'ALL'
               ? `All Credentials (${credentials.length})`
               : tab === 'COURSE'
-              ? 'Course Mastery'
-              : 'Competitive Percentiles'
+                ? 'Course Mastery'
+                : 'Competitive Percentiles'
 
           return (
             <button
@@ -262,7 +263,8 @@ export const StudentCredentialsPortfolio: React.FC<StudentCredentialsPortfolioPr
             No Verifiable Credentials Yet
           </h3>
           <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mb-5">
-            Complete courses, score in top assessment percentiles, or click the buttons above to claim a live cryptographically signed W3C DID demonstration credential.
+            Complete courses, score in top assessment percentiles, or click the buttons above to
+            claim a live cryptographically signed W3C DID demonstration credential.
           </p>
           <div className="flex gap-2">
             <Button

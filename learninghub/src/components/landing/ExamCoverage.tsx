@@ -37,7 +37,8 @@ const competitiveExams = [
     badge: 'IIT Kanpur / Madras Format',
     questions: '25,000+ Multi-Correct',
     subjects: ['Physics', 'Chemistry', 'Mathematics'],
-    description: 'Rigorous multi-correct, matrix match, and numerical integer problems for IIT aspirants.',
+    description:
+      'Rigorous multi-correct, matrix match, and numerical integer problems for IIT aspirants.',
     accent: 'border-amber-500/40 text-amber-400 bg-amber-500/10',
   },
   {
@@ -70,7 +71,8 @@ const competitiveExams = [
     badge: 'IISc / IIT Exam Standard',
     questions: '15,000+ Rigorous Items',
     subjects: ['Algorithms', 'OS', 'DBMS', 'Computer Networks'],
-    description: 'Deep theoretical computer science questions with step-by-step mathematical proofs.',
+    description:
+      'Deep theoretical computer science questions with step-by-step mathematical proofs.',
     accent: 'border-indigo-500/40 text-indigo-400 bg-indigo-500/10',
   },
   {
@@ -81,7 +83,8 @@ const competitiveExams = [
     badge: 'State Syllabus Aligned',
     questions: '28,000+ PYQs',
     subjects: ['Mathematics', 'Physics', 'Chemistry'],
-    description: 'Chapter-wise question sets targeting top state technical universities and Jadavpur.',
+    description:
+      'Chapter-wise question sets targeting top state technical universities and Jadavpur.',
     accent: 'border-pink-500/40 text-pink-400 bg-pink-500/10',
   },
   {
@@ -103,7 +106,8 @@ const competitiveExams = [
     badge: 'Advanced Problem Solving',
     questions: '8,000+ Selected Proofs',
     subjects: ['Physics', 'Chemistry', 'Pure Mathematics'],
-    description: 'Challenging olympiad problem sets designed to build deep first-principles intuition.',
+    description:
+      'Challenging olympiad problem sets designed to build deep first-principles intuition.',
     accent: 'border-purple-500/40 text-purple-400 bg-purple-500/10',
   },
 ]
@@ -117,7 +121,8 @@ const engineeringTracks = [
     badge: 'Browser AST Sandbox',
     questions: '750+ Curated Problems',
     subjects: ['Arrays & Hashing', 'Trees & Graphs', 'Dynamic Programming'],
-    description: 'Practice data structures with sub-15ms browser-based code execution and memory traces.',
+    description:
+      'Practice data structures with sub-15ms browser-based code execution and memory traces.',
     accent: 'border-blue-500/40 text-blue-400 bg-blue-500/10',
   },
   {
@@ -128,7 +133,8 @@ const engineeringTracks = [
     badge: 'Interactive Canvas',
     questions: '45+ Interactive Scenarios',
     subjects: ['Load Balancing', 'Consistent Hashing', 'Event Sourcing'],
-    description: 'Interactive architecture blueprints with realistic throughput calculations and failure modes.',
+    description:
+      'Interactive architecture blueprints with realistic throughput calculations and failure modes.',
     accent: 'border-cyan-500/40 text-cyan-400 bg-cyan-500/10',
   },
   {
@@ -139,7 +145,8 @@ const engineeringTracks = [
     badge: 'Live WebSocket Engine',
     questions: 'Live Competitions',
     subjects: ['Speed Algorithmic Solving', 'ELO Rating', 'Anti-Cheat'],
-    description: 'Challenge developers worldwide in timed coding duels with real-time test case verification.',
+    description:
+      'Challenge developers worldwide in timed coding duels with real-time test case verification.',
     accent: 'border-amber-500/40 text-amber-400 bg-amber-500/10',
   },
   {
@@ -160,14 +167,16 @@ interface ExamCoverageProps {
 }
 
 export function ExamCoverage({ onSelectExam }: ExamCoverageProps) {
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'competitive' | 'engineering'>('all')
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'competitive' | 'engineering'>(
+    'all'
+  )
 
   const displayedItems =
     selectedCategory === 'all'
       ? [...competitiveExams.slice(0, 4), ...engineeringTracks]
       : selectedCategory === 'competitive'
-      ? competitiveExams
-      : engineeringTracks
+        ? competitiveExams
+        : engineeringTracks
 
   return (
     <section className="py-20 lg:py-28 bg-slate-900/60 border-b border-slate-800">
@@ -242,7 +251,9 @@ export function ExamCoverage({ onSelectExam }: ExamCoverageProps) {
                   <div className="w-11 h-11 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center">
                     <item.icon className="w-5 h-5 text-amber-400" />
                   </div>
-                  <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border ${item.accent}`}>
+                  <span
+                    className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border ${item.accent}`}
+                  >
                     {item.badge}
                   </span>
                 </div>

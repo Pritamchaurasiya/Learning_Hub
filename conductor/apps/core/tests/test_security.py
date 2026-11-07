@@ -67,7 +67,8 @@ class SecurityHeadersMiddlewareTest(TestCase):
         request = self.factory.get('/')
         response = self.middleware(request)
         
-        self.assertEqual(response['X-Frame-Options'], 'SAMEORIGIN')
+        # DENY is more secure than SAMEORIGIN - prevents framing entirely
+        self.assertEqual(response['X-Frame-Options'], 'DENY')
     
     def test_adds_xss_protection(self):
         """Test X-XSS-Protection header is added."""

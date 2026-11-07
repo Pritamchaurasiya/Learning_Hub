@@ -58,7 +58,11 @@ export function LiveSessionNotesPanel({ sessionId, sessionTitle }: Props) {
     const newNote: LiveNote = {
       id: `note_${now}`,
       text: trimmed,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      }),
       elapsedLabel: formatElapsed(elapsed),
     }
 
@@ -98,17 +102,12 @@ export function LiveSessionNotesPanel({ sessionId, sessionTitle }: Props) {
   const noteCount = useMemo(() => notes.length, [notes])
 
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-testid="live-session-notes-panel"
-    >
+    <div className="flex flex-col h-full overflow-hidden" data-testid="live-session-notes-panel">
       {/* Panel Header */}
       <div className="flex items-center justify-between p-3 border-b border-slate-800 bg-slate-950">
         <div className="flex items-center gap-2">
           <FileText className="w-4 h-4 text-indigo-400" />
-          <span className="text-xs font-bold text-slate-200">
-            Session Notes
-          </span>
+          <span className="text-xs font-bold text-slate-200">Session Notes</span>
           {noteCount > 0 && (
             <span className="px-1.5 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 text-[9px] font-black tabular-nums">
               {noteCount}
@@ -185,9 +184,7 @@ export function LiveSessionNotesPanel({ sessionId, sessionTitle }: Props) {
               <div className="text-center py-8 text-slate-500">
                 <FileText className="w-8 h-8 mx-auto mb-2 opacity-40" />
                 <p className="text-xs font-bold">No notes yet</p>
-                <p className="text-[10px] mt-1">
-                  Capture key insights as the session progresses
-                </p>
+                <p className="text-[10px] mt-1">Capture key insights as the session progresses</p>
               </div>
             ) : (
               notes.map(note => (

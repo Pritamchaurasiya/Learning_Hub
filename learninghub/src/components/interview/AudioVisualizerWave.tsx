@@ -51,7 +51,9 @@ export function AudioVisualizerWave({
           />
         ))}
       </div>
-      <span className={`text-[11px] font-medium tracking-wide ${isActive ? 'text-indigo-400' : 'text-slate-400'}`}>
+      <span
+        className={`text-[11px] font-medium tracking-wide ${isActive ? 'text-indigo-400' : 'text-slate-400'}`}
+      >
         {label}
       </span>
     </div>

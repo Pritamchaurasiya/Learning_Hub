@@ -1,9 +1,5 @@
 import api from '../utils/api'
-import {
-  BenchmarkRequestParams,
-  ProfilerResultPayload,
-  AlgorithmPreset,
-} from '../types/complexity'
+import { BenchmarkRequestParams, ProfilerResultPayload, AlgorithmPreset } from '../types/complexity'
 
 export const complexityService = {
   /**

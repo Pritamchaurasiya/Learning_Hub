@@ -36,10 +36,7 @@ export const createCheckout = asyncHandler(async (req: Request, res: Response) =
     sendSuccess(res, result, 'Checkout initiated')
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Checkout failed'
-    if (
-      message.includes('already have') ||
-      message.includes('Invalid or inactive')
-    ) {
+    if (message.includes('already have') || message.includes('Invalid or inactive')) {
       sendError(res, message, 400, 'SUBSCRIPTION_RULE_VIOLATION')
       return
     }

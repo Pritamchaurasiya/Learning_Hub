@@ -45,7 +45,9 @@ export const ZkProofGeneratorCard: React.FC<ZkProofGeneratorCardProps> = ({
 
   const handleProve = async () => {
     if (actualValue < threshold) {
-      setErrorMsg(`Cannot generate proof: actual value (${actualValue}) must satisfy threshold (${threshold}).`)
+      setErrorMsg(
+        `Cannot generate proof: actual value (${actualValue}) must satisfy threshold (${threshold}).`
+      )
       return
     }
     setErrorMsg(null)
@@ -72,7 +74,8 @@ export const ZkProofGeneratorCard: React.FC<ZkProofGeneratorCardProps> = ({
           </div>
           <h2 className="text-lg font-bold text-white mt-1">Zero-Knowledge Prover Studio</h2>
           <p className="text-xs text-slate-400">
-            Generate mathematical proofs of your achievements without revealing underlying scores, match logs, or personal data.
+            Generate mathematical proofs of your achievements without revealing underlying scores,
+            match logs, or personal data.
           </p>
         </div>
 

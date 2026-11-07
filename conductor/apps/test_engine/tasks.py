@@ -33,7 +33,8 @@ def check_expired_attempts(self):
         for attempt in batch:
             try:
                 elapsed = (now - attempt.started_at).total_seconds()
-                time_limit = (attempt.test.time_limit_minutes or 0) * 60
+                ext_secs = (attempt.metadata or {}).get('time_extension_seconds', 0)
+                time_limit = ((attempt.test.time_limit_minutes or 0) * 60) + ext_secs
                 if time_limit <= 0:
                     continue
 

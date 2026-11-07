@@ -62,7 +62,12 @@ export const stripeService = {
       method: 'POST',
       body: JSON.stringify({
         mode: 'payment',
-        items: [{ price_data: { currency: 'usd', product_data: { name: 'Course' }, unit_amount: 0 }, quantity: 1 }],
+        items: [
+          {
+            price_data: { currency: 'usd', product_data: { name: 'Course' }, unit_amount: 0 },
+            quantity: 1,
+          },
+        ],
         course_id: params.courseId,
         success_url: params.successUrl,
         cancel_url: params.cancelUrl,
@@ -142,7 +147,9 @@ export const stripeService = {
   },
 
   // Prices
-  getPrices: async (lookupKeys?: string[]): Promise<{ data: StripePrice[]; meta: { count: number } }> => {
+  getPrices: async (
+    lookupKeys?: string[]
+  ): Promise<{ data: StripePrice[]; meta: { count: number } }> => {
     const query = lookupKeys?.length ? `?lookup_keys=${lookupKeys.join(',')}` : ''
     const response = await fetchApi(`/stripe/prices${query}`)
     return response.data

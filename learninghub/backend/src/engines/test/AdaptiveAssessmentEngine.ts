@@ -65,7 +65,7 @@ export class AdaptiveAssessmentEngine {
     const Q = 1 - P
     const denom = (1 - item.c) ** 2 * P
     if (denom <= 1e-8 || Q <= 1e-8) return 0.0
-    const numerator = (item.a ** 2) * ((P - item.c) ** 2) * Q
+    const numerator = item.a ** 2 * (P - item.c) ** 2 * Q
     return Math.max(0, numerator / denom)
   }
 
@@ -288,7 +288,9 @@ export class AdaptiveAssessmentEngine {
     const MAX_QUESTIONS = Math.min(15, test.questions.length)
     const TARGET_SEM = 0.3
 
-    const poolRemaining: any[] = test.questions.filter((q: any) => !answeredQuestionIds.includes(q.id))
+    const poolRemaining: any[] = test.questions.filter(
+      (q: any) => !answeredQuestionIds.includes(q.id)
+    )
     const isPrecisionReached = responses.length >= MIN_QUESTIONS && sem <= TARGET_SEM
     const isCapReached = responses.length >= MAX_QUESTIONS || poolRemaining.length === 0
 

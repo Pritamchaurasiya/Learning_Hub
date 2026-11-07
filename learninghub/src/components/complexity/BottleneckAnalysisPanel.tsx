@@ -1,6 +1,13 @@
 import React from 'react'
 import { ProfilerResultPayload } from '../../types/complexity'
-import { AlertTriangle, Lightbulb, Calculator, Clock, CheckCircle2, AlertOctagon } from 'lucide-react'
+import {
+  AlertTriangle,
+  Lightbulb,
+  Calculator,
+  Clock,
+  CheckCircle2,
+  AlertOctagon,
+} from 'lucide-react'
 
 interface BottleneckAnalysisPanelProps {
   result: ProfilerResultPayload
@@ -12,17 +19,41 @@ export const BottleneckAnalysisPanel: React.FC<BottleneckAnalysisPanelProps> = (
   const getVerdictBadge = (verdict: string) => {
     switch (verdict) {
       case 'INSTANT':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">INSTANT (&lt;16ms)</span>
+        return (
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            INSTANT (&lt;16ms)
+          </span>
+        )
       case 'ACCEPTABLE':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">ACCEPTABLE SLA</span>
+        return (
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+            ACCEPTABLE SLA
+          </span>
+        )
       case 'DEGRADED_SLA':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">DEGRADED SLA (&gt;200ms)</span>
+        return (
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+            DEGRADED SLA (&gt;200ms)
+          </span>
+        )
       case 'TIMEOUT_RISK':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-500/10 text-orange-400 border border-orange-500/30">TIMEOUT RISK (&gt;5s)</span>
+        return (
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-500/10 text-orange-400 border border-orange-500/30">
+            TIMEOUT RISK (&gt;5s)
+          </span>
+        )
       case 'CRITICAL_FAILURE':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30">UNFEASIBLE (&gt;60s)</span>
+        return (
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30">
+            UNFEASIBLE (&gt;60s)
+          </span>
+        )
       default:
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">UNKNOWN</span>
+        return (
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">
+            UNKNOWN
+          </span>
+        )
     }
   }
 
@@ -36,7 +67,8 @@ export const BottleneckAnalysisPanel: React.FC<BottleneckAnalysisPanelProps> = (
             Algorithmic Invariant & Bottleneck Diagnosis
           </h3>
           <p className="text-xs text-slate-400">
-            Automated architectural inspection identifying computational ceilings and cache thrashing.
+            Automated architectural inspection identifying computational ceilings and cache
+            thrashing.
           </p>
         </div>
 
@@ -48,7 +80,10 @@ export const BottleneckAnalysisPanel: React.FC<BottleneckAnalysisPanelProps> = (
           </h4>
           <div className="space-y-2">
             {bottleneckAnalysis.detectedAnomalies.map((anomaly, idx) => (
-              <div key={idx} className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 text-xs text-slate-300 flex items-start gap-2.5">
+              <div
+                key={idx}
+                className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 text-xs text-slate-300 flex items-start gap-2.5"
+              >
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5 shrink-0" />
                 <span>{anomaly}</span>
               </div>
@@ -64,7 +99,10 @@ export const BottleneckAnalysisPanel: React.FC<BottleneckAnalysisPanelProps> = (
           </h4>
           <div className="space-y-2">
             {bottleneckAnalysis.actionableSuggestions.map((suggestion, idx) => (
-              <div key={idx} className="p-3 rounded-xl bg-indigo-950/20 border border-indigo-500/20 text-xs text-indigo-200/90 flex items-start gap-2.5">
+              <div
+                key={idx}
+                className="p-3 rounded-xl bg-indigo-950/20 border border-indigo-500/20 text-xs text-indigo-200/90 flex items-start gap-2.5"
+              >
                 <CheckCircle2 className="w-4 h-4 text-indigo-400 mt-0.5 shrink-0" />
                 <span>{suggestion}</span>
               </div>
@@ -92,7 +130,8 @@ export const BottleneckAnalysisPanel: React.FC<BottleneckAnalysisPanelProps> = (
             Hypothetical Enterprise Scale Projections
           </h3>
           <p className="text-xs text-slate-400">
-            Extrapolated latency and memory consumption when scaling to production workloads up to N = 1,000,000.
+            Extrapolated latency and memory consumption when scaling to production workloads up to N
+            = 1,000,000.
           </p>
         </div>
 
@@ -134,7 +173,9 @@ export const BottleneckAnalysisPanel: React.FC<BottleneckAnalysisPanelProps> = (
         <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 flex items-start gap-2">
           <span className="text-indigo-400 font-bold shrink-0">Note:</span>
           <span>
-            Projections are synthesized using least-squares non-linear extrapolation of the empirical model. Actual cloud production latency may be influenced by GC pauses, network round-trips, and concurrency contention.
+            Projections are synthesized using least-squares non-linear extrapolation of the
+            empirical model. Actual cloud production latency may be influenced by GC pauses, network
+            round-trips, and concurrency contention.
           </span>
         </div>
       </div>

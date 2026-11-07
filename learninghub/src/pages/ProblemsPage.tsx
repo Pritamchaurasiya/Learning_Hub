@@ -251,7 +251,11 @@ export default function ProblemsPage() {
       }
 
       // Difficulty (case-insensitive)
-      if (selectedDifficulty !== 'ALL' && (problem.difficulty || '').toUpperCase() !== selectedDifficulty) return false
+      if (
+        selectedDifficulty !== 'ALL' &&
+        (problem.difficulty || '').toUpperCase() !== selectedDifficulty
+      )
+        return false
 
       // Status
       if (selectedStatus !== 'ALL') {

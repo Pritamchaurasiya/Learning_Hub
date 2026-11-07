@@ -39,7 +39,9 @@ export function InterviewerAvatarHUD({
       // Select natural sounding voice if available
       const voices = window.speechSynthesis.getVoices()
       const preferred = voices.find(v =>
-        isAlex ? v.name.includes('Male') || v.name.includes('David') : v.name.includes('Female') || v.name.includes('Zira')
+        isAlex
+          ? v.name.includes('Male') || v.name.includes('David')
+          : v.name.includes('Female') || v.name.includes('Zira')
       )
       if (preferred) utterance.voice = preferred
 
@@ -68,7 +70,9 @@ export function InterviewerAvatarHUD({
         <div className="relative">
           <div
             className={`w-11 h-11 rounded-xl bg-gradient-to-tr ${gradientColor} flex items-center justify-center text-white font-bold text-base shadow-md ring-2 ${
-              status === 'speaking' ? 'ring-indigo-400 ring-offset-2 ring-offset-slate-900 animate-pulse' : 'ring-slate-700'
+              status === 'speaking'
+                ? 'ring-indigo-400 ring-offset-2 ring-offset-slate-900 animate-pulse'
+                : 'ring-slate-700'
             }`}
           >
             {avatarInitials}
@@ -78,8 +82,8 @@ export function InterviewerAvatarHUD({
               status === 'speaking'
                 ? 'bg-emerald-500 animate-ping'
                 : status === 'thinking'
-                ? 'bg-amber-400'
-                : 'bg-indigo-500'
+                  ? 'bg-amber-400'
+                  : 'bg-indigo-500'
             }`}
           />
         </div>
@@ -103,10 +107,10 @@ export function InterviewerAvatarHUD({
             status === 'speaking'
               ? `${displayName} speaking...`
               : status === 'listening'
-              ? 'Candidate speaking...'
-              : status === 'thinking'
-              ? 'Synthesizing...'
-              : 'Channel ready'
+                ? 'Candidate speaking...'
+                : status === 'thinking'
+                  ? 'Synthesizing...'
+                  : 'Channel ready'
           }
         />
 

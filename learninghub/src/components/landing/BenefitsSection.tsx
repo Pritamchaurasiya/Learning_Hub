@@ -82,7 +82,9 @@ export function BenefitsSection() {
               <div>
                 {/* Icon & Badge */}
                 <div className="flex items-center justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl border flex items-center justify-center ${stakeholder.accent}`}>
+                  <div
+                    className={`w-12 h-12 rounded-xl border flex items-center justify-center ${stakeholder.accent}`}
+                  >
                     <stakeholder.icon className="w-6 h-6" />
                   </div>
                   <span className="text-[11px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
@@ -96,7 +98,10 @@ export function BenefitsSection() {
                 {/* Items List */}
                 <ul className="space-y-3">
                   {stakeholder.items.map(item => (
-                    <li key={item} className="flex items-start gap-2.5 text-xs text-slate-300 leading-relaxed">
+                    <li
+                      key={item}
+                      className="flex items-start gap-2.5 text-xs text-slate-300 leading-relaxed"
+                    >
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                       <span>{item}</span>
                     </li>

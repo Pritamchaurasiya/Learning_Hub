@@ -1,9 +1,4 @@
-import {
-  DrawingElement,
-  GraphNode,
-  GraphEdge,
-  LatexRecognitionResult,
-} from '../types/canvasStudio'
+import { DrawingElement, GraphNode, GraphEdge, LatexRecognitionResult } from '../types/canvasStudio'
 
 class CanvasStudioService {
   /**
@@ -169,7 +164,10 @@ class CanvasStudioService {
         const r = Math.hypot(p2.x - p1.x, p2.y - p1.y)
         svg += `  <circle cx="${p1.x}" cy="${p1.y}" r="${r}" stroke="${el.color}" stroke-width="${el.strokeWidth}" fill="none" />\n`
       } else {
-        const d = el.points.reduce((acc, p, idx) => `${acc} ${idx === 0 ? 'M' : 'L'} ${p.x} ${p.y}`, '')
+        const d = el.points.reduce(
+          (acc, p, idx) => `${acc} ${idx === 0 ? 'M' : 'L'} ${p.x} ${p.y}`,
+          ''
+        )
         const opacity = el.tool === 'HIGHLIGHTER' ? '0.35' : '1.0'
         svg += `  <path d="${d}" stroke="${el.color}" stroke-width="${el.strokeWidth}" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="${opacity}" />\n`
       }

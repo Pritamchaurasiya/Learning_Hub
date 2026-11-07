@@ -29,7 +29,10 @@ export class OllamaAdapter implements IAIAgent {
   })
 
   constructor(baseUrl?: string, model?: string) {
-    this.baseUrl = (baseUrl ?? process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434').replace(/\/$/, '')
+    this.baseUrl = (baseUrl ?? process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434').replace(
+      /\/$/,
+      ''
+    )
     this.defaultModel = model ?? process.env.OLLAMA_MODEL ?? 'deepseek-r1:latest'
   }
 
@@ -131,7 +134,9 @@ export class OllamaAdapter implements IAIAgent {
       }
     }
 
-    throw lastError || new Error(`[OllamaAdapter] ${operationName} failed after ${MAX_RETRIES} retries`)
+    throw (
+      lastError || new Error(`[OllamaAdapter] ${operationName} failed after ${MAX_RETRIES} retries`)
+    )
   }
 
   private async postChat(body: Record<string, unknown>): Promise<Response> {
@@ -179,7 +184,10 @@ export class OllamaAdapter implements IAIAgent {
     }, 'generateText')
   }
 
-  async generateChat(messages: AIMessage[], options?: AIProviderOptions): Promise<AIGenerationResult> {
+  async generateChat(
+    messages: AIMessage[],
+    options?: AIProviderOptions
+  ): Promise<AIGenerationResult> {
     return this.withRetry(async () => {
       const startTime = Date.now()
       const model = options?.model || this.defaultModel

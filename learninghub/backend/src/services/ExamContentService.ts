@@ -111,7 +111,10 @@ export class ExamContentService {
         return dbCountries
       }
     } catch (err) {
-      console.warn('[ExamContentService] Falling back to curated countries:', err instanceof Error ? err.message : String(err))
+      console.warn(
+        '[ExamContentService] Falling back to curated countries:',
+        err instanceof Error ? err.message : String(err)
+      )
     }
 
     // High-resiliency curated fallback
@@ -141,9 +144,21 @@ export class ExamContentService {
         flagEmoji: '🌐',
         isActive: true,
         exams: [
-          { id: 'exam-dsa-swe', name: 'Software Engineering & FAANG DSA', slug: 'dsa-software-engineering' },
-          { id: 'exam-fullstack-dev', name: 'Full-Stack Web Development', slug: 'fullstack-web-dev' },
-          { id: 'exam-ai-ml-eng', name: 'Machine Learning & AI Engineering', slug: 'machine-learning-ai' },
+          {
+            id: 'exam-dsa-swe',
+            name: 'Software Engineering & FAANG DSA',
+            slug: 'dsa-software-engineering',
+          },
+          {
+            id: 'exam-fullstack-dev',
+            name: 'Full-Stack Web Development',
+            slug: 'fullstack-web-dev',
+          },
+          {
+            id: 'exam-ai-ml-eng',
+            name: 'Machine Learning & AI Engineering',
+            slug: 'machine-learning-ai',
+          },
         ],
       },
       {
@@ -220,7 +235,10 @@ export class ExamContentService {
         return dbExams
       }
     } catch (err) {
-      console.warn('[ExamContentService] Falling back to curated exams:', err instanceof Error ? err.message : String(err))
+      console.warn(
+        '[ExamContentService] Falling back to curated exams:',
+        err instanceof Error ? err.message : String(err)
+      )
     }
 
     const fallbackExams = [
@@ -228,7 +246,8 @@ export class ExamContentService {
         id: 'exam-jee-main',
         name: 'JEE Main',
         slug: 'jee-main',
-        description: 'National Testing Agency (NTA) CBT for Engineering Admissions (NITs, IIITs, CFTIs)',
+        description:
+          'National Testing Agency (NTA) CBT for Engineering Admissions (NITs, IIITs, CFTIs)',
         countryId: 'country-in',
         category: 'Engineering & Tech',
         country: { id: 'country-in', name: 'India', code: 'IN' },
@@ -242,7 +261,8 @@ export class ExamContentService {
         id: 'exam-jee-adv',
         name: 'JEE Advanced',
         slug: 'jee-advanced',
-        description: 'Prestigious Entrance Exam for admission into the Indian Institutes of Technology (IITs)',
+        description:
+          'Prestigious Entrance Exam for admission into the Indian Institutes of Technology (IITs)',
         countryId: 'country-in',
         category: 'Engineering & Tech',
         country: { id: 'country-in', name: 'India', code: 'IN' },
@@ -256,7 +276,8 @@ export class ExamContentService {
         id: 'exam-neet-ug',
         name: 'NEET-UG',
         slug: 'neet-ug',
-        description: 'National Eligibility cum Entrance Test for MBBS, BDS, and Premier Medical Admissions',
+        description:
+          'National Eligibility cum Entrance Test for MBBS, BDS, and Premier Medical Admissions',
         countryId: 'country-in',
         category: 'Medical & Healthcare',
         country: { id: 'country-in', name: 'India', code: 'IN' },
@@ -270,13 +291,18 @@ export class ExamContentService {
         id: 'exam-ssc-cgl',
         name: 'SSC CGL',
         slug: 'ssc-cgl',
-        description: 'Combined Graduate Level examination for prestigious Group B & C Central Government positions',
+        description:
+          'Combined Graduate Level examination for prestigious Group B & C Central Government positions',
         countryId: 'country-in',
         category: 'Government & Civil Services',
         country: { id: 'country-in', name: 'India', code: 'IN' },
         subjects: [
           { id: 'sub-ssc-quant', name: 'Quantitative Aptitude', slug: 'ssc-quantitative-aptitude' },
-          { id: 'sub-ssc-reasoning', name: 'General Intelligence & Reasoning', slug: 'ssc-reasoning' },
+          {
+            id: 'sub-ssc-reasoning',
+            name: 'General Intelligence & Reasoning',
+            slug: 'ssc-reasoning',
+          },
           { id: 'sub-ssc-english', name: 'English Comprehension', slug: 'ssc-english' },
           { id: 'sub-ssc-ga', name: 'General Awareness', slug: 'ssc-general-awareness' },
         ],
@@ -285,7 +311,8 @@ export class ExamContentService {
         id: 'exam-upsc-cse',
         name: 'UPSC Civil Services (IAS / IPS)',
         slug: 'upsc-civil-services',
-        description: 'Union Public Service Commission Civil Services Examination for IAS, IPS, and Central Group A posts',
+        description:
+          'Union Public Service Commission Civil Services Examination for IAS, IPS, and Central Group A posts',
         countryId: 'country-in',
         category: 'Government & Civil Services',
         country: { id: 'country-in', name: 'India', code: 'IN' },
@@ -298,7 +325,8 @@ export class ExamContentService {
         id: 'exam-gate-cse',
         name: 'GATE Computer Science',
         slug: 'gate-cse',
-        description: 'Graduate Aptitude Test in Engineering for Master’s admissions in IITs/IISc and PSU Recruitments',
+        description:
+          'Graduate Aptitude Test in Engineering for Master’s admissions in IITs/IISc and PSU Recruitments',
         countryId: 'country-in',
         category: 'Engineering & Tech',
         country: { id: 'country-in', name: 'India', code: 'IN' },
@@ -306,30 +334,48 @@ export class ExamContentService {
           { id: 'sub-gate-dsa', name: 'Data Structures & Algorithms', slug: 'gate-dsa' },
           { id: 'sub-gate-os', name: 'Operating Systems', slug: 'gate-os' },
           { id: 'sub-gate-dbms', name: 'Database Management Systems', slug: 'gate-dbms' },
-          { id: 'sub-gate-toc', name: 'Theory of Computation & Compilers', slug: 'gate-toc-compilers' },
+          {
+            id: 'sub-gate-toc',
+            name: 'Theory of Computation & Compilers',
+            slug: 'gate-toc-compilers',
+          },
           { id: 'sub-gate-cn', name: 'Computer Networks', slug: 'gate-computer-networks' },
-          { id: 'sub-gate-math', name: 'Engineering Mathematics', slug: 'gate-engineering-mathematics' },
+          {
+            id: 'sub-gate-math',
+            name: 'Engineering Mathematics',
+            slug: 'gate-engineering-mathematics',
+          },
         ],
       },
       {
         id: 'exam-cat-mba',
         name: 'CAT (IIMs / MBA Entrance)',
         slug: 'cat-mba',
-        description: 'Common Admission Test for elite Indian Institutes of Management (IIMs) and top business schools',
+        description:
+          'Common Admission Test for elite Indian Institutes of Management (IIMs) and top business schools',
         countryId: 'country-in',
         category: 'Management & MBA',
         country: { id: 'country-in', name: 'India', code: 'IN' },
         subjects: [
           { id: 'sub-cat-quant', name: 'Quantitative Aptitude (QA)', slug: 'cat-qa' },
-          { id: 'sub-cat-dilr', name: 'Data Interpretation & Logical Reasoning (DILR)', slug: 'cat-dilr' },
-          { id: 'sub-cat-varc', name: 'Verbal Ability & Reading Comprehension (VARC)', slug: 'cat-varc' },
+          {
+            id: 'sub-cat-dilr',
+            name: 'Data Interpretation & Logical Reasoning (DILR)',
+            slug: 'cat-dilr',
+          },
+          {
+            id: 'sub-cat-varc',
+            name: 'Verbal Ability & Reading Comprehension (VARC)',
+            slug: 'cat-varc',
+          },
         ],
       },
       {
         id: 'exam-bitsat',
         name: 'BITSAT',
         slug: 'bitsat',
-        description: 'Birla Institute of Technology and Science Admission Test for BITS Pilani, Goa & Hyderabad',
+        description:
+          'Birla Institute of Technology and Science Admission Test for BITS Pilani, Goa & Hyderabad',
         countryId: 'country-in',
         category: 'Engineering & Tech',
         country: { id: 'country-in', name: 'India', code: 'IN' },
@@ -344,7 +390,8 @@ export class ExamContentService {
         id: 'exam-cbse-12',
         name: 'CBSE Class 12 Boards',
         slug: 'cbse-class-12',
-        description: 'Class 12th Board Examinations for Science Stream with NCERT Exemplar & Proof Questions',
+        description:
+          'Class 12th Board Examinations for Science Stream with NCERT Exemplar & Proof Questions',
         countryId: 'country-in',
         category: 'School Boards (K-12)',
         country: { id: 'country-in', name: 'India', code: 'IN' },
@@ -358,7 +405,8 @@ export class ExamContentService {
         id: 'exam-dsa-swe',
         name: 'Software Engineering & FAANG DSA',
         slug: 'dsa-software-engineering',
-        description: 'High-Impact Data Structures, Algorithms, System Design, and FAANG/MAANG Technical Interviews',
+        description:
+          'High-Impact Data Structures, Algorithms, System Design, and FAANG/MAANG Technical Interviews',
         countryId: 'country-global',
         category: 'Software & Computer Science',
         country: { id: 'country-global', name: 'Global / Tech', code: 'GLOBAL' },
@@ -373,13 +421,18 @@ export class ExamContentService {
         id: 'exam-fullstack-dev',
         name: 'Full-Stack Web Development',
         slug: 'fullstack-web-dev',
-        description: 'Modern Frontend React/TypeScript, Robust Node.js Backends, REST/GraphQL APIs, Databases and DevOps',
+        description:
+          'Modern Frontend React/TypeScript, Robust Node.js Backends, REST/GraphQL APIs, Databases and DevOps',
         countryId: 'country-global',
         category: 'Software & Computer Science',
         country: { id: 'country-global', name: 'Global / Tech', code: 'GLOBAL' },
         subjects: [
           { id: 'sub-fs-frontend', name: 'Modern React & TypeScript', slug: 'react-typescript' },
-          { id: 'sub-fs-backend', name: 'Backend Architecture & Databases', slug: 'backend-databases' },
+          {
+            id: 'sub-fs-backend',
+            name: 'Backend Architecture & Databases',
+            slug: 'backend-databases',
+          },
           { id: 'sub-fs-cloud', name: 'Cloud, CI/CD & Containers', slug: 'cloud-cicd' },
         ],
       },
@@ -387,12 +440,17 @@ export class ExamContentService {
         id: 'exam-ai-ml-eng',
         name: 'Machine Learning & AI Engineering',
         slug: 'machine-learning-ai',
-        description: 'Foundations of Machine Learning, Deep Neural Networks, Large Language Models (LLMs), and Production AI',
+        description:
+          'Foundations of Machine Learning, Deep Neural Networks, Large Language Models (LLMs), and Production AI',
         countryId: 'country-global',
         category: 'Software & Computer Science',
         country: { id: 'country-global', name: 'Global / Tech', code: 'GLOBAL' },
         subjects: [
-          { id: 'sub-ml-foundations', name: 'Machine Learning Foundations', slug: 'ml-foundations' },
+          {
+            id: 'sub-ml-foundations',
+            name: 'Machine Learning Foundations',
+            slug: 'ml-foundations',
+          },
           { id: 'sub-dl-llm', name: 'Deep Learning & LLM Systems', slug: 'deep-learning-llms' },
         ],
       },
@@ -400,7 +458,8 @@ export class ExamContentService {
         id: 'exam-sat',
         name: 'SAT',
         slug: 'sat',
-        description: 'Digital SAT standardized entrance exam administered by College Board for US Undergraduate admissions',
+        description:
+          'Digital SAT standardized entrance exam administered by College Board for US Undergraduate admissions',
         countryId: 'country-us',
         category: 'Global & College Entrance',
         country: { id: 'country-us', name: 'United States', code: 'US' },
@@ -413,7 +472,8 @@ export class ExamContentService {
         id: 'exam-gre-gen',
         name: 'GRE General Test',
         slug: 'gre-general',
-        description: 'ETS Graduate Record Examination for master’s and doctoral programmes across international universities',
+        description:
+          'ETS Graduate Record Examination for master’s and doctoral programmes across international universities',
         countryId: 'country-us',
         category: 'Global & College Entrance',
         country: { id: 'country-us', name: 'United States', code: 'US' },
@@ -427,7 +487,8 @@ export class ExamContentService {
         id: 'exam-mcat-us',
         name: 'MCAT',
         slug: 'mcat',
-        description: 'Medical College Admission Test for medical schools in the United States and Canada',
+        description:
+          'Medical College Admission Test for medical schools in the United States and Canada',
         countryId: 'country-us',
         category: 'Medical & Healthcare',
         country: { id: 'country-us', name: 'United States', code: 'US' },
@@ -441,7 +502,8 @@ export class ExamContentService {
         id: 'exam-alevel',
         name: 'A-Level (Cambridge / Edexcel)',
         slug: 'a-level',
-        description: 'General Certificate of Education Advanced Level recognized worldwide for university matriculation',
+        description:
+          'General Certificate of Education Advanced Level recognized worldwide for university matriculation',
         countryId: 'country-gb',
         category: 'School Boards (K-12)',
         country: { id: 'country-gb', name: 'United Kingdom', code: 'GB' },
@@ -455,7 +517,8 @@ export class ExamContentService {
         id: 'exam-ielts-acad',
         name: 'IELTS Academic',
         slug: 'ielts-academic',
-        description: 'International English Language Testing System for higher education and global migration',
+        description:
+          'International English Language Testing System for higher education and global migration',
         countryId: 'country-gb',
         category: 'Global & College Entrance',
         country: { id: 'country-gb', name: 'United Kingdom', code: 'GB' },
@@ -470,7 +533,8 @@ export class ExamContentService {
         id: 'exam-celpip',
         name: 'CELPIP General',
         slug: 'celpip-general',
-        description: 'Canadian English Language Proficiency Index Program for Canadian Permanent Residency and citizenship',
+        description:
+          'Canadian English Language Proficiency Index Program for Canadian Permanent Residency and citizenship',
         countryId: 'country-ca',
         category: 'Global & College Entrance',
         country: { id: 'country-ca', name: 'Canada', code: 'CA' },
@@ -484,7 +548,8 @@ export class ExamContentService {
         id: 'exam-pte-acad',
         name: 'PTE Academic',
         slug: 'pte-academic',
-        description: 'Pearson Test of English Academic for study abroad and immigration in Australia, New Zealand & UK',
+        description:
+          'Pearson Test of English Academic for study abroad and immigration in Australia, New Zealand & UK',
         countryId: 'country-au',
         category: 'Global & College Entrance',
         country: { id: 'country-au', name: 'Australia', code: 'AU' },
@@ -537,7 +602,10 @@ export class ExamContentService {
         return dbSubjects
       }
     } catch (err) {
-      console.warn('[ExamContentService] Falling back to curated subjects:', err instanceof Error ? err.message : String(err))
+      console.warn(
+        '[ExamContentService] Falling back to curated subjects:',
+        err instanceof Error ? err.message : String(err)
+      )
     }
 
     const lowerId = examId.toLowerCase()
@@ -549,7 +617,11 @@ export class ExamContentService {
           name: 'Advanced Physics',
           slug: 'jee-adv-physics',
           topics: [
-            { id: 'top-ap-1', name: 'Advanced Mechanics & Angular Momentum', slug: 'adv-mechanics' },
+            {
+              id: 'top-ap-1',
+              name: 'Advanced Mechanics & Angular Momentum',
+              slug: 'adv-mechanics',
+            },
             { id: 'top-ap-2', name: 'Electrodynamics & Maxwell Laws', slug: 'electrodynamics' },
             { id: 'top-ap-3', name: 'Wave Optics & Interference', slug: 'wave-optics' },
           ],
@@ -559,8 +631,16 @@ export class ExamContentService {
           name: 'Advanced Chemistry',
           slug: 'jee-adv-chemistry',
           topics: [
-            { id: 'top-ac-1', name: 'Organic Reaction Mechanisms & Stereochemistry', slug: 'organic-mechanisms' },
-            { id: 'top-ac-2', name: 'Physical Chemistry & Electrochemistry', slug: 'electrochemistry' },
+            {
+              id: 'top-ac-1',
+              name: 'Organic Reaction Mechanisms & Stereochemistry',
+              slug: 'organic-mechanisms',
+            },
+            {
+              id: 'top-ac-2',
+              name: 'Physical Chemistry & Electrochemistry',
+              slug: 'electrochemistry',
+            },
           ],
         },
         {
@@ -595,7 +675,11 @@ export class ExamContentService {
           name: 'Chemistry',
           slug: 'jee-main-chemistry',
           topics: [
-            { id: 'top-7', name: 'Chemical Bonding & Molecular Structure', slug: 'chemical-bonding' },
+            {
+              id: 'top-7',
+              name: 'Chemical Bonding & Molecular Structure',
+              slug: 'chemical-bonding',
+            },
             { id: 'top-8', name: 'Chemical & Ionic Equilibrium', slug: 'equilibrium' },
             { id: 'top-9', name: 'Organic Chemistry Basics & GOC', slug: 'goc' },
             { id: 'top-10', name: 'Coordination Compounds', slug: 'coordination-compounds' },
@@ -645,7 +729,11 @@ export class ExamContentService {
           name: 'Chemistry for NEET',
           slug: 'neet-chemistry',
           topics: [
-            { id: 'top-nc1', name: 'Organic Chemistry & Biomolecules', slug: 'organic-biomolecules' },
+            {
+              id: 'top-nc1',
+              name: 'Organic Chemistry & Biomolecules',
+              slug: 'organic-biomolecules',
+            },
             { id: 'top-nc2', name: 'Chemical Kinetics & Solutions', slug: 'kinetics-solutions' },
             { id: 'top-nc3', name: 'p-Block & Coordination Elements', slug: 'inorganic-blocks' },
           ],
@@ -660,9 +748,17 @@ export class ExamContentService {
           name: 'Quantitative Aptitude',
           slug: 'ssc-quantitative-aptitude',
           topics: [
-            { id: 'top-sq-1', name: 'Arithmetic (Percentage, Profit & Loss, SI/CI)', slug: 'arithmetic' },
+            {
+              id: 'top-sq-1',
+              name: 'Arithmetic (Percentage, Profit & Loss, SI/CI)',
+              slug: 'arithmetic',
+            },
             { id: 'top-sq-2', name: 'Time, Speed, Distance & Work', slug: 'time-work' },
-            { id: 'top-sq-3', name: 'Advance Maths (Algebra, Trigonometry, Geometry)', slug: 'advance-maths' },
+            {
+              id: 'top-sq-3',
+              name: 'Advance Maths (Algebra, Trigonometry, Geometry)',
+              slug: 'advance-maths',
+            },
           ],
         },
         {
@@ -670,9 +766,21 @@ export class ExamContentService {
           name: 'General Intelligence & Reasoning',
           slug: 'ssc-reasoning',
           topics: [
-            { id: 'top-sr-1', name: 'Analogies, Classification & Series', slug: 'analogies-series' },
-            { id: 'top-sr-2', name: 'Blood Relations & Direction Sense', slug: 'relations-directions' },
-            { id: 'top-sr-3', name: 'Syllogism, Venn Diagrams & Puzzles', slug: 'syllogism-puzzles' },
+            {
+              id: 'top-sr-1',
+              name: 'Analogies, Classification & Series',
+              slug: 'analogies-series',
+            },
+            {
+              id: 'top-sr-2',
+              name: 'Blood Relations & Direction Sense',
+              slug: 'relations-directions',
+            },
+            {
+              id: 'top-sr-3',
+              name: 'Syllogism, Venn Diagrams & Puzzles',
+              slug: 'syllogism-puzzles',
+            },
           ],
         },
         {
@@ -681,8 +789,16 @@ export class ExamContentService {
           slug: 'ssc-english',
           topics: [
             { id: 'top-se-1', name: 'Reading Comprehension & Cloze Test', slug: 'rc-cloze' },
-            { id: 'top-se-2', name: 'Grammar (Spotting Errors, Sentence Improvement)', slug: 'grammar-errors' },
-            { id: 'top-se-3', name: 'Vocabulary, Idioms & One-Word Substitution', slug: 'vocabulary-idioms' },
+            {
+              id: 'top-se-2',
+              name: 'Grammar (Spotting Errors, Sentence Improvement)',
+              slug: 'grammar-errors',
+            },
+            {
+              id: 'top-se-3',
+              name: 'Vocabulary, Idioms & One-Word Substitution',
+              slug: 'vocabulary-idioms',
+            },
           ],
         },
         {
@@ -705,10 +821,18 @@ export class ExamContentService {
           name: 'General Studies Paper 1',
           slug: 'upsc-gs-1',
           topics: [
-            { id: 'top-ug-1', name: 'Indian Polity, Governance & Judiciary', slug: 'polity-governance' },
+            {
+              id: 'top-ug-1',
+              name: 'Indian Polity, Governance & Judiciary',
+              slug: 'polity-governance',
+            },
             { id: 'top-ug-2', name: 'Indian History & Art and Culture', slug: 'history-culture' },
             { id: 'top-ug-3', name: 'Physical, Social & Economic Geography', slug: 'geography' },
-            { id: 'top-ug-4', name: 'Macroeconomics, Sustainable Development & Budget', slug: 'economics' },
+            {
+              id: 'top-ug-4',
+              name: 'Macroeconomics, Sustainable Development & Budget',
+              slug: 'economics',
+            },
           ],
         },
         {
@@ -716,7 +840,11 @@ export class ExamContentService {
           name: 'CSAT (General Studies Paper 2)',
           slug: 'upsc-csat',
           topics: [
-            { id: 'top-uc-1', name: 'Reading Comprehension & Critical Reasoning', slug: 'rc-critical' },
+            {
+              id: 'top-uc-1',
+              name: 'Reading Comprehension & Critical Reasoning',
+              slug: 'rc-critical',
+            },
             { id: 'top-uc-2', name: 'Basic Numeracy & Data Interpretation', slug: 'numeracy' },
           ],
         },
@@ -730,9 +858,14 @@ export class ExamContentService {
           name: 'Data Structures & Algorithms',
           slug: 'gate-dsa',
           topics: [
-            { id: 'top-gd-1', name: 'Asymptotic Analysis & Recurrences', slug: 'asymptotic-analysis' },
+            {
+              id: 'top-gd-1',
+              name: 'Asymptotic Analysis & Recurrences',
+              slug: 'asymptotic-analysis',
+            },
             { id: 'top-gd-2', name: 'Trees, BSTs, Heaps & Graphs', slug: 'trees-heaps' },
             { id: 'top-gd-3', name: 'Dynamic Programming & Greedy Algorithms', slug: 'dp-greedy' },
+            { id: 'top-gd-4', name: 'Graph Traversals, MST & Shortest Paths', slug: 'graphs-mst' },
           ],
         },
         {
@@ -740,9 +873,18 @@ export class ExamContentService {
           name: 'Operating Systems',
           slug: 'gate-os',
           topics: [
-            { id: 'top-go-1', name: 'Processes, Threads & CPU Scheduling', slug: 'processes-scheduling' },
-            { id: 'top-go-2', name: 'Process Synchronization & Semaphores', slug: 'synchronization' },
+            {
+              id: 'top-go-1',
+              name: 'Processes, Threads & CPU Scheduling',
+              slug: 'processes-scheduling',
+            },
+            {
+              id: 'top-go-2',
+              name: 'Process Synchronization & Semaphores',
+              slug: 'synchronization',
+            },
             { id: 'top-go-3', name: 'Deadlock Handling & Virtual Memory', slug: 'virtual-memory' },
+            { id: 'top-go-4', name: 'File Systems & Disk Scheduling', slug: 'file-systems' },
           ],
         },
         {
@@ -752,6 +894,77 @@ export class ExamContentService {
           topics: [
             { id: 'top-gdb-1', name: 'Relational Model, SQL & Algebra', slug: 'sql-algebra' },
             { id: 'top-gdb-2', name: 'Normalization & Transactions', slug: 'normalization' },
+            {
+              id: 'top-gdb-3',
+              name: 'B/B+ Trees Indexing & Concurrency Control',
+              slug: 'indexing-concurrency',
+            },
+          ],
+        },
+        {
+          id: 'sub-gate-toc',
+          name: 'Theory of Computation & Compilers',
+          slug: 'gate-toc-compilers',
+          topics: [
+            {
+              id: 'top-gtc-1',
+              name: 'Regular Expressions, DFA/NFA & Pumping Lemma',
+              slug: 'regular-languages',
+            },
+            {
+              id: 'top-gtc-2',
+              name: 'Context-Free Grammars, Pushdown Automata & LL/LR Parsers',
+              slug: 'cfg-parsing',
+            },
+            {
+              id: 'top-gtc-3',
+              name: 'Turing Machines, Decidability & Code Optimization',
+              slug: 'turing-decidability',
+            },
+          ],
+        },
+        {
+          id: 'sub-gate-cn',
+          name: 'Computer Networks',
+          slug: 'gate-computer-networks',
+          topics: [
+            {
+              id: 'top-gcn-1',
+              name: 'OSI/TCP-IP Framing, Sliding Window & Error Detection',
+              slug: 'data-link-framing',
+            },
+            {
+              id: 'top-gcn-2',
+              name: 'IP Addressing, CIDR Subnetting & Routing Protocols',
+              slug: 'routing-subnetting',
+            },
+            {
+              id: 'top-gcn-3',
+              name: 'TCP/UDP Congestion Control & Application Protocols',
+              slug: 'tcp-udp-congestion',
+            },
+          ],
+        },
+        {
+          id: 'sub-gate-math',
+          name: 'Engineering Mathematics & Discrete Structures',
+          slug: 'gate-engineering-mathematics',
+          topics: [
+            {
+              id: 'top-gm-1',
+              name: 'Propositional & First-Order Logic, Sets & Relations',
+              slug: 'logic-relations',
+            },
+            {
+              id: 'top-gm-2',
+              name: 'Combinatorics, Generating Functions & Graph Theory',
+              slug: 'combinatorics-graphs',
+            },
+            {
+              id: 'top-gm-3',
+              name: 'Linear Algebra (Eigenvalues/Vectors) & Calculus/Probability',
+              slug: 'linear-algebra-prob',
+            },
           ],
         },
       ]
@@ -764,8 +977,16 @@ export class ExamContentService {
           name: 'Reading and Writing',
           slug: 'sat-reading-writing',
           topics: [
-            { id: 'top-sr-1', name: 'Craft and Structure (Words in Context)', slug: 'craft-structure' },
-            { id: 'top-sr-2', name: 'Information and Ideas (Evidence & Arguments)', slug: 'information-ideas' },
+            {
+              id: 'top-sr-1',
+              name: 'Craft and Structure (Words in Context)',
+              slug: 'craft-structure',
+            },
+            {
+              id: 'top-sr-2',
+              name: 'Information and Ideas (Evidence & Arguments)',
+              slug: 'information-ideas',
+            },
             { id: 'top-sr-3', name: 'Standard English Conventions', slug: 'conventions' },
           ],
         },
@@ -775,7 +996,11 @@ export class ExamContentService {
           slug: 'sat-math',
           topics: [
             { id: 'top-sm-1', name: 'Algebra (Linear Equations & Systems)', slug: 'algebra' },
-            { id: 'top-sm-2', name: 'Advanced Math (Quadratics & Polynomials)', slug: 'advanced-math' },
+            {
+              id: 'top-sm-2',
+              name: 'Advanced Math (Quadratics & Polynomials)',
+              slug: 'advanced-math',
+            },
             { id: 'top-sm-3', name: 'Problem-Solving & Data Analysis', slug: 'data-analysis' },
           ],
         },
@@ -789,7 +1014,11 @@ export class ExamContentService {
           name: 'Quantitative Aptitude (QA)',
           slug: 'cat-qa',
           topics: [
-            { id: 'top-cq-1', name: 'Arithmetic (Averages, Ratios, Time-Work)', slug: 'cat-arithmetic' },
+            {
+              id: 'top-cq-1',
+              name: 'Arithmetic (Averages, Ratios, Time-Work)',
+              slug: 'cat-arithmetic',
+            },
             { id: 'top-cq-2', name: 'Algebra & Higher Degree Polynomials', slug: 'cat-algebra' },
             { id: 'top-cq-3', name: 'Geometry & Modern Math', slug: 'cat-geometry' },
           ],
@@ -822,9 +1051,21 @@ export class ExamContentService {
           name: 'Verbal Reasoning',
           slug: 'gre-verbal',
           topics: [
-            { id: 'top-gv-1', name: 'Text Completion & Sentence Equivalence', slug: 'text-completion' },
-            { id: 'top-gv-2', name: 'Critical Reasoning & Argument Analysis', slug: 'argument-analysis' },
-            { id: 'top-gv-3', name: 'Advanced Analytical Reading Passages', slug: 'analytical-reading' },
+            {
+              id: 'top-gv-1',
+              name: 'Text Completion & Sentence Equivalence',
+              slug: 'text-completion',
+            },
+            {
+              id: 'top-gv-2',
+              name: 'Critical Reasoning & Argument Analysis',
+              slug: 'argument-analysis',
+            },
+            {
+              id: 'top-gv-3',
+              name: 'Advanced Analytical Reading Passages',
+              slug: 'analytical-reading',
+            },
           ],
         },
         {
@@ -843,7 +1084,11 @@ export class ExamContentService {
           name: 'Analytical Writing (AWA)',
           slug: 'gre-awa',
           topics: [
-            { id: 'top-gaw-1', name: 'Analyze an Issue Synthesis & Counterarguments', slug: 'analyze-issue' },
+            {
+              id: 'top-gaw-1',
+              name: 'Analyze an Issue Synthesis & Counterarguments',
+              slug: 'analyze-issue',
+            },
           ],
         },
       ]
@@ -856,7 +1101,11 @@ export class ExamContentService {
           name: 'Quantitative Reasoning (Problem Solving)',
           slug: 'gmat-quant',
           topics: [
-            { id: 'top-gmq-1', name: 'Advanced Number Properties & Fractions', slug: 'number-properties' },
+            {
+              id: 'top-gmq-1',
+              name: 'Advanced Number Properties & Fractions',
+              slug: 'number-properties',
+            },
             { id: 'top-gmq-2', name: 'Exponents, Roots & Inequalities', slug: 'inequalities' },
             { id: 'top-gmq-3', name: 'Word Problems & Rates/Work', slug: 'word-problems' },
           ],
@@ -866,8 +1115,16 @@ export class ExamContentService {
           name: 'Verbal Reasoning (Focus Edition)',
           slug: 'gmat-verbal',
           topics: [
-            { id: 'top-gmv-1', name: 'Critical Reasoning (Assumptions & Weaken)', slug: 'critical-reasoning' },
-            { id: 'top-gmv-2', name: 'Complex Business & Academic Reading Passages', slug: 'business-rc' },
+            {
+              id: 'top-gmv-1',
+              name: 'Critical Reasoning (Assumptions & Weaken)',
+              slug: 'critical-reasoning',
+            },
+            {
+              id: 'top-gmv-2',
+              name: 'Complex Business & Academic Reading Passages',
+              slug: 'business-rc',
+            },
           ],
         },
         {
@@ -876,8 +1133,16 @@ export class ExamContentService {
           slug: 'gmat-data-insights',
           topics: [
             { id: 'top-gmd-1', name: 'Data Sufficiency Logic', slug: 'data-sufficiency' },
-            { id: 'top-gmd-2', name: 'Multi-Source Reasoning & Table Analysis', slug: 'multi-source' },
-            { id: 'top-gmd-3', name: 'Two-Part Analysis & Graphics Interpretation', slug: 'two-part' },
+            {
+              id: 'top-gmd-2',
+              name: 'Multi-Source Reasoning & Table Analysis',
+              slug: 'multi-source',
+            },
+            {
+              id: 'top-gmd-3',
+              name: 'Two-Part Analysis & Graphics Interpretation',
+              slug: 'two-part',
+            },
           ],
         },
       ]
@@ -891,9 +1156,21 @@ export class ExamContentService {
           slug: 'usmle-foundations',
           topics: [
             { id: 'top-uf-1', name: 'Pathology & Cellular Injury', slug: 'general-pathology' },
-            { id: 'top-uf-2', name: 'Physiology & Organ System Dynamics', slug: 'organ-physiology' },
-            { id: 'top-uf-3', name: 'Pharmacology, Pharmacokinetics & Receptors', slug: 'pharmacology' },
-            { id: 'top-uf-4', name: 'Biochemistry, Genetics & Molecular Biology', slug: 'molecular-genetics' },
+            {
+              id: 'top-uf-2',
+              name: 'Physiology & Organ System Dynamics',
+              slug: 'organ-physiology',
+            },
+            {
+              id: 'top-uf-3',
+              name: 'Pharmacology, Pharmacokinetics & Receptors',
+              slug: 'pharmacology',
+            },
+            {
+              id: 'top-uf-4',
+              name: 'Biochemistry, Genetics & Molecular Biology',
+              slug: 'molecular-genetics',
+            },
           ],
         },
         {
@@ -901,8 +1178,16 @@ export class ExamContentService {
           name: 'Organ Systems & Clinical Pathophysiology',
           slug: 'usmle-organ-systems',
           topics: [
-            { id: 'top-uo-1', name: 'Cardiovascular & Respiratory Systems', slug: 'cardio-pulmonary' },
-            { id: 'top-uo-2', name: 'Renal, Urinary & Electrolyte Balance', slug: 'renal-electrolytes' },
+            {
+              id: 'top-uo-1',
+              name: 'Cardiovascular & Respiratory Systems',
+              slug: 'cardio-pulmonary',
+            },
+            {
+              id: 'top-uo-2',
+              name: 'Renal, Urinary & Electrolyte Balance',
+              slug: 'renal-electrolytes',
+            },
             { id: 'top-uo-3', name: 'Gastrointestinal & Hepatobiliary', slug: 'gastro-hepatic' },
             { id: 'top-uo-4', name: 'Neurology & Special Senses', slug: 'neurology' },
           ],
@@ -913,8 +1198,16 @@ export class ExamContentService {
           slug: 'usmle-micro-immuno',
           topics: [
             { id: 'top-um-1', name: 'Immunology, Hypersensitivity & Vaccines', slug: 'immunology' },
-            { id: 'top-um-2', name: 'Bacteriology, Virology, Mycology & Parasitology', slug: 'medical-micro' },
-            { id: 'top-um-3', name: 'Biostatistics, Epidemiology & Medical Ethics', slug: 'epidemiology-ethics' },
+            {
+              id: 'top-um-2',
+              name: 'Bacteriology, Virology, Mycology & Parasitology',
+              slug: 'medical-micro',
+            },
+            {
+              id: 'top-um-3',
+              name: 'Biostatistics, Epidemiology & Medical Ethics',
+              slug: 'epidemiology-ethics',
+            },
           ],
         },
       ]
@@ -927,9 +1220,21 @@ export class ExamContentService {
           name: 'Chemical and Physical Foundations of Biological Systems (CPBS)',
           slug: 'mcat-cpbs',
           topics: [
-            { id: 'top-mc-1', name: 'General & Organic Chemistry Mechanisms', slug: 'organic-mechanisms' },
-            { id: 'top-mc-2', name: 'Thermodynamics, Electrochemistry & Kinetics', slug: 'thermodynamics' },
-            { id: 'top-mc-3', name: 'Newtonian Fluids, Optics & Electrostatics', slug: 'fluids-optics' },
+            {
+              id: 'top-mc-1',
+              name: 'General & Organic Chemistry Mechanisms',
+              slug: 'organic-mechanisms',
+            },
+            {
+              id: 'top-mc-2',
+              name: 'Thermodynamics, Electrochemistry & Kinetics',
+              slug: 'thermodynamics',
+            },
+            {
+              id: 'top-mc-3',
+              name: 'Newtonian Fluids, Optics & Electrostatics',
+              slug: 'fluids-optics',
+            },
           ],
         },
         {
@@ -937,9 +1242,21 @@ export class ExamContentService {
           name: 'Biological and Biochemical Foundations of Living Systems (BBLS)',
           slug: 'mcat-bbls',
           topics: [
-            { id: 'top-mb-1', name: 'Enzyme Kinetics (Michaelis-Menten & Lineweaver-Burk)', slug: 'enzyme-kinetics' },
-            { id: 'top-mb-2', name: 'Metabolism: Glycolysis, Krebs & Oxidative Phosphorylation', slug: 'cellular-metabolism' },
-            { id: 'top-mb-3', name: 'Molecular Genetics, Transcription & Epigenetics', slug: 'transcription-epigenetics' },
+            {
+              id: 'top-mb-1',
+              name: 'Enzyme Kinetics (Michaelis-Menten & Lineweaver-Burk)',
+              slug: 'enzyme-kinetics',
+            },
+            {
+              id: 'top-mb-2',
+              name: 'Metabolism: Glycolysis, Krebs & Oxidative Phosphorylation',
+              slug: 'cellular-metabolism',
+            },
+            {
+              id: 'top-mb-3',
+              name: 'Molecular Genetics, Transcription & Epigenetics',
+              slug: 'transcription-epigenetics',
+            },
           ],
         },
         {
@@ -947,8 +1264,16 @@ export class ExamContentService {
           name: 'Critical Analysis and Reasoning Skills (CARS)',
           slug: 'mcat-cars',
           topics: [
-            { id: 'top-mr-1', name: 'Humanities & Social Science Analytical Passages', slug: 'humanities-passages' },
-            { id: 'top-mr-2', name: 'Author Voice, Tone, Underlying Rhetoric & Inferences', slug: 'rhetoric-inferences' },
+            {
+              id: 'top-mr-1',
+              name: 'Humanities & Social Science Analytical Passages',
+              slug: 'humanities-passages',
+            },
+            {
+              id: 'top-mr-2',
+              name: 'Author Voice, Tone, Underlying Rhetoric & Inferences',
+              slug: 'rhetoric-inferences',
+            },
           ],
         },
         {
@@ -956,8 +1281,16 @@ export class ExamContentService {
           name: 'Psychological, Social, and Biological Foundations of Behavior (PSBB)',
           slug: 'mcat-psbb',
           topics: [
-            { id: 'top-mp-1', name: 'Cognitive Psychology, Perception & Memory Models', slug: 'cognitive-psych' },
-            { id: 'top-mp-2', name: 'Social Stratification, Demographics & Sociology', slug: 'sociology-demographics' },
+            {
+              id: 'top-mp-1',
+              name: 'Cognitive Psychology, Perception & Memory Models',
+              slug: 'cognitive-psych',
+            },
+            {
+              id: 'top-mp-2',
+              name: 'Social Stratification, Demographics & Sociology',
+              slug: 'sociology-demographics',
+            },
           ],
         },
       ]
@@ -970,7 +1303,11 @@ export class ExamContentService {
         name: 'Data Structures & Algorithms',
         slug: 'dsa-core',
         topics: [
-          { id: 'top-d1', name: 'Arrays, Two Pointers & Sliding Window', slug: 'arrays-two-pointers' },
+          {
+            id: 'top-d1',
+            name: 'Arrays, Two Pointers & Sliding Window',
+            slug: 'arrays-two-pointers',
+          },
           { id: 'top-d2', name: 'Binary Trees & BSTs', slug: 'trees-bst' },
           { id: 'top-d3', name: 'Graph Algorithms (BFS, DFS, Dijkstra)', slug: 'graphs' },
           { id: 'top-d4', name: 'Dynamic Programming (1D, 2D)', slug: 'dp' },

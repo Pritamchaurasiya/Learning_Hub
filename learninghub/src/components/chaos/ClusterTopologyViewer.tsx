@@ -1,14 +1,5 @@
 import React from 'react'
-import {
-  Server,
-  Database,
-  Layers,
-  Shield,
-  Activity,
-  AlertTriangle,
-  Zap,
-  Cpu,
-} from 'lucide-react'
+import { Server, Database, Layers, Shield, Activity, AlertTriangle, Zap, Cpu } from 'lucide-react'
 import {
   ClusterTopology,
   ServiceNode,
@@ -131,7 +122,7 @@ export const ClusterTopologyViewer: React.FC<ClusterTopologyViewerProps> = ({
 
       {/* Microservice Nodes Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-        {topology.nodes.map((node) => {
+        {topology.nodes.map(node => {
           const isSelected = selectedNodeId === node.id
           const threadSaturationPercent = Math.round(
             (node.threadPoolUsed / Math.max(1, node.threadPoolCapacity)) * 100
@@ -176,8 +167,8 @@ export const ClusterTopologyViewer: React.FC<ClusterTopologyViewerProps> = ({
                       threadSaturationPercent > 80
                         ? 'bg-rose-500'
                         : threadSaturationPercent > 50
-                        ? 'bg-amber-500'
-                        : 'bg-emerald-500'
+                          ? 'bg-amber-500'
+                          : 'bg-emerald-500'
                     }`}
                     style={{ width: `${Math.min(threadSaturationPercent, 100)}%` }}
                   />
@@ -202,7 +193,7 @@ export const ClusterTopologyViewer: React.FC<ClusterTopologyViewerProps> = ({
           <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Active Inter-Service Links
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-          {topology.links.map((link) => (
+          {topology.links.map(link => (
             <div
               key={link.id}
               className={`p-2.5 rounded-lg border text-xs font-mono flex items-center justify-between ${getLinkStateDisplay(

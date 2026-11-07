@@ -21,7 +21,7 @@ export const TestQuestionPalette = memo(function TestQuestionPalette({
   flaggedQuestions,
   visitedQuestions = [],
   visitedQuestionIds,
-    onSelectQuestion,
+  onSelectQuestion,
 }: TestQuestionPaletteProps) {
   const [filter, setFilter] = useState<PaletteFilter>('all')
 
@@ -38,9 +38,7 @@ export const TestQuestionPalette = memo(function TestQuestionPalette({
     questions.forEach((q, idx) => {
       const rawAns = answers[q.id]
       const hasAnswer =
-        rawAns !== undefined &&
-        rawAns !== '' &&
-        (!Array.isArray(rawAns) || rawAns.length > 0)
+        rawAns !== undefined && rawAns !== '' && (!Array.isArray(rawAns) || rawAns.length > 0)
       const isFlagged = flaggedQuestions.includes(q.id)
       const isVisited =
         effectiveVisited.includes(q.id) || idx === currentIndex || hasAnswer || isFlagged
@@ -76,7 +74,9 @@ export const TestQuestionPalette = memo(function TestQuestionPalette({
           type="button"
           onClick={() => setFilter(filter === 'answered' ? 'all' : 'answered')}
           className={`flex items-center gap-2 p-1.5 rounded-lg text-left transition ${
-            filter === 'answered' ? 'ring-2 ring-emerald-500 bg-emerald-50 dark:bg-emerald-950/40' : 'hover:bg-gray-100 dark:hover:bg-slate-800'
+            filter === 'answered'
+              ? 'ring-2 ring-emerald-500 bg-emerald-50 dark:bg-emerald-950/40'
+              : 'hover:bg-gray-100 dark:hover:bg-slate-800'
           }`}
         >
           <span className="w-5 h-5 rounded bg-emerald-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0">
@@ -89,39 +89,51 @@ export const TestQuestionPalette = memo(function TestQuestionPalette({
           type="button"
           onClick={() => setFilter(filter === 'not_answered' ? 'all' : 'not_answered')}
           className={`flex items-center gap-2 p-1.5 rounded-lg text-left transition ${
-            filter === 'not_answered' ? 'ring-2 ring-rose-500 bg-rose-50 dark:bg-rose-950/40' : 'hover:bg-gray-100 dark:hover:bg-slate-800'
+            filter === 'not_answered'
+              ? 'ring-2 ring-rose-500 bg-rose-50 dark:bg-rose-950/40'
+              : 'hover:bg-gray-100 dark:hover:bg-slate-800'
           }`}
         >
           <span className="w-5 h-5 rounded bg-rose-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0">
             {stats.notAnswered}
           </span>
-          <span className="text-gray-700 dark:text-slate-300 font-medium truncate">Not Answered</span>
+          <span className="text-gray-700 dark:text-slate-300 font-medium truncate">
+            Not Answered
+          </span>
         </button>
 
         <button
           type="button"
           onClick={() => setFilter(filter === 'not_visited' ? 'all' : 'not_visited')}
           className={`flex items-center gap-2 p-1.5 rounded-lg text-left transition ${
-            filter === 'not_visited' ? 'ring-2 ring-slate-400 bg-slate-100 dark:bg-slate-800' : 'hover:bg-gray-100 dark:hover:bg-slate-800'
+            filter === 'not_visited'
+              ? 'ring-2 ring-slate-400 bg-slate-100 dark:bg-slate-800'
+              : 'hover:bg-gray-100 dark:hover:bg-slate-800'
           }`}
         >
           <span className="w-5 h-5 rounded bg-gray-300 dark:bg-slate-700 text-gray-700 dark:text-slate-200 font-bold flex items-center justify-center text-[10px] shrink-0">
             {stats.notVisited}
           </span>
-          <span className="text-gray-700 dark:text-slate-300 font-medium truncate">Not Visited</span>
+          <span className="text-gray-700 dark:text-slate-300 font-medium truncate">
+            Not Visited
+          </span>
         </button>
 
         <button
           type="button"
           onClick={() => setFilter(filter === 'marked_review' ? 'all' : 'marked_review')}
           className={`flex items-center gap-2 p-1.5 rounded-lg text-left transition col-span-2 sm:col-span-1 ${
-            filter === 'marked_review' ? 'ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-950/40' : 'hover:bg-gray-100 dark:hover:bg-slate-800'
+            filter === 'marked_review'
+              ? 'ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-950/40'
+              : 'hover:bg-gray-100 dark:hover:bg-slate-800'
           }`}
         >
           <span className="w-5 h-5 rounded bg-purple-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0">
             {stats.markedReview}
           </span>
-          <span className="text-gray-700 dark:text-slate-300 font-medium truncate">Marked for Review</span>
+          <span className="text-gray-700 dark:text-slate-300 font-medium truncate">
+            Marked for Review
+          </span>
         </button>
 
         <div className="flex items-center gap-2 p-1.5 rounded-lg text-left col-span-2">
@@ -130,7 +142,10 @@ export const TestQuestionPalette = memo(function TestQuestionPalette({
             <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-400 rounded-full border border-white dark:border-slate-900" />
           </div>
           <span className="text-gray-700 dark:text-slate-300 font-medium text-[10px] leading-tight">
-            Ans & Marked (Evaluated in NTA): <strong className="text-purple-600 dark:text-purple-400">{stats.answeredAndMarked}</strong>
+            Ans & Marked (Evaluated in NTA):{' '}
+            <strong className="text-purple-600 dark:text-purple-400">
+              {stats.answeredAndMarked}
+            </strong>
           </span>
         </div>
       </div>
@@ -139,7 +154,10 @@ export const TestQuestionPalette = memo(function TestQuestionPalette({
       {filter !== 'all' && (
         <div className="flex items-center justify-between text-xs">
           <span className="text-gray-500">
-            Filtering by: <strong className="capitalize text-blue-600 dark:text-blue-400">{filter.replace('_', ' ')}</strong>
+            Filtering by:{' '}
+            <strong className="capitalize text-blue-600 dark:text-blue-400">
+              {filter.replace('_', ' ')}
+            </strong>
           </span>
           <button
             type="button"
@@ -156,45 +174,45 @@ export const TestQuestionPalette = memo(function TestQuestionPalette({
         {questions.map((q, index) => {
           const rawAns = answers[q.id]
           const isAnswered =
-            rawAns !== undefined &&
-            rawAns !== '' &&
-            (!Array.isArray(rawAns) || rawAns.length > 0)
+            rawAns !== undefined && rawAns !== '' && (!Array.isArray(rawAns) || rawAns.length > 0)
           const isCurrentFlagged = flaggedQuestions.includes(q.id)
           const isCurrent = index === currentIndex
           const isVisited =
-            effectiveVisited.includes(q.id) || index === currentIndex || isAnswered || isCurrentFlagged
+            effectiveVisited.includes(q.id) ||
+            index === currentIndex ||
+            isAnswered ||
+            isCurrentFlagged
 
           // Filter matching
           if (filter === 'answered' && !isAnswered) return null
-          if (filter === 'not_answered' && (!isVisited || isAnswered || isCurrentFlagged)) return null
+          if (filter === 'not_answered' && (!isVisited || isAnswered || isCurrentFlagged))
+            return null
           if (filter === 'marked_review' && !isCurrentFlagged) return null
           if (filter === 'not_visited' && isVisited) return null
 
-          let btnClass = ''
-          if (isCurrent) {
-            btnClass =
-              'bg-blue-600 text-white ring-2 ring-blue-400 ring-offset-2 dark:ring-offset-slate-900 font-extrabold shadow-md scale-105 z-10'
-          } else if (isAnswered && isCurrentFlagged) {
+          let baseStateClass = ''
+          if (isAnswered && isCurrentFlagged) {
             // State 5: Answered and Marked for Review
-            btnClass =
-              'bg-purple-600 text-white font-bold shadow-xs hover:bg-purple-700'
+            baseStateClass = 'bg-purple-600 text-white font-bold shadow-xs hover:bg-purple-700'
           } else if (isAnswered) {
             // State 3: Answered
-            btnClass =
-              'bg-emerald-600 text-white font-bold shadow-xs hover:bg-emerald-700'
+            baseStateClass = 'bg-emerald-600 text-white font-bold shadow-xs hover:bg-emerald-700'
           } else if (isCurrentFlagged) {
             // State 4: Marked for Review without answer
-            btnClass =
-              'bg-purple-600 text-white font-bold shadow-xs hover:bg-purple-700'
+            baseStateClass = 'bg-purple-600 text-white font-bold shadow-xs hover:bg-purple-700'
           } else if (isVisited) {
             // State 2: Not Answered (visited but skipped)
-            btnClass =
-              'bg-rose-600 text-white font-bold shadow-xs hover:bg-rose-700'
+            baseStateClass = 'bg-rose-600 text-white font-bold shadow-xs hover:bg-rose-700'
           } else {
             // State 1: Not Visited
-            btnClass =
+            baseStateClass =
               'bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 font-medium'
           }
+
+          const currentRingClass = isCurrent
+            ? 'ring-3 ring-blue-500 ring-offset-2 dark:ring-offset-slate-900 font-extrabold shadow-md scale-105 z-10'
+            : ''
+          const btnClass = `${baseStateClass} ${currentRingClass}`.trim()
 
           return (
             <button

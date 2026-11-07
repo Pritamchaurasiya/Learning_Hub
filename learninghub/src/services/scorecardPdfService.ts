@@ -35,9 +35,15 @@ function computeAuditDigest(
     hash = hash & hash
   }
   const hex1 = Math.abs(hash).toString(16).padStart(8, '0')
-  const hex2 = Math.abs(hash ^ 0x5a5a5a5a).toString(16).padStart(8, '0')
-  const hex3 = Math.abs(hash ^ 0x3c3c3c3c).toString(16).padStart(8, '0')
-  const hex4 = Math.abs(hash ^ 0xa5a5a5a5).toString(16).padStart(8, '0')
+  const hex2 = Math.abs(hash ^ 0x5a5a5a5a)
+    .toString(16)
+    .padStart(8, '0')
+  const hex3 = Math.abs(hash ^ 0x3c3c3c3c)
+    .toString(16)
+    .padStart(8, '0')
+  const hex4 = Math.abs(hash ^ 0xa5a5a5a5)
+    .toString(16)
+    .padStart(8, '0')
   return `LH-${hex1.toUpperCase()}-${hex2.toUpperCase()}-${hex3.toUpperCase()}-${hex4.toUpperCase()}`
 }
 
@@ -93,14 +99,15 @@ export class ScorecardPdfService {
     const correctCount =
       result.correct_count ??
       result.correct_answers_count ??
-      (result.question_results?.filter(q => q.is_correct === true).length ?? 0)
+      result.question_results?.filter(q => q.is_correct === true).length ??
+      0
     const incorrectCount =
       result.incorrect_count ??
       result.incorrect_answers_count ??
-      (result.question_results?.filter(q => q.is_correct === false).length ?? 0)
+      result.question_results?.filter(q => q.is_correct === false).length ??
+      0
     const totalQuestions =
-      result.total_questions ??
-      (result.question_results?.length || (correctCount + incorrectCount))
+      result.total_questions ?? (result.question_results?.length || correctCount + incorrectCount)
     const timeTakenSeconds = result.time_taken ?? result.time_taken_seconds ?? 0
     const minutes = Math.floor(timeTakenSeconds / 60)
     const seconds = timeTakenSeconds % 60
@@ -126,8 +133,15 @@ export class ScorecardPdfService {
 
     doc.setFontSize(8)
     doc.setTextColor(148, 163, 184) // Slate 400
-    doc.text(`VERIFICATION ID: ${audit.verificationHash}`, pageWidth - margin, 12, { align: 'right' })
-    doc.text(`ISSUED: ${new Date(audit.issuedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, pageWidth - margin, 18, { align: 'right' })
+    doc.text(`VERIFICATION ID: ${audit.verificationHash}`, pageWidth - margin, 12, {
+      align: 'right',
+    })
+    doc.text(
+      `ISSUED: ${new Date(audit.issuedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
+      pageWidth - margin,
+      18,
+      { align: 'right' }
+    )
 
     let currentY = 36
 
@@ -145,8 +159,16 @@ export class ScorecardPdfService {
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(15, 23, 42) // Slate 900
     doc.text(options.candidateName || 'Registered Student', margin + 35, currentY + 7)
-    doc.text(options.candidateId || `STU-${result.attempt_id.substring(0, 8).toUpperCase()}`, margin + 35, currentY + 14)
-    doc.text(options.institutionName || 'LearningHub National Testing Network', margin + 35, currentY + 20)
+    doc.text(
+      options.candidateId || `STU-${result.attempt_id.substring(0, 8).toUpperCase()}`,
+      margin + 35,
+      currentY + 14
+    )
+    doc.text(
+      options.institutionName || 'LearningHub National Testing Network',
+      margin + 35,
+      currentY + 20
+    )
 
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(71, 85, 105)
@@ -176,7 +198,9 @@ export class ScorecardPdfService {
     doc.text(`${percentage}%`, margin + 22.5, currentY + 16, { align: 'center' })
 
     doc.setFontSize(10)
-    doc.text(isPassed ? 'PASSED' : 'NOT QUALIFIED', margin + 22.5, currentY + 26, { align: 'center' })
+    doc.text(isPassed ? 'PASSED' : 'NOT QUALIFIED', margin + 22.5, currentY + 26, {
+      align: 'center',
+    })
 
     // Secondary metrics grid next to badge
     const gridX = margin + 50
@@ -189,9 +213,10 @@ export class ScorecardPdfService {
       { label: 'TIME SPENT', value: formattedDuration },
       {
         label: 'IRT THETA (ABILITY)',
-        value: result.adaptive_diagnostics?.finalTheta !== undefined
-          ? `${result.adaptive_diagnostics.finalTheta > 0 ? '+' : ''}${result.adaptive_diagnostics.finalTheta.toFixed(2)}`
-          : 'Proficient',
+        value:
+          result.adaptive_diagnostics?.finalTheta !== undefined
+            ? `${result.adaptive_diagnostics.finalTheta > 0 ? '+' : ''}${result.adaptive_diagnostics.finalTheta.toFixed(2)}`
+            : 'Proficient',
       },
     ]
 
@@ -277,7 +302,11 @@ export class ScorecardPdfService {
       doc.text(`${t.pct}%`, margin + 155, currentY + 5, { align: 'center' })
 
       const statusLabel = t.pct >= 75 ? 'Mastered' : t.pct >= 50 ? 'Proficient' : 'Needs Review'
-      doc.setTextColor(t.pct >= 75 ? 16 : t.pct >= 50 ? 79 : 220, t.pct >= 75 ? 185 : t.pct >= 50 ? 70 : 38, t.pct >= 75 ? 129 : t.pct >= 50 ? 229 : 38)
+      doc.setTextColor(
+        t.pct >= 75 ? 16 : t.pct >= 50 ? 79 : 220,
+        t.pct >= 75 ? 185 : t.pct >= 50 ? 70 : 38,
+        t.pct >= 75 ? 129 : t.pct >= 50 ? 229 : 38
+      )
       doc.text(statusLabel, pageWidth - margin - 3, currentY + 5, { align: 'right' })
 
       currentY += 7
@@ -304,9 +333,7 @@ export class ScorecardPdfService {
       result.integrity_risk ??
       'LOW_RISK'
     const tabSwitches =
-      result.telemetry_digest?.tabSwitches ??
-      result.telemetry_summary?.total_violations ??
-      0
+      result.telemetry_digest?.tabSwitches ?? result.telemetry_summary?.total_violations ?? 0
 
     doc.setFillColor(248, 250, 252)
     doc.setDrawColor(226, 232, 240)
@@ -318,7 +345,11 @@ export class ScorecardPdfService {
     doc.text('Audited Security Level:', margin + 6, currentY + 15)
 
     doc.setFont('helvetica', 'bold')
-    doc.setTextColor(integrityScore >= 80 ? 16 : 220, integrityScore >= 80 ? 185 : 38, integrityScore >= 80 ? 129 : 38)
+    doc.setTextColor(
+      integrityScore >= 80 ? 16 : 220,
+      integrityScore >= 80 ? 185 : 38,
+      integrityScore >= 80 ? 129 : 38
+    )
     doc.text(`${integrityScore}/100`, margin + 46, currentY + 7)
     doc.text(riskLevel, margin + 46, currentY + 15)
 
@@ -356,7 +387,9 @@ export class ScorecardPdfService {
 
       doc.setFont('helvetica', 'normal')
       doc.setTextColor(51, 65, 85)
-      const weakNames = weakList.map(w => w.name).join(', ') || 'Review foundational mechanics and timing consistency.'
+      const weakNames =
+        weakList.map(w => w.name).join(', ') ||
+        'Review foundational mechanics and timing consistency.'
       doc.text(
         `Focus areas identified: ${weakNames.substring(0, 90)}. Complete Socratic flashcards and revisit incorrect question explanations before re-attempting.`,
         margin + 6,
@@ -376,7 +409,11 @@ export class ScorecardPdfService {
     doc.setFontSize(7.5)
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(100, 116, 139)
-    doc.text('This is an authentic, digitally verified examination performance record generated by the LearningHub Assessment Engine.', margin, footerY + 6)
+    doc.text(
+      'This is an authentic, digitally verified examination performance record generated by the LearningHub Assessment Engine.',
+      margin,
+      footerY + 6
+    )
     doc.text(`Digital Verification Hash: ${audit.verificationHash}`, margin, footerY + 11)
     doc.text(`Verify Online: ${audit.verificationUrl}`, margin, footerY + 16)
 
@@ -384,7 +421,9 @@ export class ScorecardPdfService {
     doc.line(pageWidth - margin - 45, footerY + 16, pageWidth - margin, footerY + 16)
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(7)
-    doc.text('Controller of Examinations', pageWidth - margin - 22.5, footerY + 20, { align: 'center' })
+    doc.text('Controller of Examinations', pageWidth - margin - 22.5, footerY + 20, {
+      align: 'center',
+    })
 
     return doc
   }

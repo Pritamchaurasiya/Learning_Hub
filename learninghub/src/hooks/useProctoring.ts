@@ -214,7 +214,11 @@ export function useProctoring({
         recordViolation('DEV_TOOLS', 'F12 Developer Tools key press detected.')
         return
       }
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['i', 'I', 'j', 'J', 'c', 'C'].includes(e.key)) {
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        e.shiftKey &&
+        ['i', 'I', 'j', 'J', 'c', 'C'].includes(e.key)
+      ) {
         e.preventDefault()
         recordViolation('DEV_TOOLS', 'Developer inspection shortcut detected.')
         return

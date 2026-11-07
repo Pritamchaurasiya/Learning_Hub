@@ -1,11 +1,5 @@
 export type ComplexityClass =
-  | 'O(1)'
-  | 'O(log N)'
-  | 'O(N)'
-  | 'O(N log N)'
-  | 'O(N^2)'
-  | 'O(2^N)'
-  | 'UNKNOWN'
+  'O(1)' | 'O(log N)' | 'O(N)' | 'O(N log N)' | 'O(N^2)' | 'O(2^N)' | 'UNKNOWN'
 
 export interface EmpiricalDataPoint {
   n: number
@@ -31,7 +25,8 @@ export interface AsymptoticProjection {
   targetN: number
   projectedTimeMs: number
   projectedMemoryMb: number
-  feasibilityVerdict: 'INSTANT' | 'ACCEPTABLE' | 'DEGRADED_SLA' | 'TIMEOUT_RISK' | 'CRITICAL_FAILURE'
+  feasibilityVerdict:
+    'INSTANT' | 'ACCEPTABLE' | 'DEGRADED_SLA' | 'TIMEOUT_RISK' | 'CRITICAL_FAILURE'
 }
 
 export interface ProfilerResultPayload {
@@ -45,7 +40,8 @@ export interface ProfilerResultPayload {
   primaryModel: ModelFitResult
   asymptoticProjections: AsymptoticProjection[]
   bottleneckAnalysis: {
-    primaryLimiter: 'CPU_COMPUTATIONAL' | 'MEMORY_BANDWIDTH' | 'ALLOCATION_OVERHEAD' | 'CACHE_MISSES'
+    primaryLimiter:
+      'CPU_COMPUTATIONAL' | 'MEMORY_BANDWIDTH' | 'ALLOCATION_OVERHEAD' | 'CACHE_MISSES'
     detectedAnomalies: string[]
     actionableSuggestions: string[]
     katexFormalProof: string
@@ -57,7 +53,13 @@ export interface BenchmarkRequestParams {
   algorithmName: string
   codeSnippet?: string
   inputSizes?: number[]
-  presetAlgorithm?: 'BUBBLE_SORT' | 'MERGE_SORT' | 'BINARY_SEARCH' | 'LINEAR_SEARCH' | 'FIBONACCI_RECURSIVE' | 'HASHMAP_LOOKUP'
+  presetAlgorithm?:
+    | 'BUBBLE_SORT'
+    | 'MERGE_SORT'
+    | 'BINARY_SEARCH'
+    | 'LINEAR_SEARCH'
+    | 'FIBONACCI_RECURSIVE'
+    | 'HASHMAP_LOOKUP'
 }
 
 export interface AlgorithmPreset {

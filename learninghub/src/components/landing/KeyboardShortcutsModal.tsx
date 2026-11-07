@@ -39,7 +39,11 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
       if (e.key === 'Escape' && isOpen) {
         onClose()
       }
-      if (e.key === '?' && !isOpen && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+      if (
+        e.key === '?' &&
+        !isOpen &&
+        !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)
+      ) {
         e.preventDefault()
         onClose()
       }
@@ -77,7 +81,9 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
               </div>
               <div>
                 <h3 className="text-base font-bold text-white">Keyboard Shortcuts</h3>
-                <p className="text-xs text-slate-400">Power-user keybindings for zero-mouse study</p>
+                <p className="text-xs text-slate-400">
+                  Power-user keybindings for zero-mouse study
+                </p>
               </div>
             </div>
             <button
@@ -122,7 +128,13 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
 
           {/* Footer */}
           <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
-            <span>Press <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-amber-400">Esc</kbd> to dismiss</span>
+            <span>
+              Press{' '}
+              <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-amber-400">
+                Esc
+              </kbd>{' '}
+              to dismiss
+            </span>
             <span>LearningHub Studio Engine</span>
           </div>
         </motion.div>

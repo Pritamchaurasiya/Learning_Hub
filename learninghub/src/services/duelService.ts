@@ -54,7 +54,8 @@ export const TIER_CONFIG: Record<RankTier, TierInfo> = {
     tier: 'GRANDMASTER',
     label: 'Grandmaster Apex',
     color: '#F97316',
-    bgBadge: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300 ring-1 ring-rose-500/50',
+    bgBadge:
+      'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300 ring-1 ring-rose-500/50',
     minElo: 2400,
     maxElo: 3000,
   },
@@ -90,7 +91,6 @@ export const duelService = {
       }
     }
 
-    // eslint-disable-next-line security/detect-object-injection
     const nextTier = TIER_CONFIG[tiers[currentIndex + 1]]
     const range = nextTier.minElo - currentTier.minElo
     const earned = Math.max(0, elo - currentTier.minElo)
@@ -124,7 +124,10 @@ export const duelService = {
   async joinQueue(
     category = 'ANY',
     forceGhost = false
-  ): Promise<{ status: string; data: { match: DuelMatch | null; queued: boolean; isGhost?: boolean } }> {
+  ): Promise<{
+    status: string
+    data: { match: DuelMatch | null; queued: boolean; isGhost?: boolean }
+  }> {
     return fetchApi('/duel/queue', {
       method: 'POST',
       body: JSON.stringify({ category, forceGhost }),
@@ -137,7 +140,10 @@ export const duelService = {
     })
   },
 
-  async getActiveMatch(): Promise<{ status: string; data: { match: DuelMatch | null; inMatch: boolean } }> {
+  async getActiveMatch(): Promise<{
+    status: string
+    data: { match: DuelMatch | null; inMatch: boolean }
+  }> {
     return fetchApi('/duel/active').catch(() => ({
       status: 'success',
       data: { match: null, inMatch: false },
@@ -174,15 +180,62 @@ export const duelService = {
   },
 
   async getLeaderboard(): Promise<{ status: string; data: { leaderboard: DuelPlayer[] } }> {
-    return fetchApi<{ status: string; data: { leaderboard: DuelPlayer[] } }>('/duel/leaderboard').catch(() => ({
+    return fetchApi<{ status: string; data: { leaderboard: DuelPlayer[] } }>(
+      '/duel/leaderboard'
+    ).catch(() => ({
       status: 'success',
       data: {
         leaderboard: [
-          { userId: 'seed-1', username: 'AlgorithmAce', elo: 2420, tier: 'GRANDMASTER', wins: 88, losses: 12, streak: 8, peakElo: 2450 },
-          { userId: 'seed-2', username: 'ByteMaster_99', elo: 2210, tier: 'DIAMOND', wins: 64, losses: 19, streak: 4, peakElo: 2280 },
-          { userId: 'seed-3', username: 'BinaryWizard', elo: 2040, tier: 'PLATINUM', wins: 51, losses: 23, streak: 2, peakElo: 2090 },
-          { userId: 'seed-4', username: 'GraphTraverser', elo: 1870, tier: 'PLATINUM', wins: 40, losses: 20, streak: 1, peakElo: 1920 },
-          { userId: 'seed-5', username: 'DynamicDev', elo: 1720, tier: 'GOLD', wins: 33, losses: 21, streak: 3, peakElo: 1750 },
+          {
+            userId: 'seed-1',
+            username: 'AlgorithmAce',
+            elo: 2420,
+            tier: 'GRANDMASTER',
+            wins: 88,
+            losses: 12,
+            streak: 8,
+            peakElo: 2450,
+          },
+          {
+            userId: 'seed-2',
+            username: 'ByteMaster_99',
+            elo: 2210,
+            tier: 'DIAMOND',
+            wins: 64,
+            losses: 19,
+            streak: 4,
+            peakElo: 2280,
+          },
+          {
+            userId: 'seed-3',
+            username: 'BinaryWizard',
+            elo: 2040,
+            tier: 'PLATINUM',
+            wins: 51,
+            losses: 23,
+            streak: 2,
+            peakElo: 2090,
+          },
+          {
+            userId: 'seed-4',
+            username: 'GraphTraverser',
+            elo: 1870,
+            tier: 'PLATINUM',
+            wins: 40,
+            losses: 20,
+            streak: 1,
+            peakElo: 1920,
+          },
+          {
+            userId: 'seed-5',
+            username: 'DynamicDev',
+            elo: 1720,
+            tier: 'GOLD',
+            wins: 33,
+            losses: 21,
+            streak: 3,
+            peakElo: 1750,
+          },
         ],
       },
     }))

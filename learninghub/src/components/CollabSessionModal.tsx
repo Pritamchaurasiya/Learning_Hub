@@ -107,7 +107,9 @@ export function CollabSessionModal({
                     <Share2 className="w-3.5 h-3.5 text-primary-400" />
                     Collaborative Room Code
                   </span>
-                  <span className="text-[10px] text-gray-400">Share with your peer or interviewer</span>
+                  <span className="text-[10px] text-gray-400">
+                    Share with your peer or interviewer
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 bg-gray-950 px-3 py-2 rounded-lg font-mono text-xs text-emerald-400 border border-gray-800 select-all truncate">
@@ -146,7 +148,9 @@ export function CollabSessionModal({
                   <div className="flex items-center justify-between p-2.5 rounded-lg bg-gray-900/40 border border-gray-800/60">
                     <div className="flex items-center gap-2">
                       <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" />
-                      <span className="text-xs font-medium text-gray-200">You (Host/Developer)</span>
+                      <span className="text-xs font-medium text-gray-200">
+                        You (Host/Developer)
+                      </span>
                     </div>
                     <span className="text-[10px] font-mono text-gray-500">Local Cursor</span>
                   </div>
@@ -201,7 +205,11 @@ export function CollabSessionModal({
                         : 'bg-gray-900 text-gray-400 border-gray-800 hover:text-gray-200'
                     }`}
                   >
-                    {isVideoEnabled ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
+                    {isVideoEnabled ? (
+                      <Video className="w-4 h-4" />
+                    ) : (
+                      <VideoOff className="w-4 h-4" />
+                    )}
                     <span>{isVideoEnabled ? 'Video On' : 'Video Off'}</span>
                   </button>
                 </div>
@@ -221,7 +229,8 @@ export function CollabSessionModal({
               <div className="p-4 bg-gray-900/60 border border-gray-800 rounded-xl space-y-3">
                 <h4 className="text-xs font-bold text-gray-200">Start a New Collaboration Room</h4>
                 <p className="text-xs text-gray-400">
-                  Generate an instant room ID for this problem and invite another developer or interviewer to code with you in real-time.
+                  Generate an instant room ID for this problem and invite another developer or
+                  interviewer to code with you in real-time.
                 </p>
                 <button
                   onClick={() => onStartSession()}

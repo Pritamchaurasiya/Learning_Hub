@@ -1,11 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import {
-  Award,
-  CheckCircle2,
-  Building,
-  ShieldCheck,
-} from 'lucide-react'
+import { Award, CheckCircle2, Building, ShieldCheck } from 'lucide-react'
 
 const verifiedStories = [
   {
@@ -110,8 +105,8 @@ export function TrustMetrics() {
             </span>
           </h2>
           <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            From IIT Bombay computer scientists to AIIMS medical doctors and Staff Software Engineers.
-            Hear how serious practice made the difference.
+            From IIT Bombay computer scientists to AIIMS medical doctors and Staff Software
+            Engineers. Hear how serious practice made the difference.
           </p>
 
           {/* Filter Pills */}

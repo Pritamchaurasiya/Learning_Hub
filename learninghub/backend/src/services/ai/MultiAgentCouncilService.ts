@@ -39,14 +39,43 @@ export class MultiAgentCouncilService {
   /**
    * Detects student sentiment and frustration markers to tailor coaching tone
    */
-  public detectFrustrationSignals(text: string): 'confident' | 'neutral' | 'frustrated' | 'fatigued' {
+  public detectFrustrationSignals(
+    text: string
+  ): 'confident' | 'neutral' | 'frustrated' | 'fatigued' {
     const lower = text.toLowerCase()
     const frustrationWords = [
-      'stuck', 'hate', 'impossible', 'give up', 'broken', 'wrong', 'failing', 'why does this not work',
-      'stupid', 'confused', 'lost', 'waste of time', 'frustrated'
+      'stuck',
+      'hate',
+      'impossible',
+      'give up',
+      'broken',
+      'wrong',
+      'failing',
+      'why does this not work',
+      'stupid',
+      'confused',
+      'lost',
+      'waste of time',
+      'frustrated',
     ]
-    const fatigueWords = ['tired', 'sleepy', 'headache', 'burned out', 'brain melted', 'late night', 'exhausted']
-    const confidentWords = ['solved', 'easy', 'figured out', 'works', 'optimized', 'mastered', 'clean']
+    const fatigueWords = [
+      'tired',
+      'sleepy',
+      'headache',
+      'burned out',
+      'brain melted',
+      'late night',
+      'exhausted',
+    ]
+    const confidentWords = [
+      'solved',
+      'easy',
+      'figured out',
+      'works',
+      'optimized',
+      'mastered',
+      'clean',
+    ]
 
     if (frustrationWords.some(w => lower.includes(w))) return 'frustrated'
     if (fatigueWords.some(w => lower.includes(w))) return 'fatigued'
@@ -66,8 +95,12 @@ export class MultiAgentCouncilService {
       const adapter = AIServiceFactory.getAgent()
 
       const safeQuery = TokenTrimmer.escapeXML(params.query.substring(0, 1500))
-      const safeCode = params.codeSnippet ? TokenTrimmer.escapeXML(params.codeSnippet.substring(0, 2500)) : ''
-      const safeProblem = params.problemDescription ? TokenTrimmer.escapeXML(params.problemDescription.substring(0, 1000)) : ''
+      const safeCode = params.codeSnippet
+        ? TokenTrimmer.escapeXML(params.codeSnippet.substring(0, 2500))
+        : ''
+      const safeProblem = params.problemDescription
+        ? TokenTrimmer.escapeXML(params.problemDescription.substring(0, 1000))
+        : ''
 
       const prompt = `
 <trusted_instructions>
@@ -131,7 +164,9 @@ Respond STRICTLY in valid JSON matching this schema:
           topic,
           studentLevel,
           sentimentDetected: sentiment,
-          councilSummary: raw.councilSummary || 'The AI Council has analyzed your challenge and formulated a multi-tier roadmap.',
+          councilSummary:
+            raw.councilSummary ||
+            'The AI Council has analyzed your challenge and formulated a multi-tier roadmap.',
           perspectives: {
             socratic_guide: {
               role: 'socratic_guide',
@@ -164,11 +199,13 @@ Respond STRICTLY in valid JSON matching this schema:
               confidenceScore: raw.motivationalCoach.confidenceScore || 0.98,
             },
           },
-          actionPlan: Array.isArray(raw.actionPlan) ? raw.actionPlan : [
-            'Break down problem constraints into baseline examples.',
-            'Audit asymptotic complexity bounds before writing nested loops.',
-            'Take a brief 3-minute breather if hitting cognitive blocks.',
-          ],
+          actionPlan: Array.isArray(raw.actionPlan)
+            ? raw.actionPlan
+            : [
+                'Break down problem constraints into baseline examples.',
+                'Audit asymptotic complexity bounds before writing nested loops.',
+                'Take a brief 3-minute breather if hitting cognitive blocks.',
+              ],
           aiPowered: true,
         }
       }
@@ -233,9 +270,10 @@ Respond STRICTLY in valid JSON matching this schema:
           name: 'Coach Maya',
           avatar: '🌟',
           badge: 'Performance & Mindset',
-          recommendation: sentiment === 'frustrated'
-            ? `Feeling blocked is an indicator of active neural adaptation. Take a 2-minute break, hydrate, and re-approach with fresh eyes.`
-            : `You are making steady conceptual progress. Focus on incremental correctness over instant perfection.`,
+          recommendation:
+            sentiment === 'frustrated'
+              ? `Feeling blocked is an indicator of active neural adaptation. Take a 2-minute break, hydrate, and re-approach with fresh eyes.`
+              : `You are making steady conceptual progress. Focus on incremental correctness over instant perfection.`,
           keyObservations: [
             `Cognitive load is highest during the initial representation phase.`,
             `Every failed testcase gives exact diagnostic data for refinement.`,

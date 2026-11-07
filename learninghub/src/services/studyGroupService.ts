@@ -67,7 +67,8 @@ const MOCK_GROUPS: StudyGroup[] = [
   {
     id: 'sg-3',
     name: 'Generative AI & LLM Systems Research',
-    description: 'Fine-tuning, LoRA, RLHF, multi-agent orchestrations, and vector retrieval pipelines.',
+    description:
+      'Fine-tuning, LoRA, RLHF, multi-agent orchestrations, and vector retrieval pipelines.',
     category: 'AI & ML',
     examTarget: 'Applied AI & ML Research',
     memberCount: 215,

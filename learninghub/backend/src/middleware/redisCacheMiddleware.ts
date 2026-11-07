@@ -26,7 +26,11 @@ export const redisCacheMiddleware = (durationInSeconds: number) => {
       return
     }
 
-    const key = cacheService.generateKey('http', req.originalUrl || req.url, req.user?.userId ?? 'anonymous')
+    const key = cacheService.generateKey(
+      'http',
+      req.originalUrl || req.url,
+      req.user?.userId ?? 'anonymous'
+    )
 
     const isAuth = !!req.user?.userId
     const cacheControlHeader = `${isAuth ? 'private' : 'public'}, max-age=${Math.min(durationInSeconds, 60)}, stale-while-revalidate=300`

@@ -28,10 +28,7 @@ import logger from '../utils/logger'
 // ─── Interfaces ──────────────────────────────────────────────────────────────
 
 export type AchievementType =
-  | 'COURSE_COMPLETION'
-  | 'CAT_PERCENTILE'
-  | 'ASSESSMENT_MASTERY'
-  | 'COMPETITIVE_EXAM_RANK'
+  'COURSE_COMPLETION' | 'CAT_PERCENTILE' | 'ASSESSMENT_MASTERY' | 'COMPETITIVE_EXAM_RANK'
 
 export interface W3CIssuer {
   id: string // e.g. "did:polygon:0x71C665C1e78451bEE7065CA80f5338749b75F9B7"
@@ -220,8 +217,14 @@ export class MerkleTree {
         const proofBuf = Buffer.from(cleanProof, 'hex')
         const nextCandidates: Buffer[] = []
         for (const cand of candidates) {
-          const hashLeft = crypto.createHash('sha256').update(Buffer.concat([cand, proofBuf])).digest()
-          const hashRight = crypto.createHash('sha256').update(Buffer.concat([proofBuf, cand])).digest()
+          const hashLeft = crypto
+            .createHash('sha256')
+            .update(Buffer.concat([cand, proofBuf]))
+            .digest()
+          const hashRight = crypto
+            .createHash('sha256')
+            .update(Buffer.concat([proofBuf, cand]))
+            .digest()
           nextCandidates.push(hashLeft, hashRight)
         }
         candidates = nextCandidates
@@ -237,7 +240,10 @@ export class MerkleTree {
 
 export class VerifiableCredentialService {
   // In-memory revocation and on-chain anchor registry fallback
-  private static revocationRegistry = new Map<string, { revoked: boolean; reason?: string; at?: string }>()
+  private static revocationRegistry = new Map<
+    string,
+    { revoked: boolean; reason?: string; at?: string }
+  >()
   private static issuedCredentials = new Map<string, W3CVerifiableCredential>()
 
   /**
@@ -300,7 +306,10 @@ export class VerifiableCredentialService {
 
     // 2. Build DID & PII-safe metadata
     const studentDid = this.deriveStudentDid(userId, params.walletAddress)
-    const studentEmailHash = crypto.createHash('sha256').update(user.email.toLowerCase()).digest('hex')
+    const studentEmailHash = crypto
+      .createHash('sha256')
+      .update(user.email.toLowerCase())
+      .digest('hex')
     const credentialId = `urn:uuid:${crypto.randomUUID()}`
     const issuanceDate = new Date().toISOString()
     const expirationDate = params.expirationDays
@@ -350,10 +359,7 @@ export class VerifiableCredentialService {
     }
 
     const canonicalString = this.canonicalizeJson(unsignedPayload)
-    const proofValue = crypto
-      .createHmac('sha256', VC_SECRET)
-      .update(canonicalString)
-      .digest('hex')
+    const proofValue = crypto.createHmac('sha256', VC_SECRET).update(canonicalString).digest('hex')
 
     // 4. Merkle Tree & On-Chain Anchor
     const epochElements = [credentialId, studentDid, title, issuanceDate]
@@ -363,7 +369,10 @@ export class VerifiableCredentialService {
     const ipfsCid = this.generateIpfsCid(canonicalString)
 
     const blockNumber = 56291000 + Math.floor(Math.random() * 5000)
-    const txHash = `0x${crypto.createHash('sha256').update(credentialId + issuanceDate).digest('hex')}`
+    const txHash = `0x${crypto
+      .createHash('sha256')
+      .update(credentialId + issuanceDate)
+      .digest('hex')}`
 
     const proof: W3CCredentialProof = {
       type: 'HmacSha256Signature2026',
@@ -463,7 +472,11 @@ export class VerifiableCredentialService {
           summary: 'Cryptographic verification failed: malformed W3C Verifiable Credential.',
         },
         checks: [
-          { name: 'Schema Compliance', passed: false, details: 'Payload does not meet W3C VC 1.1 spec' },
+          {
+            name: 'Schema Compliance',
+            passed: false,
+            details: 'Payload does not meet W3C VC 1.1 spec',
+          },
         ],
       }
     }
@@ -480,8 +493,7 @@ export class VerifiableCredentialService {
 
     const sigBuf = Buffer.from(proof.proofValue || '')
     const expBuf = Buffer.from(expectedSignature)
-    const signatureValid =
-      sigBuf.length === expBuf.length && crypto.timingSafeEqual(sigBuf, expBuf)
+    const signatureValid = sigBuf.length === expBuf.length && crypto.timingSafeEqual(sigBuf, expBuf)
 
     checks.push({
       name: 'Cryptographic Signature',

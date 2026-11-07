@@ -125,7 +125,9 @@ export class WebSocketService {
 
   public broadcastToRoom(roomId: string, eventName: string, payload: unknown): void {
     if (!this.io) {
-      logger.warn(`[WebSocketService] Failed to broadcast to room ${roomId}. Service not initialized.`)
+      logger.warn(
+        `[WebSocketService] Failed to broadcast to room ${roomId}. Service not initialized.`
+      )
       return
     }
     this.io.to(roomId).emit(eventName, payload)

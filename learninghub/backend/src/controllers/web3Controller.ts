@@ -45,4 +45,3 @@ export const mintNFT = asyncHandler(async (req: Request, res: Response) => {
   const nft = await web3Service.mintNFT(userId, courseId)
   sendSuccess(res, nft, 'NFT certificate minted successfully', 201)
 })
-

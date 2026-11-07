@@ -217,6 +217,12 @@ describe('ResultsView Subjective AI Grading', () => {
       ],
     }
 
+    it('renders Pacing Efficiency & Time Trap Diagnostic card with telemetry', () => {
+      render(<ResultsView result={mockMistakeResult} onRetry={vi.fn()} onBack={vi.fn()} />)
+      expect(screen.getByText('Pacing Efficiency & Time Trap Diagnostic')).toBeInTheDocument()
+      expect(screen.getByText(/Time Banked \(Speed Wins\)/i)).toBeInTheDocument()
+    })
+
     it('renders "Add Mistakes to SRS Deck" button and triggers batch export', async () => {
       render(<ResultsView result={mockMistakeResult} onRetry={vi.fn()} onBack={vi.fn()} />)
 
@@ -257,4 +263,105 @@ describe('ResultsView Subjective AI Grading', () => {
       })
     })
   })
-})
+
+  describe('Detailed Solution Review & Filtering System', () => {
+    const multiQuestionResult: TestResult = {
+      attempt_id: 'att-multi-1',
+      test_id: 'test-multi-1',
+      test_title: 'GATE Computer Science Comprehensive Mock',
+      mode: 'contest',
+      score: 75,
+      total_marks: 100,
+      percentage: 75,
+      passed: true,
+      time_taken: 900,
+      time_limit: 45,
+      correct_count: 2,
+      incorrect_count: 1,
+      unanswered_count: 0,
+      question_results: [
+        {
+          question_id: 'q-correct-1',
+          question_text: 'What is the time complexity of searching in a balanced AVL tree?',
+          question_type: 'single_choice',
+          topic: 'Data Structures',
+          selected_options: [{ id: 'opt-1', text: 'O(log n)' }],
+          correct_options: [{ id: 'opt-1', text: 'O(log n)' }],
+          is_correct: true,
+          marks_obtained: 2,
+          explanation: 'AVL trees maintain height O(log n), so search is bounded by O(log n).',
+          time_spent: 35,
+          is_flagged: false,
+        },
+        {
+          question_id: 'q-incorrect-1',
+          question_text: 'Which normal form eliminates all transitive functional dependencies?',
+          question_type: 'single_choice',
+          topic: 'Databases',
+          selected_options: [{ id: 'opt-2', text: '2NF' }],
+          correct_options: [{ id: 'opt-3', text: '3NF' }],
+          is_correct: false,
+          marks_obtained: -0.66,
+          explanation: '3NF strictly disallows non-prime attributes depending on non-prime attributes.',
+          time_spent: 95,
+          is_flagged: false,
+        },
+        {
+          question_id: 'q-correct-2',
+          question_text: 'What is the maximum number of edges in a simple graph with n vertices?',
+          question_type: 'single_choice',
+          topic: 'Discrete Mathematics',
+          selected_options: [{ id: 'opt-a', text: 'n(n-1)/2' }],
+          correct_options: [{ id: 'opt-a', text: 'n(n-1)/2' }],
+          is_correct: true,
+          marks_obtained: 1,
+          explanation: 'A complete graph K_n has C(n,2) = n(n-1)/2 edges.',
+          time_spent: 20,
+          is_flagged: false,
+        },
+      ],
+    }
+
+    it('renders review filters, search bar, and question jump pills', () => {
+      render(<ResultsView result={multiQuestionResult} onRetry={vi.fn()} onBack={vi.fn()} />)
+
+      expect(screen.getByText('Detailed Solution & Review')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText(/Filter by keyword or topic.../i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /All Questions/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Incorrect Only/i })).toBeInTheDocument()
+
+      // Jump to question buttons
+      expect(screen.getByTitle(/Question 1: Correct/i)).toBeInTheDocument()
+      expect(screen.getByTitle(/Question 2: Incorrect/i)).toBeInTheDocument()
+      expect(screen.getByTitle(/Question 3: Correct/i)).toBeInTheDocument()
+    })
+
+    it('filters questions when clicking "Incorrect Only" filter button', async () => {
+      render(<ResultsView result={multiQuestionResult} onRetry={vi.fn()} onBack={vi.fn()} />)
+
+      // Initially all 3 questions rendered
+      expect(screen.getByText(/balanced AVL tree/i)).toBeInTheDocument()
+      expect(screen.getByText(/transitive functional dependencies/i)).toBeInTheDocument()
+      expect(screen.getByText(/simple graph with n vertices/i)).toBeInTheDocument()
+
+      // Click "Incorrect Only"
+      const incorrectBtn = screen.getByRole('button', { name: /Incorrect Only/i })
+      fireEvent.click(incorrectBtn)
+
+      // Only question 2 should remain
+      expect(screen.getByText(/transitive functional dependencies/i)).toBeInTheDocument()
+      expect(screen.queryByText(/balanced AVL tree/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/simple graph with n vertices/i)).not.toBeInTheDocument()
+    })
+
+    it('filters questions via the search bar by topic or question text', () => {
+      render(<ResultsView result={multiQuestionResult} onRetry={vi.fn()} onBack={vi.fn()} />)
+
+      const searchInput = screen.getByPlaceholderText(/Filter by keyword or topic.../i)
+      fireEvent.change(searchInput, { target: { value: 'Databases' } })
+
+      expect(screen.getByText(/transitive functional dependencies/i)).toBeInTheDocument()
+      expect(screen.queryByText(/balanced AVL tree/i)).not.toBeInTheDocument()
+    })
+  })
+});

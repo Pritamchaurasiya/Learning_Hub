@@ -28,7 +28,8 @@ export default function NotFoundPage() {
         Page Not Found
       </h1>
       <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-8 max-w-lg leading-relaxed">
-        The page you are looking for might have been removed, renamed, or is temporarily unavailable. Let&apos;s get you back on track to your learning journey.
+        The page you are looking for might have been removed, renamed, or is temporarily
+        unavailable. Let&apos;s get you back on track to your learning journey.
       </p>
 
       {/* Primary Action Buttons */}

@@ -48,7 +48,10 @@ export function LoadingScreen({ fullScreen = false, className, message }: Loadin
 
       <div className="space-y-2 text-center">
         <h2 className="text-2xl font-bold tracking-tight">
-          <span className="font-brand-cursive text-glow-brand bg-clip-text text-transparent bg-gradient-to-r from-sky-400 via-violet-300 to-fuchsia-400" style={{ fontFamily: "'Dancing Script', 'Caveat', cursive, sans-serif" }}>
+          <span
+            className="font-brand-cursive text-glow-brand bg-clip-text text-transparent bg-gradient-to-r from-sky-400 via-violet-300 to-fuchsia-400"
+            style={{ fontFamily: "'Dancing Script', 'Caveat', cursive, sans-serif" }}
+          >
             LearningHub
           </span>
           <span className="text-amber-400 text-xs ml-1">✦</span>

@@ -325,8 +325,10 @@ export const analyticsService = {
           data: {
             nodes: normalizedNodes,
             edges: res.data.edges || [],
-            recommendedConceptId: res.data.recommended_concept_id ?? res.data.recommendedConceptId ?? null,
-            overallProgressPercentage: res.data.overall_progress_percentage ?? res.data.overallProgressPercentage ?? 0,
+            recommendedConceptId:
+              res.data.recommended_concept_id ?? res.data.recommendedConceptId ?? null,
+            overallProgressPercentage:
+              res.data.overall_progress_percentage ?? res.data.overallProgressPercentage ?? 0,
           },
         }
       }

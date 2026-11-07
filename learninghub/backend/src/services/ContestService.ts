@@ -196,7 +196,9 @@ export class ContestService {
       if (contest) {
         const status = this.calculateStatus(contest.startTime, contest.endTime)
         const isFrozen = this.isLeaderboardFrozen(contest.endTime, contest.freezeMinutes)
-        const isRegistered = userId ? contest.participants && contest.participants.length > 0 : false
+        const isRegistered = userId
+          ? contest.participants && contest.participants.length > 0
+          : false
 
         return {
           contest_id: contest.id,
@@ -220,9 +222,7 @@ export class ContestService {
       // Ignore DB error and fallback to canonical
     }
 
-    const canonical = CANONICAL_CONTESTS.find(
-      c => c.contest_id === idOrSlug || c.slug === idOrSlug
-    )
+    const canonical = CANONICAL_CONTESTS.find(c => c.contest_id === idOrSlug || c.slug === idOrSlug)
     return canonical ? { ...canonical } : null
   }
 

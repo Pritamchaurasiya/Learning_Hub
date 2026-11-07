@@ -8,7 +8,8 @@ import { MockAIAdapter } from './MockAIAdapter'
 import { AIRouter } from './AIRouter'
 import logger from '../../utils/logger'
 
-export type AIProviderName = 'router' | 'gemini' | 'groq' | 'ollama' | 'openai' | 'anthropic' | 'mock'
+export type AIProviderName =
+  'router' | 'gemini' | 'groq' | 'ollama' | 'openai' | 'anthropic' | 'mock'
 
 export class AIServiceFactory {
   private static instance?: IAIAgent

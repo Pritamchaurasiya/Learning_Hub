@@ -20,6 +20,7 @@ import { cpp } from '@codemirror/lang-cpp'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { problemService } from '../services/problemService'
 import { aiTutorService } from '../services/aiTutorService'
+import { desktopService } from '../services/desktopService'
 import { SEO } from '../components/SEO'
 import { Button } from '../components/ui/Button'
 import { useStore } from '../stores/useStore'
@@ -300,7 +301,7 @@ export default function ProblemWorkspacePage() {
   const [leftTab, setLeftTab] = useState<'description' | 'editorial' | 'submissions' | 'hints'>(
     'description'
   )
-  const [mobileTab, setMobileTab] = useState<'description' | 'editor'>('description')
+  const [mobileTab, setMobileTab] = useState<'description' | 'editor' | 'console'>('description')
 
   // Code & Language State
   const [language, setLanguage] = useState('javascript')
@@ -496,15 +497,37 @@ export default function ProblemWorkspacePage() {
     [problem?.starter_code, problem?.starterCode]
   )
 
-  // ── Auto-save to Local Storage ─────────────────────────────────────
+  // ── Auto-save to Local Storage & Desktop Offline Vault ─────────────
   useEffect(() => {
-    if (slug) {
-      const savedCode = localStorage.getItem(`draft_${slug}_${language}`)
+    let isCancelled = false
+    async function loadSavedDraft() {
+      if (!slug) return
+      const localKey = `draft_${slug}_${language}`
+      const savedCode = localStorage.getItem(localKey)
       if (savedCode) {
-        setCode(savedCode)
-      } else {
+        if (!isCancelled) setCode(savedCode)
+        return
+      }
+      if (desktopService.isDesktop()) {
+        try {
+          const vaultItem = await desktopService.loadOfflineVault<{ code: string }>(
+            `code_draft_${slug}_${language}`
+          )
+          if (vaultItem?.code && !isCancelled) {
+            setCode(vaultItem.code)
+            return
+          }
+        } catch {
+          // ignore desktop vault read error
+        }
+      }
+      if (!isCancelled) {
         setCode(getInitialCodeForLanguage(language))
       }
+    }
+    void loadSavedDraft()
+    return () => {
+      isCancelled = true
     }
   }, [slug, language, getInitialCodeForLanguage])
 
@@ -512,6 +535,12 @@ export default function ProblemWorkspacePage() {
     if (!slug || code === getInitialCodeForLanguage(language)) return
     const timeoutId = setTimeout(() => {
       localStorage.setItem(`draft_${slug}_${language}`, code)
+      if (desktopService.isDesktop()) {
+        void desktopService.saveOfflineVault(`code_draft_${slug}_${language}`, {
+          code,
+          updatedAt: Date.now(),
+        })
+      }
     }, 1000)
     return () => clearTimeout(timeoutId)
   }, [code, slug, language, getInitialCodeForLanguage])
@@ -533,7 +562,11 @@ export default function ProblemWorkspacePage() {
     mutationFn: () => problemService.runCode(problem!.id, language, code),
     onSuccess: res => {
       const d = res.data
-      const isAccepted = d.status === 'AC' || d.status === 'ACCEPTED' || d.status === 'Accepted' || (d as any).short_status === 'AC'
+      const isAccepted =
+        d.status === 'AC' ||
+        d.status === 'ACCEPTED' ||
+        d.status === 'Accepted' ||
+        (d as any).short_status === 'AC'
       const lines = [
         `▶ Run (Sample Tests): ${d.status}`,
         `   Passed: ${d.passed_tests}/${d.total_tests} test cases`,
@@ -579,7 +612,11 @@ export default function ProblemWorkspacePage() {
     mutationFn: () => problemService.submitSolution(problem!.id, language, code),
     onSuccess: res => {
       const d = res.data
-      const isAccepted = d.status === 'AC' || (d.status as string) === 'ACCEPTED' || (d.status as string) === 'Accepted' || (d as any).short_status === 'AC'
+      const isAccepted =
+        d.status === 'AC' ||
+        (d.status as string) === 'ACCEPTED' ||
+        (d.status as string) === 'Accepted' ||
+        (d as any).short_status === 'AC'
       const lines = [
         `${isAccepted ? '✅' : '❌'} Submission: ${d.status}`,
         `   Passed: ${d.passed_tests}/${d.total_tests} test cases`,
@@ -623,6 +660,9 @@ export default function ProblemWorkspacePage() {
   const handleRun = useCallback(async () => {
     if (!problem) return
     setIsConsoleOpen(true)
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setMobileTab('console')
+    }
 
     if (collabRoomId) {
       sendRunTests()
@@ -728,6 +768,9 @@ export default function ProblemWorkspacePage() {
     if (!problem) return
     setOutput('⏳ Evaluating against all test cases…')
     setIsConsoleOpen(true)
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setMobileTab('console')
+    }
     submitSolutionMutation.mutate()
   }, [problem, submitSolutionMutation])
 
@@ -739,6 +782,9 @@ export default function ProblemWorkspacePage() {
     )
     setIsConsoleOpen(true)
     setConsoleTab('output')
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setMobileTab('console')
+    }
     try {
       const response = await aiTutorService.reviewCode(code, language, problem.description)
       if (response.status === 'success') {
@@ -821,7 +867,13 @@ ${review.overallFeedback}
         e.preventDefault()
         if (slug) {
           localStorage.setItem(`draft_${slug}_${language}`, code)
-          addToast({ message: 'Draft saved locally', type: 'success' })
+          if (desktopService.isDesktop()) {
+            void desktopService.saveOfflineVault(`code_draft_${slug}_${language}`, {
+              code,
+              updatedAt: Date.now(),
+            })
+          }
+          addToast({ message: 'Draft saved locally & offline vault', type: 'success' })
         }
       } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault()
@@ -1018,6 +1070,21 @@ ${review.overallFeedback}
             }`}
           >
             Code
+          </button>
+          <button
+            data-testid="mobile-tab-console"
+            onClick={() => {
+              setMobileTab('console')
+              setIsConsoleOpen(true)
+            }}
+            className={`min-h-[40px] px-3.5 py-1.5 text-xs font-bold rounded-lg transition-colors flex items-center gap-1 ${
+              mobileTab === 'console'
+                ? 'bg-primary-600 text-white shadow-sm'
+                : 'text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            <Terminal className="w-3.5 h-3.5" />
+            <span>Console</span>
           </button>
         </div>
 
@@ -1729,7 +1796,7 @@ ${review.overallFeedback}
         <div
           ref={rightPaneRef}
           className={`h-full flex flex-col min-w-0 bg-gray-950 ${
-            mobileTab === 'editor' ? 'flex w-full' : 'hidden lg:flex'
+            mobileTab === 'editor' || mobileTab === 'console' ? 'flex w-full' : 'hidden lg:flex'
           }`}
           style={{ width: undefined }}
         >
@@ -1815,7 +1882,9 @@ ${review.overallFeedback}
             {/* CodeMirror Surface */}
             <div
               ref={codeEditorRef}
-              className="min-h-0 overflow-hidden"
+              className={`min-h-0 overflow-hidden ${
+                mobileTab === 'console' ? 'hidden lg:block' : 'block'
+              }`}
               style={{
                 height: isConsoleOpen ? `${100 - consoleHeightRef.current}%` : '100%',
                 fontSize: `${fontSize}px`,
@@ -1865,8 +1934,17 @@ ${review.overallFeedback}
             {/* Console & Test Case Runner Panel */}
             <div
               ref={consolePanelRef}
-              className="bg-gray-950 flex flex-col shrink-0 border-t border-gray-800/60"
-              style={{ height: isConsoleOpen ? `${consoleHeightRef.current}%` : '36px' }}
+              className={`bg-gray-950 flex flex-col shrink-0 border-t border-gray-800/60 ${
+                mobileTab === 'console' ? 'flex-1 h-full lg:flex-none' : ''
+              }`}
+              style={{
+                height:
+                  mobileTab === 'console'
+                    ? undefined
+                    : isConsoleOpen
+                      ? `${consoleHeightRef.current}%`
+                      : '36px',
+              }}
             >
               {/* Console Header Tabs */}
               <div className="h-9 bg-gray-900/80 flex items-center justify-between px-3 shrink-0">

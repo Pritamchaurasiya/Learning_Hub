@@ -60,7 +60,14 @@ export interface SearchResponse {
 export const searchService = {
   async search(params: SearchParams): Promise<{
     data: SearchResult[]
-    meta: { total: number; page: number; limit: number; pages: number; hasNext: boolean; hasPrev?: boolean }
+    meta: {
+      total: number
+      page: number
+      limit: number
+      pages: number
+      hasNext: boolean
+      hasPrev?: boolean
+    }
   }> {
     const query = (params.q ?? params.query ?? '').trim()
     const page = Math.max(1, params.page ?? 1)
@@ -109,7 +116,10 @@ export const searchService = {
 
         if (examIds.length > 0 || testIds.length > 0) {
           usedRaw = true
-          const testIdFilter = testIds.length > 0 ? { id: { in: testIds.map((r: { id: string }) => r.id) } } : { id: '-1' }
+          const testIdFilter =
+            testIds.length > 0
+              ? { id: { in: testIds.map((r: { id: string }) => r.id) } }
+              : { id: '-1' }
           const [exams, tests, testCount] = await Promise.all([
             examIds.length > 0
               ? prisma.exam.findMany({
@@ -356,7 +366,11 @@ export const searchService = {
               title: ebook.title,
               description: ebook.description ?? '',
               url: `/ebooks/${ebook.slug}`,
-              metadata: { author: ebook.author, coverUrl: ebook.coverUrl, category: ebook.category },
+              metadata: {
+                author: ebook.author,
+                coverUrl: ebook.coverUrl,
+                category: ebook.category,
+              },
             })
           }
           total += ebookCount
@@ -450,7 +464,11 @@ export const searchService = {
     try {
       const [tests, problems, exams] = await Promise.all([
         prisma.test.findMany({
-          where: { isPublished: true, deletedAt: null, title: { contains: trimmed, mode: 'insensitive' } },
+          where: {
+            isPublished: true,
+            deletedAt: null,
+            title: { contains: trimmed, mode: 'insensitive' },
+          },
           select: { title: true },
           take: 3,
         }),
@@ -460,7 +478,11 @@ export const searchService = {
           take: 3,
         }),
         prisma.exam.findMany({
-          where: { isActive: true, deletedAt: null, name: { contains: trimmed, mode: 'insensitive' } },
+          where: {
+            isActive: true,
+            deletedAt: null,
+            name: { contains: trimmed, mode: 'insensitive' },
+          },
           select: { name: true },
           take: 3,
         }),
@@ -495,7 +517,14 @@ export const searchService = {
           where: { deletedAt: null },
           orderBy: { createdAt: 'desc' },
           take: 5,
-          select: { id: true, title: true, slug: true, description: true, category: true, difficulty: true },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            description: true,
+            category: true,
+            difficulty: true,
+          },
         }),
       ])
 
@@ -542,7 +571,7 @@ export class SearchService {
     let hash = 0
     for (let i = 0; i < text.length; i++) {
       const char = text.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash |= 0
     }
     return Math.abs(hash)
@@ -692,7 +721,7 @@ export class SearchService {
         type: 'canonical_question' as const,
         title: item.stem.substring(0, 100),
         content: item.explanation || '',
-        score: this.calculateTextScore(query, item.stem + ' ' + (item.explanation || '')),
+        score: this.calculateTextScore(query, `${item.stem} ${item.explanation || ''}`),
         metadata: {
           difficulty: item.difficulty,
           tags: item.tags,
@@ -727,7 +756,7 @@ export class SearchService {
         type: 'question' as const,
         title: item.text.substring(0, 100),
         content: item.explanation || '',
-        score: this.calculateTextScore(query, item.text + ' ' + (item.explanation || '')),
+        score: this.calculateTextScore(query, `${item.text} ${item.explanation || ''}`),
         metadata: {
           difficulty: item.difficulty,
           tags: item.tags,
@@ -763,7 +792,7 @@ export class SearchService {
         type: 'problem' as const,
         title: item.title,
         content: item.description || '',
-        score: this.calculateTextScore(query, item.title + ' ' + (item.description || '')),
+        score: this.calculateTextScore(query, `${item.title} ${item.description || ''}`),
         metadata: {
           difficulty: item.difficulty,
           tags: item.tags,
@@ -810,7 +839,7 @@ export class SearchService {
         content: item.shortDescription || item.description || '',
         score: this.calculateTextScore(
           query,
-          item.title + ' ' + (item.shortDescription || '') + ' ' + (item.description || '')
+          `${item.title} ${item.shortDescription || ''} ${item.description || ''}`
         ),
         metadata: {
           category: item.category,
@@ -826,7 +855,10 @@ export class SearchService {
   }
 
   private static calculateTextScore(query: string, text: string): number {
-    const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2)
+    const queryWords = query
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(w => w.length > 2)
     const textLower = text.toLowerCase()
     let score = 0
     for (const word of queryWords) {
@@ -874,11 +906,7 @@ export class SearchService {
     const suggestions =
       topicPerformance.length > 0
         ? topicPerformance.slice(0, 5).map((w: any) => `How to master ${w.topicName || 'Topic'}`)
-        : [
-            `How to master ${query}`,
-            `${query} practice problems`,
-            `${query} beginner guide`,
-          ]
+        : [`How to master ${query}`, `${query} practice problems`, `${query} beginner guide`]
 
     return {
       results: results.results,
@@ -935,7 +963,9 @@ export class SearchService {
     }
   }
 
-  static async getTrendingSearches(limit: number = 10): Promise<Array<{ query: string; count: number }>> {
+  static async getTrendingSearches(
+    limit: number = 10
+  ): Promise<Array<{ query: string; count: number }>> {
     if (!(prisma as any).searchAnalytics) {
       return []
     }

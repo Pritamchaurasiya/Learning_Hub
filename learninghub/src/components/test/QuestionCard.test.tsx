@@ -8,6 +8,22 @@ vi.mock('../MathRenderer', () => ({
   MathRenderer: ({ text }: { text: string }) => <div data-testid="math-renderer">{text}</div>,
 }))
 
+vi.mock('../../services/testsAService', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../services/testsAService')>()
+  return {
+    ...actual,
+    testsAService: {
+      ...actual.testsAService,
+      getPracticeHint: vi.fn().mockResolvedValue({
+        data: {
+          level: 1,
+          hint: 'Think about reducing the maximum flow problem to the Ford-Fulkerson or Edmonds-Karp algorithm.',
+        },
+      }),
+    },
+  }
+})
+
 describe('QuestionCard Component with WASM Sandbox Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -504,5 +520,37 @@ describe('QuestionCard Component with WASM Sandbox Integration', () => {
     await waitFor(() => {
       expect(screen.getByText(/Step 1 Hint/i)).toBeInTheDocument()
     })
+  })
+
+  it('passes onFlagAndAdvance handler to QuestionPaceRadar and renders correctly', () => {
+    const onFlagAndAdvance = vi.fn()
+    const question: TestQuestion = {
+      id: 'q-pace-radar-prop',
+      text: 'Sample Pace Test Question',
+      question_type: 'mcq',
+      difficulty: 0.5,
+      bloom_level: 'understand',
+      options: [],
+      order: 1,
+      marks: 2,
+    }
+
+    render(
+      <QuestionCard
+        question={question}
+        currentIndex={0}
+        totalQuestions={1}
+        selectedAnswer={null}
+        confidence="HIGH"
+        isFlagged={false}
+        onAnswer={vi.fn()}
+        onConfidenceChange={vi.fn()}
+        onFlag={vi.fn()}
+        onUnflag={vi.fn()}
+        onFlagAndAdvance={onFlagAndAdvance}
+      />
+    )
+
+    expect(screen.getByTestId('question-pace-radar')).toBeInTheDocument()
   })
 })

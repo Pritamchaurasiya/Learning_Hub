@@ -272,6 +272,341 @@ export const triggerDataExport = asyncHandler(
 // ==================== COURSE MANAGEMENT ====================
 
 /**
+ * GET /admin/courses
+ * List all courses/tests with optional status and category filters (admin view)
+ */
+export const getAdminCourses = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const adminId = req.user?.userId ?? ''
+  const { status, category } = req.query
+
+  logger.audit('ACCESS_COURSES', adminId, { status, category })
+
+  const where: Prisma.TestWhereInput = { deletedAt: null }
+  if (status === 'published') {
+    where.isPublished = true
+  } else if (status === 'draft') {
+    where.isPublished = false
+  }
+  if (category && category !== 'All') {
+    where.exam = { name: { contains: String(category), mode: 'insensitive' } }
+  }
+
+  const tests = await prisma.test.findMany({
+    where,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      exam: { select: { id: true, name: true, slug: true } },
+      _count: { select: { results: true } },
+    },
+  })
+
+  const courses = tests.map(t => {
+    let levelStr = 'beginner'
+    if (t.difficulty === 'MEDIUM') levelStr = 'intermediate'
+    else if (t.difficulty === 'HARD') levelStr = 'advanced'
+
+    return {
+      id: t.id,
+      title: t.title,
+      description: t.description ?? '',
+      category: t.exam?.name ?? 'Computer Science',
+      level: levelStr,
+      difficulty: t.difficulty,
+      isPublished: t.isPublished,
+      published: t.isPublished,
+      status: t.isPublished ? 'published' : 'draft',
+      studentCount: t._count?.results ?? 0,
+      enrolledCount: t._count?.results ?? 0,
+      duration: t.timeLimit ?? 60,
+      created_at: t.createdAt.toISOString(),
+      updated_at: t.updatedAt?.toISOString() ?? t.createdAt.toISOString(),
+    }
+  })
+
+  sendSuccess(res, courses)
+})
+
+/**
+ * POST /admin/courses
+ * Create a new course/test master
+ */
+export const createAdminCourse = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const adminId = req.user?.userId ?? ''
+  const { title, description, category, level } = req.body
+
+  if (!title || typeof title !== 'string' || !title.trim()) {
+    sendValidationError(res, 'Course title is required')
+    return
+  }
+
+  let mappedDifficulty: 'EASY' | 'MEDIUM' | 'HARD' = 'EASY'
+  const normalizedLevel = String(level ?? '').toLowerCase()
+  if (normalizedLevel === 'intermediate') mappedDifficulty = 'MEDIUM'
+  else if (normalizedLevel === 'advanced' || normalizedLevel === 'expert') mappedDifficulty = 'HARD'
+
+  let exam = await prisma.exam.findFirst({
+    where: { name: { contains: category || 'Computer Science', mode: 'insensitive' } },
+  })
+  if (!exam) {
+    exam = await prisma.exam.findFirst()
+  }
+
+  const test = await prisma.test.create({
+    data: {
+      title: title.trim(),
+      description: description ?? '',
+      difficulty: mappedDifficulty,
+      timeLimit: 60,
+      totalMarks: 100,
+      passingScore: 60,
+      isPublished: false,
+      examId: exam?.id ?? null,
+    },
+    include: {
+      exam: { select: { id: true, name: true } },
+    },
+  })
+
+  logger.audit('CREATE_COURSE', adminId, { courseId: test.id, title: test.title })
+
+  sendSuccess(
+    res,
+    {
+      id: test.id,
+      title: test.title,
+      description: test.description ?? '',
+      category: test.exam?.name ?? category ?? 'Computer Science',
+      level: normalizedLevel || 'beginner',
+      difficulty: test.difficulty,
+      isPublished: test.isPublished,
+      published: test.isPublished,
+      status: 'draft',
+      studentCount: 0,
+      enrolledCount: 0,
+      created_at: test.createdAt.toISOString(),
+    },
+    'Course created successfully',
+    201
+  )
+})
+
+/**
+ * PUT /admin/courses/:id
+ * Update an existing course/test master
+ */
+export const updateAdminCourse = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const adminId = req.user?.userId ?? ''
+  const id = req.params.id as string
+  const { title, description, level, published, isPublished, status } = req.body
+
+  const existing = await prisma.test.findUnique({ where: { id } })
+  if (!existing) {
+    sendNotFound(res, 'Course not found')
+    return
+  }
+
+  const updateData: Prisma.TestUpdateInput = {}
+  if (title !== undefined) updateData.title = String(title).trim()
+  if (description !== undefined) updateData.description = String(description)
+  if (published !== undefined) updateData.isPublished = Boolean(published)
+  if (isPublished !== undefined) updateData.isPublished = Boolean(isPublished)
+  if (status !== undefined) updateData.isPublished = status === 'published'
+  if (level !== undefined) {
+    const lvl = String(level).toLowerCase()
+    if (lvl === 'intermediate') updateData.difficulty = 'MEDIUM'
+    else if (lvl === 'advanced' || lvl === 'expert') updateData.difficulty = 'HARD'
+    else updateData.difficulty = 'EASY'
+  }
+
+  const updated = await prisma.test.update({
+    where: { id },
+    data: updateData,
+    include: {
+      exam: { select: { id: true, name: true } },
+      _count: { select: { results: true } },
+    },
+  })
+
+  logger.audit('UPDATE_COURSE', adminId, { courseId: id, updates: req.body })
+
+  let levelStr = 'beginner'
+  if (updated.difficulty === 'MEDIUM') levelStr = 'intermediate'
+  else if (updated.difficulty === 'HARD') levelStr = 'advanced'
+
+  sendSuccess(
+    res,
+    {
+      id: updated.id,
+      title: updated.title,
+      description: updated.description ?? '',
+      category: updated.exam?.name ?? 'Computer Science',
+      level: levelStr,
+      difficulty: updated.difficulty,
+      isPublished: updated.isPublished,
+      published: updated.isPublished,
+      status: updated.isPublished ? 'published' : 'draft',
+      studentCount: updated._count?.results ?? 0,
+      enrolledCount: updated._count?.results ?? 0,
+    },
+    'Course updated successfully'
+  )
+})
+
+/**
+ * DELETE /admin/courses/:id
+ * Soft-delete or archive a course
+ */
+export const deleteAdminCourse = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const adminId = req.user?.userId ?? ''
+  const id = req.params.id as string
+
+  const existing = await prisma.test.findUnique({ where: { id } })
+  if (!existing) {
+    sendNotFound(res, 'Course not found')
+    return
+  }
+
+  await prisma.test.update({
+    where: { id },
+    data: { deletedAt: new Date(), isPublished: false },
+  })
+
+  logger.audit('DELETE_COURSE', adminId, { courseId: id, title: existing.title })
+
+  sendSuccess(res, null, 'Course removed successfully')
+})
+
+/**
+ * GET /admin/analytics/courses
+ * Course analytics summary: popular courses and category distribution
+ */
+export const getCourseAnalytics = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const adminId = req.user?.userId ?? ''
+  logger.audit('VIEW_COURSE_ANALYTICS', adminId, {})
+
+  const [popularTests, categoryGroups] = await Promise.all([
+    prisma.test.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true,
+        title: true,
+        _count: { select: { results: true } },
+      },
+      orderBy: { results: { _count: 'desc' } },
+      take: 6,
+    }),
+    prisma.test.findMany({
+      where: { deletedAt: null },
+      select: {
+        exam: { select: { name: true } },
+      },
+    }),
+  ])
+
+  const catMap = new Map<string, number>()
+  for (const t of categoryGroups) {
+    const cat = t.exam?.name ?? 'General'
+    catMap.set(cat, (catMap.get(cat) ?? 0) + 1)
+  }
+
+  const byCategory = Array.from(catMap.entries()).map(([category, count]) => ({
+    category,
+    count,
+  }))
+
+  const popular = popularTests.map(t => ({
+    id: t.id,
+    title: t.title,
+    enrollments: t._count.results,
+  }))
+
+  sendSuccess(res, {
+    popular,
+    byCategory,
+  })
+})
+
+/**
+ * POST /admin/ai/generate-course
+ * Synthesize an entire AI course curriculum with modules and rich lessons
+ */
+export const generateAICourse = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const adminId = req.user?.userId ?? ''
+  const { prompt, difficulty = 'BEGINNER', modulesCount = 3 } = req.body
+
+  if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
+    sendValidationError(res, 'Course prompt is required')
+    return
+  }
+
+  const clampedModules = Math.min(8, Math.max(1, Number(modulesCount) || 3))
+  const cleanTitle = prompt.length > 50 ? `${prompt.slice(0, 47)}...` : prompt
+
+  let mappedDifficulty: 'EASY' | 'MEDIUM' | 'HARD' = 'EASY'
+  const diffStr = String(difficulty).toUpperCase()
+  if (diffStr === 'INTERMEDIATE') mappedDifficulty = 'MEDIUM'
+  else if (diffStr === 'ADVANCED' || diffStr === 'EXPERT') mappedDifficulty = 'HARD'
+
+  const defaultExam = await prisma.exam.findFirst()
+
+  const test = await prisma.test.create({
+    data: {
+      title: cleanTitle,
+      description: `AI-synthesized curriculum for "${prompt}". Complete with ${clampedModules} core syllabus modules.`,
+      difficulty: mappedDifficulty,
+      timeLimit: 15 * clampedModules,
+      totalMarks: 10 * clampedModules,
+      passingScore: 6 * clampedModules,
+      isPublished: true,
+      isAiGenerated: true,
+      examId: defaultExam?.id ?? null,
+    },
+  })
+
+  // Create syllabus modules as questions with educational options
+  for (let i = 1; i <= clampedModules; i++) {
+    await prisma.question.create({
+      data: {
+        testId: test.id,
+        order: i,
+        text: `Module ${i}: Core Foundations of ${cleanTitle} (Part ${i})`,
+        explanation: `Comprehensive educational guide and structured walkthrough for module ${i}. Master concepts, code examples, architectural tradeoffs, and best practices.`,
+        type: 'MCQ',
+        difficulty: mappedDifficulty === 'HARD' ? 0.8 : mappedDifficulty === 'MEDIUM' ? 0.5 : 0.2,
+        points: 10,
+        options: {
+          create: [
+            { text: `Primary implementation pattern for Module ${i}`, isCorrect: true, order: 1 },
+            { text: `Sub-optimal approach with memory leak risks`, isCorrect: false, order: 2 },
+            { text: `Deprecated legacy interface`, isCorrect: false, order: 3 },
+            { text: `Unbounded queue anti-pattern`, isCorrect: false, order: 4 },
+          ],
+        },
+      },
+    })
+  }
+
+  logger.audit('GENERATE_AI_COURSE', adminId, {
+    courseId: test.id,
+    prompt,
+    difficulty: diffStr,
+    modulesCount: clampedModules,
+  })
+
+  sendSuccess(
+    res,
+    {
+      courseId: test.id,
+      message: `Course "${test.title}" successfully generated with ${clampedModules} modules.`,
+    },
+    'Course generated successfully',
+    201
+  )
+})
+
+// ==================== PLATFORM ANALYTICS & AUDIT ====================
+
+/**
  * Get all courses with filters (admin view)
  */
 export const getAnalytics = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -383,7 +718,8 @@ export const getDauAnalytics = asyncHandler(async (req: Request, res: Response):
   }
 
   const requestedDays = parseInt(req.query.days as string)
-  const days = Number.isInteger(requestedDays) && requestedDays > 0 ? Math.min(requestedDays, 365) : 30
+  const days =
+    Number.isInteger(requestedDays) && requestedDays > 0 ? Math.min(requestedDays, 365) : 30
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days)
 

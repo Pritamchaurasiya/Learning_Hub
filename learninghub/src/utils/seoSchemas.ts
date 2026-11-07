@@ -35,9 +35,10 @@ export interface PricingTierSchemaInput {
   features?: string[]
 }
 
-const BASE_URL = typeof window !== 'undefined' && window.location.origin
-  ? window.location.origin
-  : 'https://learninghub.app'
+const BASE_URL =
+  typeof window !== 'undefined' && window.location.origin
+    ? window.location.origin
+    : 'https://learninghub.app'
 
 /**
  * EducationalOrganization Knowledge Graph schema for company branding
@@ -99,7 +100,9 @@ export function getWebSiteSchema() {
  * Course Schema with syllabus, instructor, price, and aggregate rating
  */
 export function getCourseSchema(course: CourseSchemaInput) {
-  const courseUrl = course.slug ? `${BASE_URL}/course/${course.slug}` : `${BASE_URL}/course/${course.id || ''}`
+  const courseUrl = course.slug
+    ? `${BASE_URL}/course/${course.slug}`
+    : `${BASE_URL}/course/${course.id || ''}`
   return {
     '@context': 'https://schema.org',
     '@type': 'Course',
@@ -203,38 +206,39 @@ export function getBreadcrumbSchema(items: BreadcrumbItem[]) {
  * Product & AggregateOffer Schema for Pricing & Plans
  */
 export function getProductSchema(tiers?: PricingTierSchemaInput[]) {
-  const offers = (tiers && tiers.length > 0)
-    ? tiers.map(t => ({
-        '@type': 'Offer',
-        name: t.name,
-        price: String(t.price),
-        priceCurrency: t.currency || 'USD',
-        availability: 'https://schema.org/InStock',
-        description: t.description || `LearningHub ${t.name} Membership`,
-      }))
-    : [
-        {
+  const offers =
+    tiers && tiers.length > 0
+      ? tiers.map(t => ({
           '@type': 'Offer',
-          name: 'Free Tier',
-          price: '0',
-          priceCurrency: 'USD',
+          name: t.name,
+          price: String(t.price),
+          priceCurrency: t.currency || 'USD',
           availability: 'https://schema.org/InStock',
-        },
-        {
-          '@type': 'Offer',
-          name: 'Pro Plan',
-          price: '19',
-          priceCurrency: 'USD',
-          availability: 'https://schema.org/InStock',
-        },
-        {
-          '@type': 'Offer',
-          name: 'Tests A+ Elite',
-          price: '49',
-          priceCurrency: 'USD',
-          availability: 'https://schema.org/InStock',
-        },
-      ]
+          description: t.description || `LearningHub ${t.name} Membership`,
+        }))
+      : [
+          {
+            '@type': 'Offer',
+            name: 'Free Tier',
+            price: '0',
+            priceCurrency: 'USD',
+            availability: 'https://schema.org/InStock',
+          },
+          {
+            '@type': 'Offer',
+            name: 'Pro Plan',
+            price: '19',
+            priceCurrency: 'USD',
+            availability: 'https://schema.org/InStock',
+          },
+          {
+            '@type': 'Offer',
+            name: 'Tests A+ Elite',
+            price: '49',
+            priceCurrency: 'USD',
+            availability: 'https://schema.org/InStock',
+          },
+        ]
 
   return {
     '@context': 'https://schema.org',

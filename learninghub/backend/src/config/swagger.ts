@@ -68,10 +68,13 @@ const mergedSpec: any = {
     ...(autoSpec.components || {}),
     ...(manualSpec.components || {}),
     schemas: { ...(autoSpec.components?.schemas || {}), ...(manualSpec.components?.schemas || {}) },
-    securitySchemes: { ...(autoSpec.components?.securitySchemes || {}), ...(manualSpec.components?.securitySchemes || {}) },
+    securitySchemes: {
+      ...(autoSpec.components?.securitySchemes || {}),
+      ...(manualSpec.components?.securitySchemes || {}),
+    },
   },
-  tags: [...(autoSpec.tags || []), ...(manualSpec.tags || [])].filter((t: any, i: number, arr: any[]) => 
-    arr.findIndex(x => x.name === t.name) === i
+  tags: [...(autoSpec.tags || []), ...(manualSpec.tags || [])].filter(
+    (t: any, i: number, arr: any[]) => arr.findIndex(x => x.name === t.name) === i
   ),
 }
 

@@ -593,7 +593,9 @@ export default function AITutorPage() {
           <Bot className="w-10 h-10 text-primary-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
         </div>
         <div className="text-center">
-          <p className="font-black text-xl tracking-tight uppercase">Connecting to Mentorship Workspace</p>
+          <p className="font-black text-xl tracking-tight uppercase">
+            Connecting to Mentorship Workspace
+          </p>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest animate-pulse mt-1">
             Retrieving curriculum syllabus and session history...
           </p>
@@ -1055,7 +1057,8 @@ export default function AITutorPage() {
                 </div>
               </div>
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-center mt-5 opacity-60">
-                Academic Advisory: Mentorship guidance is designed to foster derivation and first-principles reasoning. Always verify complex proofs.
+                Academic Advisory: Mentorship guidance is designed to foster derivation and
+                first-principles reasoning. Always verify complex proofs.
               </p>
             </div>
           </Card>

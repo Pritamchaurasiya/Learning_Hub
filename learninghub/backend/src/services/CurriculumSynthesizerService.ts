@@ -2,11 +2,7 @@ import crypto from 'crypto'
 import logger from '../utils/logger'
 
 export type TargetExam =
-  | 'JEE_ADVANCED'
-  | 'GATE_CS'
-  | 'SYSTEM_DESIGN_DSA'
-  | 'SAT_DIGITAL'
-  | 'FULL_STACK_DEV'
+  'JEE_ADVANCED' | 'GATE_CS' | 'SYSTEM_DESIGN_DSA' | 'SAT_DIGITAL' | 'FULL_STACK_DEV'
 
 export type PacingMode = 'INTENSIVE' | 'BALANCED' | 'STEADY'
 
@@ -97,7 +93,8 @@ const EXAM_TEMPLATES: Record<TargetExam, { title: string; domains: SyllabusDomai
         modules: [
           {
             title: 'Asymptotic Complexity, Divide & Conquer and Recurrences',
-            description: 'Master Master Theorem, Akra-Bazzi method, recursive tree expansions and optimal sorting.',
+            description:
+              'Master Master Theorem, Akra-Bazzi method, recursive tree expansions and optimal sorting.',
             concepts: [
               {
                 name: 'Master Theorem for Divide-and-Conquer Recurrences',
@@ -121,7 +118,8 @@ const EXAM_TEMPLATES: Record<TargetExam, { title: string; domains: SyllabusDomai
           },
           {
             title: 'Graph Algorithms: Shortest Paths, MST & Network Flow',
-            description: 'Dijkstra, Bellman-Ford, Floyd-Warshall, Kruskal, Prim and topological sorting.',
+            description:
+              'Dijkstra, Bellman-Ford, Floyd-Warshall, Kruskal, Prim and topological sorting.',
             concepts: [
               {
                 name: "Dijkstra's Algorithm with Min-Heap Invariant",
@@ -146,17 +144,20 @@ const EXAM_TEMPLATES: Record<TargetExam, { title: string; domains: SyllabusDomai
         modules: [
           {
             title: 'Operating Systems: Process Scheduling & Concurrency',
-            description: 'CPU scheduling algorithms, semaphores, mutexes, and deadlock prevention bankers algorithm.',
+            description:
+              'CPU scheduling algorithms, semaphores, mutexes, and deadlock prevention bankers algorithm.',
             concepts: [
               {
                 name: 'Turnaround & Waiting Time in Preemptive Scheduling',
                 estimatedMinutes: 80,
-                formulaLatex: '\\text{TAT} = \\text{Completion Time} - \\text{Arrival Time}, \\quad \\text{WT} = \\text{TAT} - \\text{Burst Time}',
+                formulaLatex:
+                  '\\text{TAT} = \\text{Completion Time} - \\text{Arrival Time}, \\quad \\text{WT} = \\text{TAT} - \\text{Burst Time}',
               },
               {
                 name: "Banker's Deadlock Avoidance Safety Algorithm",
                 estimatedMinutes: 85,
-                formulaLatex: '\\text{Need}[i][j] = \\text{Max}[i][j] - \\text{Allocation}[i][j] \\le \\text{Available}[j]',
+                formulaLatex:
+                  '\\text{Need}[i][j] = \\text{Max}[i][j] - \\text{Allocation}[i][j] \\le \\text{Available}[j]',
               },
             ],
             practiceSlugs: ['process-sync-quiz'],
@@ -177,7 +178,8 @@ const EXAM_TEMPLATES: Record<TargetExam, { title: string; domains: SyllabusDomai
         modules: [
           {
             title: 'Dynamic Programming: Knapsack, Interval & Tree DP',
-            description: 'State space reduction, memoization patterns, and space optimization techniques.',
+            description:
+              'State space reduction, memoization patterns, and space optimization techniques.',
             concepts: [
               {
                 name: '0/1 Knapsack Optimal Substructure & Space Compression',
@@ -202,7 +204,8 @@ const EXAM_TEMPLATES: Record<TargetExam, { title: string; domains: SyllabusDomai
         modules: [
           {
             title: 'Distributed Storage: Consistent Hashing & Quorums',
-            description: 'Consistent hashing with virtual nodes, CAP theorem trade-offs, and Dynamo-style quorums.',
+            description:
+              'Consistent hashing with virtual nodes, CAP theorem trade-offs, and Dynamo-style quorums.',
             concepts: [
               {
                 name: 'Consistent Hashing Ring & Virtual Node Partitioning',
@@ -212,7 +215,11 @@ const EXAM_TEMPLATES: Record<TargetExam, { title: string; domains: SyllabusDomai
             ],
             practiceSlugs: ['distributed-cache-design'],
             resourceLinks: [
-              { type: 'ebook', title: 'Distributed Systems Patterns Volume 2', url: '/library?tab=ebooks' },
+              {
+                type: 'ebook',
+                title: 'Distributed Systems Patterns Volume 2',
+                url: '/library?tab=ebooks',
+              },
               { type: 'flashcard', title: 'System Design Architecture Deck', url: '/revision' },
             ],
           },
@@ -228,7 +235,8 @@ const EXAM_TEMPLATES: Record<TargetExam, { title: string; domains: SyllabusDomai
         modules: [
           {
             title: 'Rotational Dynamics & Conservation of Angular Momentum',
-            description: 'Moment of inertia tensors, rolling without slipping, and angular impulse theorems.',
+            description:
+              'Moment of inertia tensors, rolling without slipping, and angular impulse theorems.',
             concepts: [
               {
                 name: 'Parallel Axis Theorem & Rolling Constraints',
@@ -254,7 +262,8 @@ const EXAM_TEMPLATES: Record<TargetExam, { title: string; domains: SyllabusDomai
         modules: [
           {
             title: 'Non-linear Equations, Parabolas & Discriminant Analysis',
-            description: 'Quadratic function roots, vertex optimizations, and exponential growth models.',
+            description:
+              'Quadratic function roots, vertex optimizations, and exponential growth models.',
             concepts: [
               {
                 name: 'Quadratic Discriminant Nature of Roots',
@@ -280,7 +289,8 @@ const EXAM_TEMPLATES: Record<TargetExam, { title: string; domains: SyllabusDomai
         modules: [
           {
             title: 'React Concurrent Mode, Fiber Architecture & State Stores',
-            description: 'Fiber tree reconciler, hooks lifecycle, Redux / Zustand store memoization.',
+            description:
+              'Fiber tree reconciler, hooks lifecycle, Redux / Zustand store memoization.',
             concepts: [
               {
                 name: 'React Fiber Workloop & Time Slicing',
@@ -293,7 +303,11 @@ const EXAM_TEMPLATES: Record<TargetExam, { title: string; domains: SyllabusDomai
             ],
             practiceSlugs: ['react-state-architecture'],
             resourceLinks: [
-              { type: 'ebook', title: 'Modern React & TypeScript Patterns', url: '/library?tab=ebooks' },
+              {
+                type: 'ebook',
+                title: 'Modern React & TypeScript Patterns',
+                url: '/library?tab=ebooks',
+              },
             ],
           },
         ],

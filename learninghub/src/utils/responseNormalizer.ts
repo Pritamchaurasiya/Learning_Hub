@@ -1,9 +1,9 @@
 /**
  * API Response Normalizer
- * 
+ *
  * Standardizes all API responses to a consistent format:
  * { status: 'success' | 'error', data: T, message?: string, code?: string, meta?: Record<string, unknown> }
- * 
+ *
  * Handles various backend response formats:
  * - { status: 'success', data: T }
  * - { status: 'success', data: { results: T[] } }
@@ -26,7 +26,10 @@ function isStandardResponse(response: unknown): response is ApiResponse {
 /**
  * Normalize a response to standard format
  */
-export function normalizeResponse<T = unknown>(response: unknown, _endpoint?: string): ApiResponse<T> {
+export function normalizeResponse<T = unknown>(
+  response: unknown,
+  _endpoint?: string
+): ApiResponse<T> {
   // Already standard format
   if (isStandardResponse(response)) {
     return response as ApiResponse<T>
@@ -48,7 +51,7 @@ export function normalizeResponse<T = unknown>(response: unknown, _endpoint?: st
     const data = obj.data as Record<string, unknown>
     if (Array.isArray(data.results)) {
       return {
-        status: (obj.status === 'error' ? 'error' : 'success'),
+        status: obj.status === 'error' ? 'error' : 'success',
         data: data.results as unknown as T,
         message: obj.message as string,
         code: obj.code as string,
@@ -62,7 +65,7 @@ export function normalizeResponse<T = unknown>(response: unknown, _endpoint?: st
     // Handle { data: { data: [...] } } - nested data
     if (Array.isArray(data.data)) {
       return {
-        status: (obj.status === 'error' ? 'error' : 'success'),
+        status: obj.status === 'error' ? 'error' : 'success',
         data: data.data as unknown as T,
         message: obj.message as string,
         code: obj.code as string,
@@ -109,7 +112,10 @@ export function normalizeResponse<T = unknown>(response: unknown, _endpoint?: st
 /**
  * Normalize error response to standard format
  */
-export function normalizeErrorResponse(error: unknown, defaultMessage = 'An error occurred'): ApiResponse {
+export function normalizeErrorResponse(
+  error: unknown,
+  defaultMessage = 'An error occurred'
+): ApiResponse {
   if (error instanceof Response) {
     // Fetch Response object
     return {
@@ -131,10 +137,15 @@ export function normalizeErrorResponse(error: unknown, defaultMessage = 'An erro
 
   if (error && typeof error === 'object') {
     const obj = error as Record<string, unknown>
-    const errObj = (obj.error && typeof obj.error === 'object') ? (obj.error as Record<string, unknown>) : null
+    const errObj =
+      obj.error && typeof obj.error === 'object' ? (obj.error as Record<string, unknown>) : null
     return {
       status: 'error',
-      message: (obj.message as string) || (obj.detail as string) || (obj.error as string) || defaultMessage,
+      message:
+        (obj.message as string) ||
+        (obj.detail as string) ||
+        (obj.error as string) ||
+        defaultMessage,
       data: null as unknown as unknown,
       code: (obj.code as string) || (errObj?.code as string),
     }

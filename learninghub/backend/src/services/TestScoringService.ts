@@ -12,6 +12,29 @@ import { webSocketService } from './WebSocketService'
 import { IRTScoringEngine } from './IRTScoringEngine'
 import { testSubmissionsTotal, testScoreHistogram } from '../utils/metrics'
 
+/**
+ * Safely extracts a discrete numerical value from a candidate string or option text.
+ * Prevents regex-concatenation bugs (e.g. "Step 1: 4" becoming 14) and supports negative & floating point values.
+ */
+function extractNumericalValue(raw: string | number | undefined | null): number | null {
+  if (raw === undefined || raw === null) return null
+  if (typeof raw === 'number') return isNaN(raw) ? null : raw
+  const trimmed = String(raw).trim()
+  if (!trimmed) return null
+
+  // 1. Exact numeric string parse
+  const directNum = Number(trimmed)
+  if (!isNaN(directNum)) return directNum
+
+  // 2. Coherent signed integer, decimal, or scientific notation match
+  const match = trimmed.match(/[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?/)
+  if (match) {
+    const parsed = parseFloat(match[0])
+    return isNaN(parsed) ? null : parsed
+  }
+  return null
+}
+
 export class TestScoringService {
   /**
    * Evaluates and scores a completed test attempt, updating analytics and returning the result.
@@ -158,9 +181,12 @@ export class TestScoringService {
           }
         }
 
-        const isGateExam = (test as any).markingScheme && ((test as any).markingScheme as any).examType === 'GATE'
+        const isGateExam =
+          (test as any).markingScheme && ((test as any).markingScheme as any).examType === 'GATE'
         const qTypeUpper = String(q.type).toUpperCase()
-        const isZeroNegative = isGateExam && (qTypeUpper === 'MSQ' || qTypeUpper === 'MULTIPLE_SELECT' || qTypeUpper === 'NUMERICAL')
+        const isZeroNegative =
+          isGateExam &&
+          (qTypeUpper === 'MSQ' || qTypeUpper === 'MULTIPLE_SELECT' || qTypeUpper === 'NUMERICAL')
         const currentNegativePenalty = isZeroNegative ? 0 : Math.abs(test.negativeMarks ?? 0)
 
         let isCorrect: boolean | null = false
@@ -181,11 +207,26 @@ export class TestScoringService {
             const rawUserStr = Array.isArray(userAnswerId)
               ? userAnswerId[0]
               : String(userAnswerId ?? '').trim()
-            const userNum = parseFloat(rawUserStr)
-            const targetStr = correctOptions[0]?.text ?? q.explanation ?? ''
-            const targetNum = parseFloat(targetStr.replace(/[^0-9.-]/g, ''))
+            const userNum = extractNumericalValue(rawUserStr)
 
-            if (!isNaN(userNum) && !isNaN(targetNum)) {
+            let targetNum: number | null = null
+            const correctOptText =
+              correctOptions.find((o: any) => o.isCorrect)?.text ?? correctOptions[0]?.text
+            if (correctOptText !== undefined && correctOptText !== null) {
+              targetNum = extractNumericalValue(correctOptText)
+            } else if (q.explanation) {
+              // Try to find targeted "answer: X", "x = X", or "= X" in explanation
+              const explMatch = q.explanation.match(
+                /(?:answer|value(?: of [a-zA-Z]+)?|result|hence|is)\s*(?:=|is|:)\s*([-+]?(?:\d*\.\d+|\d+))/i
+              )
+              if (explMatch) {
+                targetNum = extractNumericalValue(explMatch[1])
+              } else {
+                targetNum = extractNumericalValue(q.explanation)
+              }
+            }
+
+            if (userNum !== null && targetNum !== null && !isNaN(userNum) && !isNaN(targetNum)) {
               const tolerance = Math.max(0.001, Math.abs(targetNum) * 0.01)
               isCorrect = Math.abs(userNum - targetNum) <= tolerance
             } else {
@@ -285,8 +326,12 @@ export class TestScoringService {
       for (const sec of test.sections) {
         const secQuestions = test.questions.filter((q: any) => q.sectionId === sec.id)
         if (sec.maxQuestionsToAttempt && sec.maxQuestionsToAttempt < secQuestions.length) {
-          const sortedPts = secQuestions.map((q: any) => q.points).sort((a: number, b: number) => b - a)
-          totalPossibleScore += sortedPts.slice(0, sec.maxQuestionsToAttempt).reduce((a: number, b: number) => a + b, 0)
+          const sortedPts = secQuestions
+            .map((q: any) => q.points)
+            .sort((a: number, b: number) => b - a)
+          totalPossibleScore += sortedPts
+            .slice(0, sec.maxQuestionsToAttempt)
+            .reduce((a: number, b: number) => a + b, 0)
         } else {
           totalPossibleScore += secQuestions.reduce((acc: number, q: any) => acc + q.points, 0)
         }
@@ -303,124 +348,137 @@ export class TestScoringService {
     const percentage = totalPossibleScore > 0 ? (score / totalPossibleScore) * 100 : 0
     const passed = percentage >= test.passingScore
 
-    const result = await prisma.$transaction(async (tx: any) => {
-      let txExistingResult = null
-      if (existingResult?.id) {
-        txExistingResult = await tx.testResult.findUnique({
-          where: { id: existingResult.id },
-        })
-      }
-
-      if (txExistingResult && isTerminalStatus(txExistingResult.status)) {
-        // Attempt is already in a terminal state — treat as idempotent duplicate
-        return {
-          isDuplicate: true,
-          result: txExistingResult,
-          correctCount: 0,
-          incorrectCount: 0,
-          questionResults: [],
+    const result = await prisma.$transaction(
+      async (tx: any) => {
+        let txExistingResult = null
+        if (existingResult?.id) {
+          txExistingResult = await tx.testResult.findUnique({
+            where: { id: existingResult.id },
+          })
         }
-      }
 
-      // Validate the state transition before proceeding
-      if (txExistingResult) {
-        assertValidTransition(txExistingResult.id, txExistingResult.status, finalStatus)
-      }
-
-      const submissionData = {
-        score,
-        totalPoints: totalPossibleScore,
-        percentage,
-        passed,
-        timeTaken: actualTimeTaken,
-        completedAt: new Date(),
-        status: finalStatus,
-      }
-
-      let resultRecord: any
-      if (txExistingResult) {
-        resultRecord = await tx.testResult.update({
-          where: { id: txExistingResult.id },
-          data: submissionData,
-        })
-      } else {
-        const maxAttempt = await tx.testResult.findFirst({
-          where: { userId, testId },
-          orderBy: { attemptNumber: 'desc' },
-          select: { attemptNumber: true },
-        })
-        const currentAttemptNumber = maxAttempt?.attemptNumber ?? 0
-        const maxAttempts = test.maxAttempts ?? parseInt(process.env.MAX_TEST_ATTEMPTS ?? '3', 10)
-        if (currentAttemptNumber >= maxAttempts) {
-          // No in-progress attempt exists and the user has exhausted their attempts.
-          // Refuse to silently create a new attempt, which would bypass the limit enforced in startTest.
-          throw new Error('MAX_ATTEMPTS_REACHED')
-        }
-        let attemptNumber = currentAttemptNumber + 1
-
-        // Retry on unique constraint violation (attemptNumber race condition)
-        for (let attempt = 1; attempt <= 3; attempt++) {
-          try {
-            resultRecord = await tx.testResult.create({
-              data: { userId, testId, ...submissionData, attemptNumber },
-            })
-            break
-          } catch (error) {
-            const err = error as Error & { code?: string }
-            if ((err.code === 'P2002' || err.message?.includes('P2002')) && attempt < 3) {
-              attemptNumber++
-              continue
-            }
-            throw error
+        if (txExistingResult && isTerminalStatus(txExistingResult.status)) {
+          // Attempt is already in a terminal state — treat as idempotent duplicate
+          return {
+            isDuplicate: true,
+            result: txExistingResult,
+            correctCount: 0,
+            incorrectCount: 0,
+            questionResults: [],
           }
         }
-      }
 
-      // Sort questionResults by question_id to prevent PostgreSQL transaction deadlocks,
-      // then batch upsert in chunks to reduce round-trips while maintaining ordering safety.
-      const sortedResults = [...questionResults].sort((a, b) =>
-        a.question_id.localeCompare(b.question_id)
-      )
-      const CHUNK_SIZE = 10
+        // Validate the state transition before proceeding
+        if (txExistingResult) {
+          assertValidTransition(txExistingResult.id, txExistingResult.status, finalStatus)
+        }
 
-      for (let i = 0; i < sortedResults.length; i += CHUNK_SIZE) {
-        const chunk = sortedResults.slice(i, i + CHUNK_SIZE)
-        await Promise.all(
-          chunk.map(qr =>
-            tx.testAttemptAnswer.upsert({
+        const submissionData = {
+          score,
+          totalPoints: totalPossibleScore,
+          percentage,
+          passed,
+          timeTaken: actualTimeTaken,
+          completedAt: new Date(),
+          status: finalStatus,
+        }
+
+        let resultRecord: any
+        if (txExistingResult) {
+          resultRecord = await tx.testResult.update({
+            where: { id: txExistingResult.id },
+            data: submissionData,
+          })
+        } else {
+          const maxAttempt = await tx.testResult.findFirst({
+            where: { userId, testId },
+            orderBy: { attemptNumber: 'desc' },
+            select: { attemptNumber: true },
+          })
+          const currentAttemptNumber = maxAttempt?.attemptNumber ?? 0
+          const maxAttempts = test.maxAttempts ?? parseInt(process.env.MAX_TEST_ATTEMPTS ?? '3', 10)
+          if (currentAttemptNumber >= maxAttempts) {
+            // No in-progress attempt exists and the user has exhausted their attempts.
+            // Refuse to silently create a new attempt, which would bypass the limit enforced in startTest.
+            throw new Error('MAX_ATTEMPTS_REACHED')
+          }
+          let attemptNumber = currentAttemptNumber + 1
+
+          // Retry on unique constraint violation (attemptNumber race condition)
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+              resultRecord = await tx.testResult.create({
+                data: { userId, testId, ...submissionData, attemptNumber },
+              })
+              break
+            } catch (error) {
+              const err = error as Error & { code?: string }
+              if ((err.code === 'P2002' || err.message?.includes('P2002')) && attempt < 3) {
+                attemptNumber++
+                continue
+              }
+              throw error
+            }
+          }
+        }
+
+        // Sort questionResults by question_id to prevent PostgreSQL transaction deadlocks,
+        // then batch delete + createMany to eliminate N-query transaction latency over cloud DB connections.
+        const sortedResults = [...questionResults].sort((a, b) =>
+          a.question_id.localeCompare(b.question_id)
+        )
+        const questionIds = sortedResults.map(qr => qr.question_id)
+
+        if (questionIds.length > 0 && tx.testAttemptAnswer) {
+          if (typeof tx.testAttemptAnswer.deleteMany === 'function') {
+            await tx.testAttemptAnswer.deleteMany({
               where: {
-                testResultId_questionId: {
-                  testResultId: resultRecord.id,
-                  questionId: qr.question_id,
-                },
-              },
-              update: {
-                selectedOptions: qr.selected_options.map((o: any) => o.id),
-                textAnswer:
-                  qr.question_type === 'SUBJECTIVE' ? String(answers[qr.question_id] ?? '') : null,
-                isCorrect: qr.is_correct,
-                marksObtained: qr.marks_obtained,
-                timeSpent: qr.time_spent,
-                aiFeedback: qr.explanation,
-              },
-              create: {
                 testResultId: resultRecord.id,
-                questionId: qr.question_id,
-                selectedOptions: qr.selected_options.map((o: any) => o.id),
-                textAnswer:
-                  qr.question_type === 'SUBJECTIVE' ? String(answers[qr.question_id] ?? '') : null,
-                isCorrect: qr.is_correct,
-                marksObtained: qr.marks_obtained,
-                timeSpent: qr.time_spent,
-                aiFeedback: qr.explanation,
+                questionId: { in: questionIds },
               },
             })
-          )
-        )
-      }
+          }
 
-      return { isDuplicate: false, result: resultRecord }
-    })
+          const answersData = sortedResults.map(qr => ({
+            testResultId: resultRecord.id,
+            questionId: qr.question_id,
+            selectedOptions: qr.selected_options.map((o: any) => o.id),
+            textAnswer:
+              qr.question_type === 'SUBJECTIVE' ? String(answers[qr.question_id] ?? '') : null,
+            confidence: confidences?.[qr.question_id] ? String(confidences[qr.question_id]) : null,
+            isCorrect: qr.is_correct,
+            marksObtained: qr.marks_obtained,
+            timeSpent: qr.time_spent ?? 0,
+            aiFeedback: qr.explanation ?? null,
+          }))
+
+          if (typeof tx.testAttemptAnswer.createMany === 'function') {
+            await tx.testAttemptAnswer.createMany({
+              data: answersData,
+            })
+          } else if (typeof tx.testAttemptAnswer.upsert === 'function') {
+            for (const item of answersData) {
+              await tx.testAttemptAnswer.upsert({
+                where: {
+                  testResultId_questionId: {
+                    testResultId: item.testResultId,
+                    questionId: item.questionId,
+                  },
+                },
+                create: item,
+                update: item,
+              })
+            }
+          }
+        }
+
+        return { isDuplicate: false, result: resultRecord }
+      },
+      {
+        maxWait: 15000,
+        timeout: 30000,
+      }
+    )
 
     const newResult = result.isDuplicate ? undefined : result.result
     if (newResult) {
@@ -500,7 +558,11 @@ export class TestScoringService {
       questions: Array<{ id: string; tags: string[]; points: number; difficulty?: number }>
     },
     testResultId: string,
-    questionResults: Array<{ question_id: string; is_correct?: boolean | null; time_spent?: number }>,
+    questionResults: Array<{
+      question_id: string
+      is_correct?: boolean | null
+      time_spent?: number
+    }>,
     passed: boolean,
     timeTakenSeconds: number,
     score: number

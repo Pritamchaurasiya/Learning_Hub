@@ -135,7 +135,9 @@ export const UpdateFilterBar: React.FC<UpdateFilterBarProps> = ({
       {/* Horizontal Category Chips */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
         {CATEGORIES.map(cat => {
-          const isSelected = currentCategory === cat.id || (cat.id === '' && (currentCategory === '' || currentCategory === 'ALL'))
+          const isSelected =
+            currentCategory === cat.id ||
+            (cat.id === '' && (currentCategory === '' || currentCategory === 'ALL'))
           return (
             <button
               key={cat.id}

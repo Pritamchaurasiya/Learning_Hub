@@ -10,7 +10,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
-from .models import Country, Exam, Subject, Topic
+from django.db.models import Q
+from .models import Country, Exam, Subject, Topic, PYQ
 from .serializers import (
     CountrySerializer,
     ExamListSerializer,
@@ -21,6 +22,7 @@ from .serializers import (
     TopicSerializer,
     TopicListSerializer,
     TopicTreeSerializer,
+    PYQSerializer,
 )
 
 
@@ -452,4 +454,50 @@ class PreferenceView(APIView):
                 'dailyGoal': current_prefs.get('dailyGoal'),
             }
         }, status=status.HTTP_200_OK)
+
+
+@extend_schema_view(
+    list=extend_schema(description='List previous year questions (PYQs) with filters for exam, year, subject, topic, shift'),
+    retrieve=extend_schema(description='Get PYQ details with solution steps'),
+)
+@extend_schema(tags=['Exam Taxonomy - PYQ'])
+class PYQViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Endpoints for previous year exam questions (PYQs).
+    GET /api/v1/exams/pyqs/ - List PYQs with filters:
+        ?exam=JEE_ADV
+        ?year=2024
+        ?shift=Morning
+        ?subject=<id>
+        ?topic=<id>
+    GET /api/v1/exams/pyqs/{id}/ - Single PYQ detail
+    """
+    serializer_class = PYQSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'pk'
+
+    def get_queryset(self):
+        qs = PYQ.objects.filter(is_verified=True).select_related('exam', 'subject', 'topic')
+        exam_param = self.request.query_params.get('exam')
+        if exam_param:
+            qs = qs.filter(Q(exam__code__iexact=exam_param) | Q(exam__id=exam_param))
+        year_param = self.request.query_params.get('year')
+        if year_param:
+            try:
+                qs = qs.filter(year=int(year_param))
+            except ValueError:
+                pass
+        shift_param = self.request.query_params.get('shift')
+        if shift_param:
+            qs = qs.filter(shift__icontains=shift_param)
+        subject_param = self.request.query_params.get('subject')
+        if subject_param:
+            qs = qs.filter(subject_id=subject_param)
+        topic_param = self.request.query_params.get('topic')
+        if topic_param:
+            qs = qs.filter(topic_id=topic_param)
+        difficulty_param = self.request.query_params.get('difficulty')
+        if difficulty_param:
+            qs = qs.filter(difficulty__iexact=difficulty_param)
+        return qs
 

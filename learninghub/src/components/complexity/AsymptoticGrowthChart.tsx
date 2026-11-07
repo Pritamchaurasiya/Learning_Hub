@@ -41,7 +41,11 @@ export const AsymptoticGrowthChart: React.FC<AsymptoticGrowthChartProps> = ({
   }
 
   const scaleY = (t: number) => {
-    return height - padding.bottom - ((t - minTime) / (maxTime - minTime || 1)) * (height - padding.top - padding.bottom)
+    return (
+      height -
+      padding.bottom -
+      ((t - minTime) / (maxTime - minTime || 1)) * (height - padding.top - padding.bottom)
+    )
   }
 
   // Generate SVG path for empirical data line
@@ -76,12 +80,15 @@ export const AsymptoticGrowthChart: React.FC<AsymptoticGrowthChartProps> = ({
               <TrendingUp className="w-5 h-5 text-indigo-400" />
               Empirical Asymptotic Growth Curve
             </h3>
-            <span className={`px-2.5 py-0.5 text-xs font-mono font-semibold rounded-full border ${getClassBadgeColor(classifiedClass)}`}>
+            <span
+              className={`px-2.5 py-0.5 text-xs font-mono font-semibold rounded-full border ${getClassBadgeColor(classifiedClass)}`}
+            >
               Classified: {classifiedClass}
             </span>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Empirical runtime measurements (μs) vs. input size N with least-squares non-linear regression fit (R² = {primaryModel.rSquared.toFixed(3)})
+            Empirical runtime measurements (μs) vs. input size N with least-squares non-linear
+            regression fit (R² = {primaryModel.rSquared.toFixed(3)})
           </p>
         </div>
 
@@ -117,7 +124,14 @@ export const AsymptoticGrowthChart: React.FC<AsymptoticGrowthChartProps> = ({
                   strokeDasharray="4 4"
                   strokeWidth="0.8"
                 />
-                <text x={padding.left - 8} y={y + 3} textAnchor="end" fill="#94a3b8" fontSize="10" fontFamily="monospace">
+                <text
+                  x={padding.left - 8}
+                  y={y + 3}
+                  textAnchor="end"
+                  fill="#94a3b8"
+                  fontSize="10"
+                  fontFamily="monospace"
+                >
                   {val}μs
                 </text>
               </g>
@@ -129,8 +143,21 @@ export const AsymptoticGrowthChart: React.FC<AsymptoticGrowthChartProps> = ({
             const x = scaleX(pt.n)
             return (
               <g key={`x-tick-${idx}`}>
-                <line x1={x} y1={height - padding.bottom} x2={x} y2={height - padding.bottom + 5} stroke="#64748b" />
-                <text x={x} y={height - padding.bottom + 18} textAnchor="middle" fill="#94a3b8" fontSize="10" fontFamily="monospace">
+                <line
+                  x1={x}
+                  y1={height - padding.bottom}
+                  x2={x}
+                  y2={height - padding.bottom + 5}
+                  stroke="#64748b"
+                />
+                <text
+                  x={x}
+                  y={height - padding.bottom + 18}
+                  textAnchor="middle"
+                  fill="#94a3b8"
+                  fontSize="10"
+                  fontFamily="monospace"
+                >
                   {pt.n >= 1000 ? `${pt.n / 1000}k` : pt.n}
                 </text>
               </g>
@@ -168,7 +195,15 @@ export const AsymptoticGrowthChart: React.FC<AsymptoticGrowthChartProps> = ({
                   strokeWidth="2"
                 />
                 {isHovered && (
-                  <circle cx={x} cy={y} r="11" fill="none" stroke="#38bdf8" strokeWidth="1.5" strokeDasharray="3 3" />
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r="11"
+                    fill="none"
+                    stroke="#38bdf8"
+                    strokeWidth="1.5"
+                    strokeDasharray="3 3"
+                  />
                 )}
               </g>
             )
@@ -220,11 +255,12 @@ export const AsymptoticGrowthChart: React.FC<AsymptoticGrowthChartProps> = ({
         {hoveredPoint && (
           <div className="absolute top-4 right-4 bg-slate-950/95 border border-indigo-500/40 rounded-xl p-3 shadow-2xl text-xs space-y-1 backdrop-blur-md pointer-events-none">
             <div className="font-bold text-slate-200 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-              N = {hoveredPoint.n.toLocaleString()}
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />N ={' '}
+              {hoveredPoint.n.toLocaleString()}
             </div>
             <div className="text-indigo-300 font-mono">
-              Time: {hoveredPoint.executionTimeMicros.toFixed(2)} μs (±{hoveredPoint.standardDeviationMicros} μs)
+              Time: {hoveredPoint.executionTimeMicros.toFixed(2)} μs (±
+              {hoveredPoint.standardDeviationMicros} μs)
             </div>
             <div className="text-slate-400 font-mono">
               Memory: {(hoveredPoint.memoryAllocatedBytes / 1024).toFixed(1)} KB
@@ -258,7 +294,9 @@ export const AsymptoticGrowthChart: React.FC<AsymptoticGrowthChartProps> = ({
                       <span className={isSelected ? 'text-indigo-300' : 'text-slate-300'}>
                         #{i + 1} {model.complexityClass}
                       </span>
-                      <span className={`px-2 py-0.5 rounded text-[10px] ${isSelected ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-800 text-slate-400'}`}>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] ${isSelected ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-800 text-slate-400'}`}
+                      >
                         R² = {model.rSquared.toFixed(3)}
                       </span>
                     </div>

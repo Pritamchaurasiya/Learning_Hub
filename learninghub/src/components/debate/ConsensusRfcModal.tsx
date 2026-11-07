@@ -1,13 +1,5 @@
 import React, { useState } from 'react'
-import {
-  X,
-  Copy,
-  Check,
-  Download,
-  ShieldCheck,
-  FileText,
-  Users,
-} from 'lucide-react'
+import { X, Copy, Check, Download, ShieldCheck, FileText, Users } from 'lucide-react'
 import { ArchitectureRFC } from '../../types/agentDebate'
 import { agentDebateService } from '../../services/agentDebateService'
 
@@ -17,11 +9,7 @@ interface ConsensusRfcModalProps {
   onClose: () => void
 }
 
-export const ConsensusRfcModal: React.FC<ConsensusRfcModalProps> = ({
-  rfc,
-  isOpen,
-  onClose,
-}) => {
+export const ConsensusRfcModal: React.FC<ConsensusRfcModalProps> = ({ rfc, isOpen, onClose }) => {
   const [copied, setCopied] = useState(false)
 
   if (!isOpen || !rfc) return null
@@ -78,7 +66,11 @@ export const ConsensusRfcModal: React.FC<ConsensusRfcModalProps> = ({
               className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition text-xs font-medium flex items-center gap-1.5 border border-slate-700"
               title="Copy Markdown to Clipboard"
             >
-              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+              {copied ? (
+                <Check className="w-4 h-4 text-emerald-400" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
               <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy RFC'}</span>
             </button>
             <button
