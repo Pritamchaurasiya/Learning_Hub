@@ -369,25 +369,28 @@ class EnrollmentService:
     def get_course_analytics(course) -> Dict[str, Any]:
         """
         Get aggregated analytics for a specific course including engagement metrics.
+        Optimized to a single database query using conditional aggregation.
         """
-        from django.db.models import Avg, Count
+        from django.db.models import Avg, Count, Case, When, IntegerField, Value
         
-        enrollments = Enrollment.objects.filter(course=course)
-        total_enrollments = enrollments.count()
-        
-        # Calculate completion rate (percentage of students who finished)
-        completed_enrollments = enrollments.filter(progress_percentage=100).count()
-        completion_rate = (completed_enrollments / total_enrollments * 100) if total_enrollments > 0 else 0
-        
-        # Average progress
-        avg_progress = enrollments.aggregate(Avg("progress_percentage"))["progress_percentage__avg"] or 0
+        stats = Enrollment.objects.filter(course=course).aggregate(
+            total_enrollments=Count("id"),
+            completed_enrollments=Count(
+                Case(When(progress_percentage=100, then=Value(1)), output_field=IntegerField())
+            ),
+            avg_progress=Avg("progress_percentage"),
+        )
+        total_enrollments = stats["total_enrollments"] or 0
+        completed_enrollments = stats["completed_enrollments"] or 0
+        avg_progress = stats["avg_progress"] or 0.0
+        completion_rate = (completed_enrollments / total_enrollments * 100.0) if total_enrollments > 0 else 0.0
         
         return {
             "total_enrollments": total_enrollments,
             "completion_rate": round(completion_rate, 2),
             "average_progress": round(avg_progress, 2),
             "avg_rating": course.avg_rating,
-            "total_revenue": total_enrollments * float(course.price) if not course.is_free else 0
+            "total_revenue": total_enrollments * float(course.price) if not course.is_free else 0,
         }
 
 
