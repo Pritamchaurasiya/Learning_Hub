@@ -38,6 +38,7 @@ jobs:
           cd conductor
           python -m pip install --upgrade pip
           pip install -r requirements/base.txt
+          pip install pytest pytest-django factory-boy
 
       - name: Run Backend Tests
         env:
@@ -50,31 +51,35 @@ jobs:
           pytest tests/
 
   frontend-analyze:
-    runs-on: ubuntu-latest
+    name: Frontend Build, Type Check & Tests
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: learninghub
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          flutter-version: "3.24.x"
-          channel: "stable"
-          cache: true
+          node-version: "22.22.1"
+          cache: npm
+          cache-dependency-path: learninghub/package-lock.json
 
       - name: Install Frontend Dependencies
-        run: |
-          cd my_flutter_app
-          flutter pub get
+        run: npm ci
 
-      - name: Static Analysis
-        run: |
-          cd my_flutter_app
-          flutter analyze
+      - name: Type Check
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_URL: "http://localhost:5000/api/v1"
+          VITE_ENABLE_MOCK_API: "true"
 
       - name: Run Unit Tests
-        run: |
-          cd my_flutter_app
-          flutter test
+        run: npm test -- --run
 
   docker-build:
     needs: [backend-tests, frontend-analyze]

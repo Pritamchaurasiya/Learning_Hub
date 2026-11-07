@@ -18,7 +18,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.22.1'
           
       - name: Install dependencies
         run: |
@@ -39,8 +39,20 @@ jobs:
           path: ./
           base: main
           
+      - name: Check Snyk token configuration
+        id: snyk-token
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          if [ -n "$SNYK_TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Run Snyk security scan
-        uses: snyk/actions/node@v0.4.0
+        if: steps.snyk-token.outputs.configured == 'true'
+        uses: snyk/actions/node@v1.0.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
@@ -48,8 +60,12 @@ jobs:
           args: --severity-threshold=high --sarif-file-output=snyk.sarif
         continue-on-error: true
           
+      - name: Report skipped Snyk scan
+        if: steps.snyk-token.outputs.configured != 'true'
+        run: echo "::notice::SNYK_TOKEN is not configured; Snyk scan was skipped."
+
       - name: Upload security scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && hashFiles('snyk.sarif') != ''
         with:
           sarif_file: snyk.sarif

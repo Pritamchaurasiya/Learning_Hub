@@ -370,26 +370,11 @@ export class ExtendedPrismaClient extends PrismaClient {
 const basePrisma = globalForPrisma.prisma || new ExtendedPrismaClient(prismaOptions).$extends(softDeleteExtension)
 
 const replicaUrl = process.env.DATABASE_URL_REPLICA
-let replicaClient: PrismaClient | undefined
 
-if (replicaUrl) {
-  replicaClient = new PrismaClient({
-    datasources: { db: { url: replicaUrl } },
-  })
-}
-
-// Apply Read Replicas extension only when a replica is configured
-// Keep the base client type stable: the read-replicas extension narrows some
-// overloads in TypeScript (notably interactive $transaction callbacks). The
-// runtime extension is only enabled when DATABASE_URL_REPLICA is configured.
-export const prisma: ExtendedPrismaClient = replicaClient
-  ? (basePrisma.$extends(
-      readReplicas({
-        replicas: [
-          replicaClient as unknown as NonNullable<Parameters<typeof readReplicas>[0]['replicas']>[number],
-        ],
-      })
-    ) as unknown as ExtendedPrismaClient)
+// Prisma 6 uses the 0.4.x read-replicas API, which accepts the replica URL
+// and manages its internal replica client.
+export const prisma: ExtendedPrismaClient = replicaUrl
+  ? (basePrisma.$extends(readReplicas({ url: replicaUrl })) as unknown as ExtendedPrismaClient)
   : (basePrisma as ExtendedPrismaClient)
 
 // Cache instance in development to prevent hot-reload issues
