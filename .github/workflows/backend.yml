@@ -59,7 +59,7 @@ jobs:
 
           tracked_python_files = subprocess.check_output(
               ["git", "ls-files", "-z", "*.py"], text=False
-          ).decode("utf-8").split("\\0")
+          ).decode("utf-8").split("\0")
           tracked_python_files = [path for path in tracked_python_files if path]
           if not tracked_python_files:
               print("No tracked Python files found; skipping Black.")
