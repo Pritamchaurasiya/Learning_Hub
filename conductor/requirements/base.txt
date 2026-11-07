@@ -23,7 +23,7 @@ django-redis>=5.4.0
 
 # Utilities
 psutil>=5.9.8,<8.0.0  # System metrics used by Django health and monitoring endpoints
-drf-nested-routers==0.94.2  # Compatible with the project's DRF 3.14 pin
+drf-nested-routers==0.94.0  # PyPI metadata lists compatibility with DRF 3.14
 
 Pillow==12.1.0
 python-slugify==8.0.3
