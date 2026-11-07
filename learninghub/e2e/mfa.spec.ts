@@ -8,9 +8,27 @@ import { test, expect } from '@playwright/test'
  * 3. 2FA Login Challenge & Session Exchange (/auth)
  */
 test.describe('Two-Factor Authentication (2FA) User Journey', () => {
-  test.beforeEach(async ({ context }) => {
+  test.beforeEach(async ({ context, page }) => {
     await context.addInitScript(() => {
       window.localStorage.setItem('cookieConsent', 'accepted')
+      window.localStorage.setItem('lh_location_permission_requested', 'true')
+    })
+
+    // Mock global background calls to prevent session-expired redirects
+    await page.route('**/notifications*', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'success', data: { notifications: [], count: 0 } }),
+      })
+    })
+
+    await page.route('**/tests/attempts*', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'success', data: [] }),
+      })
     })
   })
 

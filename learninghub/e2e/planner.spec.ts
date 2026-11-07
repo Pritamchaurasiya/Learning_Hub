@@ -4,6 +4,7 @@ test.describe('Study Planner Flow', () => {
   test.beforeEach(async ({ context, page }) => {
     await context.addInitScript(() => {
       window.localStorage.setItem('cookieConsent', 'accepted')
+      window.localStorage.setItem('lh_location_permission_requested', 'true')
     })
     await context.clearCookies()
 

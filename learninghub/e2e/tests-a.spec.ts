@@ -5,6 +5,7 @@ test.describe('Tests A+ Module', () => {
     // Set localStorage tokens before any page navigation to avoid auth redirect race conditions
     await context.addInitScript(() => {
       window.localStorage.setItem('cookieConsent', 'accepted')
+      window.localStorage.setItem('lh_location_permission_requested', 'true')
       window.localStorage.setItem(
         'learninghub-storage',
         JSON.stringify({

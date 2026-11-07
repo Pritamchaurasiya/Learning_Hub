@@ -67,9 +67,10 @@ test.describe('Course Flow', () => {
   }
 
   test.beforeEach(async ({ context, page }) => {
-    // Set accepted cookies
+    // Set accepted cookies and location permission
     await context.addInitScript(() => {
       window.localStorage.setItem('cookieConsent', 'accepted')
+      window.localStorage.setItem('lh_location_permission_requested', 'true')
     })
 
     // Mock auth verification endpoints to prevent 401 redirects
