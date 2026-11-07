@@ -29,7 +29,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.12'
           cache: 'npm'
           cache-dependency-path: learninghub/package-lock.json
 
@@ -92,7 +92,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.12'
           cache: 'npm'
           cache-dependency-path: learninghub/backend/package-lock.json
 
@@ -229,9 +229,9 @@ jobs:
         run: npm audit --audit-level=high || echo "npm audit found issues"
 
       - name: Run pip-audit (Django)
-        uses: pypa/gh-action-pip-audit@v1
+        uses: pypa/gh-action-pip-audit@v1.1.0
         with:
-          requirements-file: conductor/requirements/base.txt
+          inputs: conductor/requirements/base.txt
 
   # E2E Live-Backend — enabled for CI health 80% → 95% (live E2E on every push)
   e2e:
@@ -266,7 +266,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.12'
           cache: 'npm'
           cache-dependency-path: learninghub/package-lock.json
 
