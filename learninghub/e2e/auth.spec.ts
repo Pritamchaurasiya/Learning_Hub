@@ -6,9 +6,10 @@ import { test, expect } from '@playwright/test'
  */
 test.describe('Authentication Flow', () => {
   test.beforeEach(async ({ context, page }) => {
-    // Seed cookieConsent accepted in localStorage before navigation
+    // Seed cookieConsent and location consent in localStorage before navigation
     await context.addInitScript(() => {
       window.localStorage.setItem('cookieConsent', 'accepted')
+      window.localStorage.setItem('lh_location_permission_requested', 'true')
     })
     // Clear any existing auth state
     await context.clearCookies()
@@ -18,6 +19,7 @@ test.describe('Authentication Flow', () => {
       localStorage.removeItem('user')
       sessionStorage.clear()
       localStorage.setItem('cookieConsent', 'accepted')
+      localStorage.setItem('lh_location_permission_requested', 'true')
     })
 
     // Mock user authentication context
