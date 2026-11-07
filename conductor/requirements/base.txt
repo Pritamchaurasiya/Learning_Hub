@@ -23,6 +23,8 @@ django-redis>=5.4.0
 
 # Utilities
 psutil>=5.9.8,<8.0.0  # System metrics used by Django health and monitoring endpoints
+drf-nested-routers==0.95.3  # Nested DRF routers imported by discussions URLs
+psutil>=5.9.8,<8.0.0  # System metrics used by Django health and monitoring endpoints
 Pillow==12.1.0
 python-slugify==8.0.3
 argon2-cffi==23.1.0
