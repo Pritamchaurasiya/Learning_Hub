@@ -87,6 +87,34 @@ test.describe('Authentication Flow', () => {
         body: JSON.stringify({ status: 'success', data: [] }),
       })
     })
+    await page.route('**/recommendations/**', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'success', data: null }),
+      })
+    })
+    await page.route('**/user-analytics/**', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'success', data: { summary: {} } }),
+      })
+    })
+    await page.route('**/analytics/**', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'success', data: [] }),
+      })
+    })
+    await page.route('**/auth/sessions*', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'success', data: [] }),
+      })
+    })
   })
 
   test('should redirect unauthenticated user to login page', async ({ page }) => {

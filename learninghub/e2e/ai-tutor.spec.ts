@@ -42,6 +42,11 @@ test('Verify code copy functionality in AI Tutor', async ({ page, context }) => 
   await context.addInitScript(() => {
     window.localStorage.setItem('cookieConsent', 'accepted')
     window.localStorage.setItem('lh_location_permission_requested', 'true')
+    window.localStorage.setItem('lh_access_token', 'mock-valid-token')
+    window.localStorage.setItem(
+      'user',
+      JSON.stringify({ id: 'test-user-1', email: 'student@learninghub.com', role: 'STUDENT' })
+    )
     window.localStorage.setItem(
       'learninghub-storage',
       JSON.stringify({
@@ -62,6 +67,38 @@ test('Verify code copy functionality in AI Tutor', async ({ page, context }) => 
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ status: 'success', data: { notifications: [], count: 0 } }),
+    })
+  })
+
+  await page.route('**/tests/attempts*', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'success', data: [] }),
+    })
+  })
+
+  await page.route('**/recommendations/**', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'success', data: null }),
+    })
+  })
+
+  await page.route('**/user-analytics/**', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'success', data: { summary: {} } }),
+    })
+  })
+
+  await page.route('**/auth/sessions*', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'success', data: [] }),
     })
   })
 

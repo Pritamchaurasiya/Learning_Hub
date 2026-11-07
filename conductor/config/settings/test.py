@@ -133,6 +133,7 @@ REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {  # type: ignore[name-defined]  # no
 # ============================================================================
 # Disable Axes brute-force protection during tests
 AXES_ENABLED = False
+SILENCED_SYSTEM_CHECKS = ['axes.W002']
 
 # Disable custom rate limiting middleware flag
 RATE_LIMITING_ENABLED = False
