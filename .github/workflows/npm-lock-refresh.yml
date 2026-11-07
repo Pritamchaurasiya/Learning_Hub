@@ -1,0 +1,44 @@
+name: Temporary backend npm lockfile refresh
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'learninghub/backend/package.json'
+      - '.github/workflows/npm-lock-refresh.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-backend-lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.1'
+
+      - name: Regenerate backend lockfile
+        working-directory: learninghub/backend
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Verify clean backend install
+        working-directory: learninghub/backend
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Commit generated backend manifest and lockfile
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add learninghub/backend/package.json learninghub/backend/package-lock.json
+          if git diff --cached --quiet; then
+            echo "Backend manifest and lockfile already match."
+          else
+            git commit -m "fix(test): add websocket test client dependency"
+            git push origin "HEAD:${GITHUB_HEAD_REF}"
+          fi
