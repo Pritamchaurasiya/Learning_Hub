@@ -52,7 +52,22 @@ jobs:
           pip install pytest pytest-django factory-boy
 
       - name: Linting (Black)
-        run: python -m black --check .
+        run: |
+          python - <<'PY'
+          import subprocess
+          import sys
+
+          tracked_python_files = subprocess.check_output(
+              ["git", "ls-files", "-z", "*.py"], text=False
+          ).decode("utf-8").split("\\0")
+          tracked_python_files = [path for path in tracked_python_files if path]
+          if not tracked_python_files:
+              print("No tracked Python files found; skipping Black.")
+          else:
+              subprocess.run(
+                  [sys.executable, "-m", "black", "--check", *tracked_python_files],
+                  check=True,
+              )
 
       - name: Linting (Flake8)
         run: python -m flake8 .
