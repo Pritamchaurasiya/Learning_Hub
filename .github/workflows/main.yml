@@ -71,7 +71,7 @@ jobs:
         run: helm lint ./conductor/charts/learning-hub
 
       - name: Snyk Security Scan
-        uses: snyk/actions/python@v0.4.0
+        uses: snyk/actions/python@v1.0.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
