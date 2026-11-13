@@ -1,10 +1,15 @@
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
+from rest_framework import status
+from django.conf import settings
+from django.core.cache import cache
+from django.db import connection
 from django.utils import timezone
 from .responses import success_response
 from .permissions import IsAdminUserRole
 import sys
 import platform
+
 
 class HealthCheckView(APIView):
     permission_classes = [AllowAny]
@@ -22,25 +27,49 @@ class HealthCheckView(APIView):
             message='LearningHub Django API is operational'
         )
 
+
 class HealthReadyView(APIView):
+    """Return a non-2xx status when a required dependency is unavailable."""
+
     permission_classes = [AllowAny]
 
     def get(self, request):
-        from django.db import connection
-        db_healthy = True
+        checks = {
+            'database': False,
+            'cache': 'not_configured',
+        }
+
         try:
             with connection.cursor() as cursor:
-                cursor.execute("SELECT 1")
+                cursor.execute('SELECT 1')
+            checks['database'] = True
         except Exception:
-            db_healthy = False
+            checks['database'] = False
+
+        redis_configured = bool(getattr(settings, 'REDIS_URL', None))
+        ready = checks['database']
+
+        if redis_configured:
+            try:
+                probe_key = 'health:readiness'
+                cache.set(probe_key, 'ok', timeout=5)
+                checks['cache'] = 'healthy' if cache.get(probe_key) == 'ok' else 'unhealthy'
+            except Exception:
+                checks['cache'] = 'unhealthy'
+            ready = ready and checks['cache'] == 'healthy'
+        else:
+            checks['cache'] = 'single_instance_fallback'
 
         return success_response(
             data={
-                'ready': db_healthy,
-                'database': 'connected' if db_healthy else 'disconnected',
+                'ready': ready,
+                'status': 'healthy' if ready else 'unhealthy',
+                'checks': checks,
             },
-            message='Readiness probe check successful'
+            message='Readiness probe passed' if ready else 'One or more dependencies are unavailable',
+            status_code=status.HTTP_200_OK if ready else status.HTTP_503_SERVICE_UNAVAILABLE,
         )
+
 
 class HealthLiveView(APIView):
     permission_classes = [AllowAny]
@@ -51,12 +80,13 @@ class HealthLiveView(APIView):
             message='Liveness probe check successful'
         )
 
+
 class SystemMetricsView(APIView):
     permission_classes = [IsAdminUserRole]
 
     def get(self, request):
-        import psutil
         import os
+        import psutil
         from django.db import connection
 
         process = psutil.Process(os.getpid())
@@ -77,19 +107,25 @@ class SystemMetricsView(APIView):
 
         return success_response(data=metrics, message='System telemetry metrics retrieved successfully')
 
+
 class CsrfTokenView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
         from django.middleware.csrf import get_token
+
+        # CsrfViewMiddleware writes the cookie using CSRF_COOKIE_NAME and the
+        # secure/samesite/httpOnly settings configured for this environment.
         token = get_token(request)
         session_id = request.session.session_key or ""
-        response = success_response(data={
-            'csrfToken': token,
-            'sessionId': session_id
-        }, message='CSRF token generated')
-        response.set_cookie('csrf-token', token, samesite='Lax')
-        return response
+        return success_response(
+            data={
+                'csrfToken': token,
+                'sessionId': session_id,
+            },
+            message='CSRF token generated',
+        )
+
 
 class DashboardAnalyticsView(APIView):
     permission_classes = [AllowAny]
@@ -157,6 +193,3 @@ class NextBestActionView(APIView):
         user = request.user if (request.user and request.user.is_authenticated) else None
         data = LearnerAnalyticsService.get_next_best_action(user)
         return success_response(data=data)
-
-
-
