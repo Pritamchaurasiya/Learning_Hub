@@ -1,0 +1,55 @@
+name: Cloudflare Pages Functions Validation
+
+on:
+  pull_request:
+    branches: [main, develop, fix/backend-staging-prisma-drift]
+    paths:
+      - "learninghub/functions/**"
+      - "learninghub/package.json"
+      - "learninghub/package-lock.json"
+      - ".github/workflows/cloudflare-pages-functions.yml"
+  push:
+    branches: [main, develop]
+    paths:
+      - "learninghub/functions/**"
+      - "learninghub/package.json"
+      - "learninghub/package-lock.json"
+      - ".github/workflows/cloudflare-pages-functions.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-functions-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-pages-functions:
+    name: Build Pages Functions bundle
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: learninghub
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: learninghub/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build Pages Functions
+        run: npx --yes wrangler@latest pages functions build --outdir=/tmp/learninghub-pages-functions
+
+      - name: Build frontend
+        run: npm run build
+        env:
+          VITE_API_URL: /api/v1
+          VITE_ENABLE_MOCK_API: "false"
+          VITE_ENABLE_DEBUG: "false"
