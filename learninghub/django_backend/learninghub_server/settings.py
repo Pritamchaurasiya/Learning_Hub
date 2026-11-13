@@ -3,37 +3,37 @@ import sys
 from pathlib import Path
 from datetime import timedelta
 
+from django.core.exceptions import ImproperlyConfigured
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Add apps folder to Python path
 sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 
-# SECURITY: SECRET_KEY must be set via environment variable in production
-# Default is only for local development - never commit default secrets
-# In production (DEBUG=False) without env, use a random per-boot key (fail-closed:
-# tokens invalidate on restart rather than using a guessable default).
-from django.core.management.utils import get_random_secret_key as _get_random_secret_key
-_SECRET_FROM_ENV = os.environ.get('DJANGO_SECRET_KEY') or os.environ.get('SECRET_KEY')
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
-# Test runner must use a stable key (random per-boot would still work within a run,
-# but dev default keeps legacy tests deterministic).
 _IS_TEST_RUNNER = 'pytest' in sys.modules or os.environ.get('PYTEST_CURRENT_TEST') is not None
+
+# Secrets must be stable across restarts in production. A random per-boot
+# SECRET_KEY invalidates sessions/tokens and makes rollbacks unpredictable.
+_SECRET_FROM_ENV = os.environ.get('DJANGO_SECRET_KEY') or os.environ.get('SECRET_KEY')
 if _SECRET_FROM_ENV:
     SECRET_KEY = _SECRET_FROM_ENV
 elif DEBUG or _IS_TEST_RUNNER:
     SECRET_KEY = 'dev-only-do-not-use-in-production-generate-a-proper-secret'
 else:
-    SECRET_KEY = _get_random_secret_key()
+    raise ImproperlyConfigured(
+        'DJANGO_SECRET_KEY (or SECRET_KEY) is required when DEBUG is False.'
+    )
 
-# SECURITY: Allow only explicitly configured hosts - never '*'
-# Production must set ALLOWED_HOSTS env var (comma-separated)
-# Development can set for localhost/docker hostnames
-ALLOWED_HOSTS = (
-    [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h.strip()]
-    if os.environ.get('ALLOWED_HOSTS')
-    else ['localhost', '127.0.0.1']
-)
+# Production hosts are explicit. Never silently accept wildcard hosts.
+_hosts_from_env = os.environ.get('ALLOWED_HOSTS', '')
+if _hosts_from_env.strip():
+    ALLOWED_HOSTS = [host.strip() for host in _hosts_from_env.split(',') if host.strip()]
+elif DEBUG or _IS_TEST_RUNNER:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
+else:
+    raise ImproperlyConfigured('ALLOWED_HOSTS must be set in production.')
 
 # Application definition
 INSTALLED_APPS = [
@@ -100,32 +100,35 @@ TEMPLATES = [
 WSGI_APPLICATION = 'learninghub_server.wsgi.application'
 ASGI_APPLICATION = 'learninghub_server.asgi.application'
 
-# Database
+# Database: PostgreSQL/Neon is mandatory outside local development and tests.
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
     try:
         import dj_database_url
-        DATABASES = {
-            'default': dj_database_url.config(
-                default=DATABASE_URL,
-                conn_max_age=600,
-                conn_health_checks=True,
-            )
-        }
-    except ImportError:
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': BASE_DIR / 'db.sqlite3',
-            }
-        }
-else:
+    except ImportError as exc:
+        raise ImproperlyConfigured(
+            'dj-database-url is required when DATABASE_URL is configured.'
+        ) from exc
+
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=60,
+            conn_health_checks=True,
+        )
+    }
+elif DEBUG or _IS_TEST_RUNNER:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+else:
+    raise ImproperlyConfigured(
+        'DATABASE_URL is required outside local development and tests. '
+        'Production must never fall back to SQLite.'
+    )
 
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
@@ -156,10 +159,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # REST Framework Configuration
@@ -183,11 +184,11 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '100/min',
         'user': '1000/min',
-        'auth': '5/min',  # Strict rate limit for authentication endpoints to prevent brute-force
-        'notifications': '30/min',  # Tighter rate limit for notification endpoints
-        'leaderboard': '60/min',  # Rate limit for leaderboard (prevents scraping)
-        'ai_tutor': '10/min',  # AI tutor rate limit (cost control)
-        'ai_tutor_anon': '3/min',  # Anonymous AI tutor (stricter)
+        'auth': '5/min',
+        'notifications': '30/min',
+        'leaderboard': '60/min',
+        'ai_tutor': '10/min',
+        'ai_tutor_anon': '3/min',
     },
 }
 
@@ -195,7 +196,6 @@ REST_FRAMEWORK = {
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 SECURE_BROWSER_XSS_FILTER = True
-
 
 # SimpleJWT Settings
 SIMPLE_JWT = {
@@ -211,12 +211,33 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
 }
 
-# CORS Configuration - Production secure by default
-# Development can set CORS_ALLOW_ALL_ORIGINS=True via env if needed
-CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'False').lower() in ('true', '1', 'yes')
+# CORS / CSRF origins. Use exact origins; custom domains can be added later
+# through the environment without changing source code.
+_local_origins = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+_custom_csrf_origins = [
+    origin.strip()
+    for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
+    if origin.strip()
+]
+CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(_local_origins + _custom_csrf_origins))
 
+_custom_cors_origins = [
+    origin.strip()
+    for origin in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
+    if origin.strip()
+]
+CORS_ALLOWED_ORIGINS = list(dict.fromkeys(_custom_cors_origins or _custom_csrf_origins))
+CORS_ALLOW_ALL_ORIGINS = (
+    os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'False').lower() in ('true', '1', 'yes')
+)
 CORS_ALLOW_CREDENTIALS = True
-
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -232,6 +253,13 @@ CORS_ALLOW_HEADERS = [
     'x-guest-id',
 ]
 
+# Django's CSRF middleware cookie name matches the LearningHub SPA client.
+CSRF_COOKIE_NAME = 'csrf-token'
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_HTTPONLY = True
+
 # OpenAPI / Swagger Docs Settings
 SPECTACULAR_SETTINGS = {
     'TITLE': 'LearningHub API (Django REST)',
@@ -240,16 +268,18 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
 }
 
-# Channels Configuration & Redis Caching
+# Shared cache/channel layers are required for multi-instance production.
+# A single-instance staging service may explicitly opt into in-memory fallbacks.
 REDIS_URL = os.environ.get('REDIS_URL')
+ALLOW_IN_MEMORY_BACKENDS = (
+    os.environ.get('ALLOW_IN_MEMORY_BACKENDS', 'False').lower() in ('true', '1', 'yes')
+)
 
 if REDIS_URL:
     CHANNEL_LAYERS = {
         'default': {
             'BACKEND': 'channels_redis.core.RedisChannelLayer',
-            'CONFIG': {
-                'hosts': [REDIS_URL],
-            },
+            'CONFIG': {'hosts': [REDIS_URL]},
         },
     }
     CACHES = {
@@ -258,17 +288,15 @@ if REDIS_URL:
             'LOCATION': REDIS_URL,
             'OPTIONS': {
                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-                'IGNORE_EXCEPTIONS': True,
+                'IGNORE_EXCEPTIONS': False,
             },
             'KEY_PREFIX': 'learninghub',
             'TIMEOUT': 300,
         }
     }
-else:
+elif DEBUG or _IS_TEST_RUNNER or ALLOW_IN_MEMORY_BACKENDS:
     CHANNEL_LAYERS = {
-        'default': {
-            'BACKEND': 'channels.layers.InMemoryChannelLayer',
-        },
+        'default': {'BACKEND': 'channels.layers.InMemoryChannelLayer'},
     }
     CACHES = {
         'default': {
@@ -277,6 +305,11 @@ else:
             'TIMEOUT': 300,
         }
     }
+else:
+    raise ImproperlyConfigured(
+        'REDIS_URL is required in production. Set ALLOW_IN_MEMORY_BACKENDS=true '
+        'only for a single-instance staging deployment.'
+    )
 
 # Celery Configuration
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', REDIS_URL or 'memory://')
@@ -285,39 +318,28 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
-ADMIN_SECRET = os.environ.get('ADMIN_SECRET', 'test-admin-secret-key-32charslong!!' if (DEBUG or 'pytest' in sys.modules) else '')
+ADMIN_SECRET = os.environ.get('ADMIN_SECRET', '')
+if not DEBUG and not _IS_TEST_RUNNER and not ADMIN_SECRET:
+    raise ImproperlyConfigured('ADMIN_SECRET is required in production.')
 
-# CSRF Trusted Origins for Frontend Integration
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-]
-custom_origins = os.environ.get('CSRF_TRUSTED_ORIGINS')
-if custom_origins:
-    CSRF_TRUSTED_ORIGINS.extend([o.strip() for o in custom_origins.split(',') if o.strip()])
-
-# Security Hardening for Production Deployments
+# Production Security Hardening
 if not DEBUG and not _IS_TEST_RUNNER:
-    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True').lower() in ('true', '1')
+    if not _custom_csrf_origins:
+        raise ImproperlyConfigured(
+            'CSRF_TRUSTED_ORIGINS must include the deployed LearningHub frontend origin.'
+        )
+    SECURE_SSL_REDIRECT = (
+        os.environ.get('SECURE_SSL_REDIRECT', 'True').lower() in ('true', '1', 'yes')
+    )
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = 'DENY'
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_HTTPONLY = False  # Allow SPA client to read CSRF cookie for X-CSRFToken header
-    SESSION_COOKIE_HTTPONLY = True
     SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '31536000'))
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+    SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
     CORS_ALLOW_ALL_ORIGINS = False
-    prod_origins = [o.strip() for o in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if o.strip()]
-    if prod_origins:
-        CSRF_TRUSTED_ORIGINS = prod_origins
-    CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS
-
+    CORS_ALLOWED_ORIGINS = list(dict.fromkeys(_custom_cors_origins or _custom_csrf_origins))
