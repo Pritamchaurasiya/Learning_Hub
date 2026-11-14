@@ -1,18 +1,23 @@
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework import status
+import os
+import platform
+import psutil
+import sys
+
 from django.conf import settings
 from django.core.cache import cache
-from django.db import connection
+from django.db import DatabaseError, connection
 from django.utils import timezone
-from .responses import success_response
+from redis.exceptions import RedisError
+from rest_framework import status
+from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
+
 from .permissions import IsAdminUserRole
-import sys
-import platform
+from .responses import success_response
 
 
 class HealthCheckView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def get(self, request):
         return success_response(
@@ -31,7 +36,7 @@ class HealthCheckView(APIView):
 class HealthReadyView(APIView):
     """Return a non-2xx status when a required dependency is unavailable."""
 
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def get(self, request):
         checks = {
@@ -43,7 +48,7 @@ class HealthReadyView(APIView):
             with connection.cursor() as cursor:
                 cursor.execute('SELECT 1')
             checks['database'] = True
-        except Exception:
+        except DatabaseError:
             checks['database'] = False
 
         redis_configured = bool(getattr(settings, 'REDIS_URL', None))
@@ -54,7 +59,7 @@ class HealthReadyView(APIView):
                 probe_key = 'health:readiness'
                 cache.set(probe_key, 'ok', timeout=5)
                 checks['cache'] = 'healthy' if cache.get(probe_key) == 'ok' else 'unhealthy'
-            except Exception:
+            except RedisError:
                 checks['cache'] = 'unhealthy'
             ready = ready and checks['cache'] == 'healthy'
         else:
@@ -72,7 +77,7 @@ class HealthReadyView(APIView):
 
 
 class HealthLiveView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def get(self, request):
         return success_response(
@@ -82,13 +87,9 @@ class HealthLiveView(APIView):
 
 
 class SystemMetricsView(APIView):
-    permission_classes = [IsAdminUserRole]
+    permission_classes = (IsAdminUserRole,)
 
     def get(self, request):
-        import os
-        import psutil
-        from django.db import connection
-
         process = psutil.Process(os.getpid())
         mem_info = process.memory_info()
 
@@ -109,7 +110,7 @@ class SystemMetricsView(APIView):
 
 
 class CsrfTokenView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def get(self, request):
         from django.middleware.csrf import get_token
@@ -128,7 +129,7 @@ class CsrfTokenView(APIView):
 
 
 class DashboardAnalyticsView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def get(self, request):
         from .learner_analytics import LearnerAnalyticsService
@@ -138,7 +139,7 @@ class DashboardAnalyticsView(APIView):
 
 
 class LearningActivityAnalyticsView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def get(self, request):
         from .learner_analytics import LearnerAnalyticsService
@@ -152,7 +153,7 @@ class LearningActivityAnalyticsView(APIView):
 
 
 class PerformanceTrendAnalyticsView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def get(self, request):
         from .learner_analytics import LearnerAnalyticsService
@@ -166,7 +167,7 @@ class PerformanceTrendAnalyticsView(APIView):
 
 
 class WeakAreasAnalyticsView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def get(self, request):
         from .learner_analytics import LearnerAnalyticsService
@@ -176,7 +177,7 @@ class WeakAreasAnalyticsView(APIView):
 
 
 class UserAnalyticsView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def get(self, request):
         from .learner_analytics import LearnerAnalyticsService
@@ -186,7 +187,7 @@ class UserAnalyticsView(APIView):
 
 
 class NextBestActionView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def get(self, request):
         from .learner_analytics import LearnerAnalyticsService
