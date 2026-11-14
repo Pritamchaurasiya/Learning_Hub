@@ -19,7 +19,7 @@ jobs:
   # Frontend CI — React + Vite + Vitest + Playwright
   frontend:
     name: Frontend
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: learninghub
@@ -148,6 +148,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Run gitleaks
         uses: gitleaks/gitleaks-action@v2
@@ -171,7 +173,7 @@ jobs:
   # E2E Live-Backend — enabled for CI health 80% → 95% (live E2E on every push)
   e2e:
     name: E2E (Live Backend)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [frontend, django-backend]
     if: always()
     services:
