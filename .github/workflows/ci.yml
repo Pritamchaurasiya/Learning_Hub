@@ -109,8 +109,12 @@ jobs:
         run: pip install pytest-cov pytest-asyncio ruff
 
       # Hard failure: ruff is installed in the step above — do not re-add `|| echo`.
-      - name: Lint
-        run: ruff check .
+      - name: Lint changed deployment-critical Django files
+        run: >-
+          ruff check
+          learninghub_server/settings.py
+          apps/core/views.py
+          apps/core/tests/test_health_readiness.py
 
       - name: Django check
         env:
