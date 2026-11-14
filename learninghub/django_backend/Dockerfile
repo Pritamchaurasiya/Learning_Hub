@@ -36,7 +36,8 @@ USER appuser
 EXPOSE 8000
 
 # Readiness must fail when PostgreSQL is unavailable; /health/live is for liveness.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-    CMD curl -fsS http://localhost:8000/api/v1/health/ready || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl -fsS -H "Host: localhost" -H "X-Forwarded-Proto: https" \
+    "http://127.0.0.1:${PORT:-8000}/api/v1/health/ready" || exit 1
 
 CMD ["sh", "-c", "daphne -b 0.0.0.0 -p ${PORT:-8000} learninghub_server.asgi:application"]
