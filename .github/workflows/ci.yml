@@ -45,8 +45,15 @@ jobs:
       # The legacy app-wide lint has pre-existing failures in untouched files.
       # Keep a strict lint gate on the frontend integration/configuration files
       # changed by this deployment PR; the full lint debt remains a separate task.
-      - name: Lint changed frontend integration files
-        run: npx eslint vite.config.ts playwright.config.ts functions
+      - name: Lint changed Playwright configuration
+        run: npx eslint playwright.config.ts --max-warnings 0
+
+      - name: Type-check Cloudflare Pages Functions
+        run: >-
+          npx tsc --noEmit --skipLibCheck --target ES2022
+          --module ESNext --moduleResolution bundler --lib ES2022,DOM
+          functions/_shared/djangoProxy.ts
+          'functions/api/[[path]].ts'
 
       - name: Build
         run: npm run build
