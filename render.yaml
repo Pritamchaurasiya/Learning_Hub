@@ -9,11 +9,6 @@ services:
     autoDeployTrigger: off
     dockerContext: learninghub/django_backend
     dockerfilePath: learninghub/django_backend/Dockerfile
-    dockerCommand: >-
-      /bin/sh -c 'python manage.py migrate --noinput &&
-      python manage.py collectstatic --noinput &&
-      exec daphne -b 0.0.0.0 -p ${PORT:-8000}
-      learninghub_server.asgi:application'
     healthCheckPath: /api/v1/health/ready
     envVars:
       - key: DEBUG
