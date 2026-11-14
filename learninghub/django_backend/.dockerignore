@@ -1,0 +1,28 @@
+# Secrets and local databases must never enter the image build context.
+.env
+.env.*
+!.env.example
+*.sqlite3
+db.sqlite3
+
+# Python runtime/test artifacts.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+.tox/
+
+# Generated assets, logs and local uploads.
+staticfiles/
+media/
+logs/
+
+# Repository metadata and editor files.
+.git/
+.idea/
+.vscode/
