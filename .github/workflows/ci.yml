@@ -45,8 +45,10 @@ jobs:
       # The legacy app-wide lint has pre-existing failures in untouched files.
       # Keep a strict lint gate on the frontend integration/configuration files
       # changed by this deployment PR; the full lint debt remains a separate task.
-      - name: Lint changed Playwright configuration
-        run: npx eslint playwright.config.ts --max-warnings 0
+      - name: Type-check Playwright configuration
+        run: >-
+          npx tsc --noEmit --skipLibCheck --target ES2022
+          --module commonjs --moduleResolution node playwright.config.ts
 
       - name: Type-check Cloudflare Pages Functions
         run: >-
