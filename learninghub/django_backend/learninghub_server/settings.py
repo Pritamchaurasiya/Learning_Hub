@@ -28,12 +28,10 @@ else:
 
 # Production hosts are explicit. Never silently accept wildcard hosts.
 _hosts_from_env = os.environ.get('ALLOWED_HOSTS', '')
-if _hosts_from_env.strip():
-    ALLOWED_HOSTS = [host.strip() for host in _hosts_from_env.split(',') if host.strip()]
-elif DEBUG or _IS_TEST_RUNNER:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
-else:
+_configured_hosts = [host.strip() for host in _hosts_from_env.split(',') if host.strip()]
+if not _configured_hosts and not (DEBUG or _IS_TEST_RUNNER):
     raise ImproperlyConfigured('ALLOWED_HOSTS must be set in production.')
+ALLOWED_HOSTS = list(dict.fromkeys(['localhost', '127.0.0.1', 'testserver'] + _configured_hosts))
 
 # Application definition
 INSTALLED_APPS = [
