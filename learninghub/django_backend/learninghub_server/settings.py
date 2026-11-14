@@ -334,7 +334,10 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
-ADMIN_SECRET = os.environ.get('ADMIN_SECRET', '')
+ADMIN_SECRET = os.environ.get(
+    'ADMIN_SECRET',
+    'test-admin-secret-key-32charslong!!' if (DEBUG or _IS_TEST_RUNNER) else '',
+)
 if not DEBUG and not _IS_TEST_RUNNER and not ADMIN_SECRET:
     raise ImproperlyConfigured('ADMIN_SECRET is required in production.')
 
