@@ -32,3 +32,4 @@ psutil>=5.9.0,<8
 pytest>=8.0.0,<10
 pytest-django>=4.8.0,<5
 pytest-cov>=5.0.0,<8
+pytest-asyncio>=0.23.0,<2
