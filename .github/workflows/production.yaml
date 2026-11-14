@@ -1,10 +1,8 @@
 name: Production CI/CD Pipeline
 
 on:
-  push:
-    branches: ["main", "master"]
-  pull_request:
-    branches: ["main", "master"]
+  # Legacy workflow retained for manual recovery only.
+  workflow_dispatch:
 
 jobs:
   backend-tests:
