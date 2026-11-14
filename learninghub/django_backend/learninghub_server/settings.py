@@ -197,6 +197,11 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 SECURE_BROWSER_XSS_FILTER = True
 
+# Keep token signing independent from Django's application secret in production.
+JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
+if not JWT_SECRET_KEY and not (DEBUG or _IS_TEST_RUNNER):
+    raise ImproperlyConfigured('JWT_SECRET_KEY is required in production.')
+
 # SimpleJWT Settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
@@ -205,7 +210,10 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
     'ALGORITHM': 'HS256',
-    'SIGNING_KEY': SECRET_KEY,
+    'SIGNING_KEY': (
+        os.environ.get('JWT_SECRET_KEY')
+        or (SECRET_KEY if DEBUG or _IS_TEST_RUNNER else None)
+    ),
     'AUTH_HEADER_TYPES': ('Bearer', 'JWT'),
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
