@@ -18,12 +18,12 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           
       - name: Install dependencies
         run: |
-          cd learninghub/backend && npm ci
-          cd ../ && npm ci --ignore-scripts
+          cd learninghub/backend && npm install --no-audit --no-fund
+          cd ../ && npm install --no-audit --no-fund --ignore-scripts
           
       - name: Run npm audit
         run: |
@@ -40,6 +40,7 @@ jobs:
           base: main
           
       - name: Run Snyk security scan
+        if: ${{ env.SNYK_TOKEN != '' }}
         uses: snyk/actions/node@v0.4.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
