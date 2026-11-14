@@ -64,8 +64,8 @@ export default defineConfig({
         stderr: 'pipe',
         env: {
           NODE_ENV: 'test',
-          VITE_API_URL: process.env.VITE_API_URL || 'http://localhost:5000/api/v1',
-          VITE_API_TARGET: process.env.VITE_API_TARGET || 'http://127.0.0.1:5000',
+          VITE_API_URL: process.env.VITE_API_URL || 'http://localhost:8000/api/v1',
+          VITE_API_TARGET: process.env.VITE_API_TARGET || 'http://127.0.0.1:8000',
         },
       },
 })
