@@ -68,9 +68,13 @@ jobs:
 
       - name: Test
         run: npm test -- --run
+        env:
+          VITE_API_URL: /api/v1
 
       - name: Test with coverage
-        run: npm run test:coverage || npx vitest run --coverage || echo "Coverage not configured"
+        run: npm run test:coverage
+        env:
+          VITE_API_URL: /api/v1
 
   # Express/Prisma is legacy and is not the primary deployed backend.
   # It remains in the repository for reference but is excluded from the production release gate.
@@ -193,7 +197,7 @@ jobs:
     name: E2E (Live Backend)
     runs-on: ubuntu-24.04
     needs: [frontend, django-backend]
-    if: always()
+    if: needs.frontend.result == 'success' && needs.django-backend.result == 'success'
     services:
       postgres:
         image: postgres:16
@@ -268,17 +272,17 @@ jobs:
         env:
           VITE_API_URL: http://localhost:8000/api/v1
           VITE_API_TARGET: http://localhost:8000
-          PLAYWRIGHT_BASE_URL: http://localhost:5173
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
         run: |
-          nohup npm run dev -- --port 5173 --host 0.0.0.0 &
-          echo "Frontend dev server starting on 5173"
+          nohup npm run dev -- --port 3000 --host 0.0.0.0 &
+          echo "Frontend dev server starting on 3000"
 
       - name: Wait for backends health
         run: |
           curl --retry 30 --retry-delay 2 --retry-connrefused -sf http://localhost:8000/api/v1/health/ready || echo "Django health check pending"
-          curl --retry 30 --retry-delay 2 --retry-connrefused -sf http://localhost:5173 || echo "Frontend health check pending"
+          curl --retry 30 --retry-delay 2 --retry-connrefused -sf http://localhost:3000 || echo "Frontend health check pending"
           for i in {1..30}; do
-            if curl --retry 30 --retry-delay 2 --retry-connrefused -sf http://localhost:8000/api/v1/health/ready && curl --retry 30 --retry-delay 2 --retry-connrefused -sf http://localhost:5173; then
+            if curl --retry 30 --retry-delay 2 --retry-connrefused -sf http://localhost:8000/api/v1/health/ready && curl --retry 30 --retry-delay 2 --retry-connrefused -sf http://localhost:3000; then
               echo "Backends healthy"
               break
             fi
@@ -286,13 +290,14 @@ jobs:
             sleep 2
           done
           curl --retry 30 --retry-delay 2 --retry-connrefused -sf http://localhost:8000/api/v1/health/ready || echo "Django health check failed"
-          curl --retry 30 --retry-delay 2 --retry-connrefused -sf http://localhost:5173 || echo "Frontend health check failed"
+          curl --retry 30 --retry-delay 2 --retry-connrefused -sf http://localhost:3000 || echo "Frontend health check failed"
 
-      - name: Run Playwright E2E (live backend)
+      - name: Run deployment smoke E2E (live Django backend)
         working-directory: learninghub
         env:
-          PLAYWRIGHT_BASE_URL: http://localhost:5173
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
+          DJANGO_API_URL: http://localhost:8000
           VITE_API_TARGET: http://localhost:8000
           VITE_API_URL: http://localhost:8000/api/v1
           CI: 'true'
-        run: npx playwright test --reporter=html
+        run: npx playwright test e2e/deployment-smoke.spec.ts --reporter=line
