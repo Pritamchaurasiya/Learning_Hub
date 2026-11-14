@@ -42,7 +42,7 @@ const pwaConfig = VitePWA({
     // must never be cached by the service worker. Static assets remain precached.
     runtimeCaching: [
       {
-        urlPattern: /\\/(?:api|socket\\.io|ws)\\//i,
+        urlPattern: ({ url }) => ['/api/', '/socket.io/', '/ws/'].some(prefix => url.pathname.startsWith(prefix)),
         handler: 'NetworkOnly',
       },
     ],
