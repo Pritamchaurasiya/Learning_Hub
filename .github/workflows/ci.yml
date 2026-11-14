@@ -49,8 +49,11 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_API_URL: 'http://localhost:5000/api/v1'
-          VITE_ENABLE_MOCK_API: 'true'
+          VITE_API_URL: '/api/v1'
+          VITE_ENABLE_MOCK_API: 'false'
+
+      - name: Build Cloudflare Pages Functions
+        run: npx --yes wrangler@latest pages functions build --outdir=/tmp/learninghub-pages-functions
 
       - name: Test
         run: npm test -- --run
