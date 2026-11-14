@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { QuestionCard } from './QuestionCard'
 import { wasmSandboxService } from '../../services/wasm/WasmSandboxService'
+import { testsAService } from '../../services/testsAService'
 import type { TestQuestion } from '../../services/testsAService'
 
 vi.mock('../MathRenderer', () => ({
@@ -466,6 +467,16 @@ describe('QuestionCard Component with WASM Sandbox Integration', () => {
   })
 
   it('allows requesting progressive hints in practice mode and reveals step-by-step guidance', async () => {
+    vi.spyOn(testsAService, 'getPracticeHint').mockResolvedValue({
+      status: 'success',
+      data: {
+        hint: 'Start by identifying the key constraints and the target output.',
+        level: 1,
+        maxLevel: 3,
+        penaltyPct: 10,
+      },
+    })
+
     const question: TestQuestion = {
       id: 'q-hint-test',
       text: 'Find the maximum flow in a bipartite matching graph.',

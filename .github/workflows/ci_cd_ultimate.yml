@@ -2,10 +2,8 @@
 name: Ultimate God Mode CI/CD
 
 on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
+  # Legacy workflow retained for manual recovery only.
+  workflow_dispatch:
 
 jobs:
   # 1. Backend Validation

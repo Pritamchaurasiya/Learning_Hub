@@ -38,80 +38,12 @@ const pwaConfig = VitePWA({
   workbox: {
     inlineWorkboxRuntime: true,
     globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+    // Authenticated API responses, exam attempts, progress, and student data
+    // must never be cached by the service worker. Static assets remain precached.
     runtimeCaching: [
       {
-        urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-        handler: 'CacheFirst',
-        options: {
-          cacheName: 'google-fonts-cache',
-          expiration: {
-            maxEntries: 10,
-            maxAgeSeconds: 60 * 60 * 24 * 365,
-          },
-          cacheableResponse: {
-            statuses: [0, 200],
-          },
-        },
-      },
-      {
-        urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-        handler: 'CacheFirst',
-        options: {
-          cacheName: 'gstatic-fonts-cache',
-          expiration: {
-            maxEntries: 10,
-            maxAgeSeconds: 60 * 60 * 24 * 365,
-          },
-          cacheableResponse: {
-            statuses: [0, 200],
-          },
-        },
-      },
-      {
-        // Stable catalog content: StaleWhileRevalidate delivers instant sub-5ms cached reads while syncing in background
-        urlPattern: /.*\/(?:courses|content)\/.*/i,
-        handler: 'StaleWhileRevalidate',
-        options: {
-          cacheName: 'api-courses-cache',
-          expiration: {
-            maxEntries: 100,
-            maxAgeSeconds: 60 * 60 * 24, // 24h for courses/content
-          },
-          cacheableResponse: {
-            statuses: [0, 200],
-          },
-        },
-      },
-      {
-        // Tests, quizzes, and problem catalogs: StaleWhileRevalidate for instant page transitions
-        urlPattern: /.*\/(?:problems|quizzes|exams)\/.*/i,
-        handler: 'StaleWhileRevalidate',
-        options: {
-          cacheName: 'api-problems-cache',
-          expiration: {
-            maxEntries: 100,
-            maxAgeSeconds: 60 * 60 * 2, // 2h
-          },
-          cacheableResponse: {
-            statuses: [0, 200],
-          },
-        },
-      },
-      {
-        // Volatile gamification/pricing/leaderboard: 1h max with 3s timeout
-        urlPattern: /.*\/(?:gamification|leaderboard|pricing|contest)\/.*/i,
-        handler: 'NetworkFirst',
-        options: {
-          cacheName: 'api-volatile-cache',
-          networkTimeoutSeconds: 3,
-          expiration: {
-            maxEntries: 100,
-            maxAgeSeconds: 60 * 60 * 1, // 1h for gamification/pricing/leaderboard
-          },
-          cacheableResponse: {
-            statuses: [0, 200],
-          },
-        },
+        urlPattern: ({ url }) => ['/api/', '/socket.io/', '/ws/'].some(prefix => url.pathname.startsWith(prefix)),
+        handler: 'NetworkOnly',
       },
     ],
   },
@@ -119,7 +51,7 @@ const pwaConfig = VitePWA({
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const apiTarget = env.VITE_API_TARGET || process.env.VITE_API_TARGET || 'http://127.0.0.1:5000'
+  const apiTarget = env.VITE_API_TARGET || process.env.VITE_API_TARGET || 'http://127.0.0.1:8000'
 
   return {
     plugins: [
