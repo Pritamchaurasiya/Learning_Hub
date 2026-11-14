@@ -3,7 +3,6 @@ import platform
 import sys
 
 import psutil
-
 from django.conf import settings
 from django.core.cache import cache
 from django.db import DatabaseError, connection
