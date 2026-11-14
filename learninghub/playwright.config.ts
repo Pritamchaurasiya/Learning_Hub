@@ -51,19 +51,21 @@ export default defineConfig({
     },
   ],
 
-  /* Run local Vite dev server before starting the tests.
-   * The backend should be started separately if running live-backend E2E tests.
-   * Mocked tests (problems, tests-a) use page.route() and don't need a backend. */
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-    stdout: 'pipe',
-    stderr: 'pipe',
-    env: {
-      NODE_ENV: 'test',
-      VITE_API_URL: 'http://localhost:5000/api/v1',
-    },
-  },
+  /* In live-backend CI, the workflow starts the frontend and Django itself.
+   * For local runs, Playwright starts the Vite development server. */
+  webServer: process.env.PLAYWRIGHT_BASE_URL
+    ? undefined
+    : {
+        command: 'npm run dev',
+        url: 'http://localhost:3000',
+        reuseExistingServer: !process.env.CI,
+        timeout: 120000,
+        stdout: 'pipe',
+        stderr: 'pipe',
+        env: {
+          NODE_ENV: 'test',
+          VITE_API_URL: process.env.VITE_API_URL || 'http://localhost:5000/api/v1',
+          VITE_API_TARGET: process.env.VITE_API_TARGET || 'http://127.0.0.1:5000',
+        },
+      },
 })
