@@ -39,16 +39,12 @@ jobs:
         # the manifest and lockfile together until the lockfile is regenerated locally.
         run: npm install --no-audit --no-fund
 
-      - name: Warn when backend API is not configured
-        if: ${{ !vars.VITE_API_URL }}
-        run: echo "::warning::VITE_API_URL is not configured. Static pages can deploy, but API-powered features require a deployed backend URL."
-
       - name: Build production frontend
         run: npm run build
         env:
-          # Use the real deployed API base URL, including its version prefix.
-          # The fallback publishes the SPA but does not create an API backend.
-          VITE_API_URL: ${{ vars.VITE_API_URL || '/api/v1' }}
+          # Keep browser traffic same-origin; Cloudflare Pages Functions route
+          # /api/* to the active Django Render backend via a runtime binding.
+          VITE_API_URL: '/api/v1'
           VITE_ENABLE_DEBUG: "false"
           VITE_ENABLE_MOCK_API: "false"
           VITE_BUILD_MODE: production
