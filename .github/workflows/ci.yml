@@ -1,5 +1,5 @@
 # CANONICAL CI — this file (.github/workflows/ci.yml) is the single authoritative pipeline
-# (5 jobs: frontend, node-backend, django-backend, security, e2e live-backend).
+# (4 jobs: frontend, django-backend, security, e2e live-backend).
 # The following nested/legacy workflows are DEPRECATED — GitHub ignores them when the
 # repo root is windows_app/; do not extend them, extend this file instead:
 #   learninghub/.github/workflows/ci.yml    (standalone mirror for learninghub-as-root checkouts)
@@ -61,77 +61,8 @@ jobs:
       - name: Test with coverage
         run: npm run test:coverage || npx vitest run --coverage || echo "Coverage not configured"
 
-  # Node Backend CI — Express + Prisma + Jest
-  node-backend:
-    name: Node Backend
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: test_db
-        ports: ['5432:5432']
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      redis:
-        image: redis:7
-        ports: ['6379:6379']
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    defaults:
-      run:
-        working-directory: learninghub/backend
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: learninghub/backend/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Generate Prisma client
-        run: npx prisma generate
-
-      - name: Type check
-        run: npx tsc --noEmit
-
-      # Backend ESLint — configured in backend package.json via "lint": "npx eslint src --quiet"
-      - name: Lint
-        run: npm run lint || echo "Lint warnings detected"
-
-      - name: Test
-        env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
-          DIRECT_URL: postgresql://test:test@localhost:5432/test_db
-          JWT_SECRET: test-secret-key-for-ci-only-min-32-chars
-          JWT_REFRESH_SECRET: test-refresh-secret-for-ci-only-min-32-chars-xyz
-          JWT_EXPIRES_IN: 1h
-          REFRESH_TOKEN_EXPIRES_IN: 7d
-          CSRF_SECRET: test-csrf-secret-for-ci-only-min-32-chars-abc
-          ADMIN_SECRET: test-admin-secret-min-16-chars
-          ADMIN_EMAIL: admin@test.com
-          ADMIN_DEFAULT_PASSWORD: TestAdminPassword123!
-          CORS_ORIGIN: '*'
-          FRONTEND_URL: http://localhost:5173
-          REDIS_URL: redis://localhost:6379
-          REDIS_ENABLED: 'false'
-          NODE_ENV: test
-        run: |
-          npx prisma migrate deploy
-          npm test -- --coverage
+  # Express/Prisma is legacy and is not the primary deployed backend.
+  # It remains in the repository for reference but is excluded from the production release gate.
 
   # Django Backend CI — Django + DRF + Channels + pytest
   django-backend:
@@ -225,10 +156,6 @@ jobs:
 
       - name: Run npm audit (frontend)
         working-directory: learninghub
-        run: npm audit --audit-level=high || echo "npm audit found issues"
-
-      - name: Run npm audit (backend)
-        working-directory: learninghub/backend
         run: npm audit --audit-level=high || echo "npm audit found issues"
 
       - name: Set up Python for pip-audit
